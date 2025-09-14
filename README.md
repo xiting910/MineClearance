@@ -1,6 +1,6 @@
-# 简单的 WinForms 扫雷游戏
+# 一个简单的 WinForms 扫雷游戏
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-- [简单的 WinForms 扫雷游戏](#简单的-winforms-扫雷游戏)
+- [一个简单的 WinForms 扫雷游戏](#一个简单的-winforms-扫雷游戏)
   - [项目说明](#项目说明)
   - [注意事项](#注意事项)
   - [系统要求](#系统要求)
