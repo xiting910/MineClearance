@@ -1,0 +1,56 @@
+root = true
+
+[*.cs]
+# 默认级别为警告
+dotnet_analyzer_diagnostic.severity = warning
+
+# 禁用特定的诊断
+dotnet_diagnostic.SYSLIB1096.severity = none
+
+# 1. 建议不使用this来引用成员
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_qualification_for_method_group = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_event = false:suggestion
+
+# 2. 使用 var 关键字
+csharp_style_var_for_built_in_types_when_declaring_locals = true:suggestion
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+
+# 3. 建议使用简化的对象初始化
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+
+# 4. 建议使用集合表达式
+csharp_style_collection_expression = true:suggestion
+
+# 5. 建议使用目标类型的 new 表达式
+csharp_style_target_typed_new_expression = true:suggestion
+
+# 6. 单行 if/for 语句块必须加大括号
+csharp_prefer_braces = always:warning
+
+# 7. 命名空间必须与文件夹结构匹配
+dotnet_style_namespace_match_folder = true:warning
+
+# 8. 使用文件范围的 namespace 声明
+csharp_style_namespace_declarations = file_scoped:suggestion
+
+# 大括号风格：新行
+csharp_brace_style = next_line
+
+# 删除行尾空格
+trim_trailing_whitespace = true
+
+# 文件末尾不加空行
+insert_final_newline = false
+
+# 其他设置
+indent_style = space
+indent_size = 4
+
+# 使用 UTF-8 编码
+charset = utf-8
