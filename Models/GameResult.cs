@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using MineClearance.Models.Enums;
 
 namespace MineClearance.Models;
@@ -13,47 +14,48 @@ namespace MineClearance.Models;
 /// <param name="boardWidth">棋盘宽度</param>
 /// <param name="boardHeight">棋盘高度</param>
 /// <param name="mineCount">地雷总数</param>
+[method: JsonConstructor]
 internal sealed class GameResult(DifficultyLevel difficulty, DateTime startTime, TimeSpan duration, bool isWin, double? completion = null, int? boardWidth = null, int? boardHeight = null, int? mineCount = null) : IEquatable<GameResult>
 {
     /// <summary>
     /// 游戏的难度级别
     /// </summary>
-    public DifficultyLevel Difficulty { get; private init; } = difficulty;
+    public DifficultyLevel Difficulty { get; } = difficulty;
 
     /// <summary>
     /// 游戏的开始时间
     /// </summary>
-    public DateTime StartTime { get; private init; } = startTime;
+    public DateTime StartTime { get; } = startTime;
 
     /// <summary>
     /// 游戏时间
     /// </summary>
-    public TimeSpan Duration { get; private init; } = duration;
+    public TimeSpan Duration { get; } = duration;
 
     /// <summary>
     /// 游戏的结果(是否获胜)
     /// </summary>
-    public bool IsWin { get; private init; } = isWin;
+    public bool IsWin { get; } = isWin;
 
     /// <summary>
     /// 游戏完成度, 取值范围 [0, 100), null 表示胜利
     /// </summary>
-    public double? Completion { get; private init; } = isWin ? null : completion;
+    public double? Completion { get; } = isWin ? null : completion;
 
     /// <summary>
     /// 棋盘宽度
     /// </summary>
-    public int? BoardWidth { get; private init; } = difficulty == DifficultyLevel.Custom ? boardWidth : null;
+    public int? BoardWidth { get; } = difficulty == DifficultyLevel.Custom ? boardWidth : null;
 
     /// <summary>
     /// 棋盘高度
     /// </summary>
-    public int? BoardHeight { get; private init; } = difficulty == DifficultyLevel.Custom ? boardHeight : null;
+    public int? BoardHeight { get; } = difficulty == DifficultyLevel.Custom ? boardHeight : null;
 
     /// <summary>
     /// 地雷数量
     /// </summary>
-    public int? MineCount { get; private init; } = difficulty == DifficultyLevel.Custom ? mineCount : null;
+    public int? MineCount { get; } = difficulty == DifficultyLevel.Custom ? mineCount : null;
 
     /// <summary>
     /// 重写 ToString 方法, 返回游戏结果的字符串表示
@@ -68,7 +70,7 @@ internal sealed class GameResult(DifficultyLevel difficulty, DateTime startTime,
         var customInfo = Difficulty == DifficultyLevel.Custom ? $", 大小: {BoardWidth}x{BoardHeight}, 地雷数: {MineCount}" : "";
 
         // 拼接所有信息
-        return $"[{StartTime}] 难度: {Difficulty}, 用时: {Duration}, 结果: {resultInfo}{customInfo}]";
+        return $"[{StartTime}] 难度: {Difficulty}, 用时: {Duration}, 结果: {resultInfo}{customInfo}";
     }
 
     /// <summary>
@@ -79,7 +81,7 @@ internal sealed class GameResult(DifficultyLevel difficulty, DateTime startTime,
     /// <returns>是否相等</returns>
     public static bool operator ==(GameResult? left, GameResult? right)
     {
-        return (left is null && right is null) || (left is not null && left.Equals(right));
+        return left is not null && left.Equals(right);
     }
 
     /// <summary>
@@ -100,7 +102,7 @@ internal sealed class GameResult(DifficultyLevel difficulty, DateTime startTime,
     /// <returns>是否相等</returns>
     public bool Equals(GameResult? other)
     {
-        return ReferenceEquals(this, other) || (other is not null && StartTime == other.StartTime);
+        return ReferenceEquals(this, other) || (other is not null && StartTime == other.StartTime && Difficulty == other.Difficulty && Duration == other.Duration && IsWin == other.IsWin && Completion == other.Completion && BoardWidth == other.BoardWidth && BoardHeight == other.BoardHeight && MineCount == other.MineCount);
     }
 
     /// <summary>
@@ -119,6 +121,6 @@ internal sealed class GameResult(DifficultyLevel difficulty, DateTime startTime,
     /// <returns>对象的哈希码</returns>
     public override int GetHashCode()
     {
-        return StartTime.GetHashCode();
+        return HashCode.Combine(StartTime, Difficulty, Duration, IsWin, Completion, BoardWidth, BoardHeight, MineCount);
     }
 }

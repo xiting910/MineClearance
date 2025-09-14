@@ -32,96 +32,101 @@ internal static class Datas
         try
         {
             // 检查数据存储路径是否存在
-            if (!Directory.Exists(Constants.DataPath))
+            var directoryInfo = new DirectoryInfo(Constants.DataPath);
+            if (!directoryInfo.Exists)
             {
-                // 如果不存在, 创建数据存储路径
-                _ = Directory.CreateDirectory(Constants.DataPath);
-
-                // 创建一个空的历史记录文件
-                await using (File.Create(Constants.HistoryFilePath)) { }
+                // 如果不存在, 创建数据存储路径并返回
+                directoryInfo.Create();
                 return;
             }
 
-            // 如果历史记录文件不存在, 则创建一个空的文件
-            if (!File.Exists(Constants.HistoryFilePath))
+            // 获取历史记录文件
+            var fileInfo = directoryInfo.EnumerateFiles().FirstOrDefault(f => f.FullName.Equals(Constants.HistoryFilePath, StringComparison.OrdinalIgnoreCase));
+
+            // 如果没有找到历史记录文件, 直接返回
+            if (fileInfo == null)
             {
-                await using (File.Create(Constants.HistoryFilePath)) { }
                 return;
             }
 
-            // 获取临时文件名, 避免与现有文件冲突
-            var tempPath = Path.Combine(Constants.DataPath, Guid.NewGuid().ToString() + ".tmp");
-            while (File.Exists(tempPath))
+            // 读取文件所有内容
+            var fileContent = await File.ReadAllTextAsync(fileInfo.FullName);
+
+            // 如果文件名大小写不正确, 则重命名为正确的文件名
+            var correctFileName = Path.GetFileName(Constants.HistoryFilePath);
+            if (!fileInfo.Name.Equals(correctFileName, StringComparison.Ordinal))
             {
-                tempPath = Path.Combine(Constants.DataPath, Guid.NewGuid().ToString() + ".tmp");
+                // 正确的文件路径
+                var correctFilePath = Path.Combine(directoryInfo.FullName, correctFileName);
+
+                // 删除错误的文件
+                fileInfo.Delete();
+
+                // 创建正确的文件
+                fileInfo = new(correctFilePath);
+
+                // 将内容写入正确的文件
+                await File.WriteAllTextAsync(correctFilePath, fileContent);
             }
 
-            // 先重命名为临时文件名, 再重命名为目标大小写
-            File.Move(Constants.HistoryFilePath, tempPath);
-            File.Move(tempPath, Constants.HistoryFilePath);
-
-            // 读取历史记录文件内容
-            await using var stream = File.OpenRead(Constants.HistoryFilePath);
-            if (stream.Length > 0)
+            try
             {
-                try
+                // 尝试反序列化为 GameData 对象
+                var gameData = JsonSerializer.Deserialize<GameData>(fileContent, Constants.JsonOptions);
+                if (gameData != null)
                 {
-                    // 尝试异步反序列化为 GameData 对象
-                    var gameData = await JsonSerializer.DeserializeAsync<GameData>(stream, Constants.JsonOptions);
-                    if (gameData != null)
+                    // 更新游戏结果列表
+                    _gameResults.AddRange(gameData.GameResults);
+
+                    // 记录数据加载信息
+                    FileLogger.LogInfo($"成功加载游戏数据: {gameData.GameResults.Count} 条记录");
+
+                    // 如果数据版本低于当前版本, 则进行数据升级
+                    if (gameData.Version < CurrentDataVersion)
                     {
-                        // 更新游戏结果列表
-                        _gameResults.AddRange(gameData.GameResults);
+                        // 游戏结果比较器, 用于按时间倒序排列
+                        var comparer = new GameResultComparer(nameof(GameResult.StartTime), SortOrder.Descending);
 
-                        // 记录数据加载信息
-                        FileLogger.LogInfo($"成功加载游戏数据: {gameData.GameResults.Count} 条记录");
+                        // 将游戏结果按时间倒序排列
+                        _gameResults.Sort(comparer);
 
-                        // 如果数据版本低于当前版本, 则进行数据升级
-                        if (gameData.Version < CurrentDataVersion)
-                        {
-                            // 将游戏结果按时间倒序排列
-                            _gameResults.Sort(new GameResultComparer(nameof(GameResult.StartTime), SortOrder.Descending));
+                        // 保存更新后的数据
+                        await SaveGameResultsAsync();
 
-                            // 保存更新后的数据
-                            await SaveGameResultsAsync();
-
-                            // 记录数据升级信息
-                            FileLogger.LogInfo($"游戏数据已从版本 {gameData.Version} 升级到 {CurrentDataVersion}");
-                        }
+                        // 记录数据升级信息
+                        FileLogger.LogInfo($"游戏数据已从版本 {gameData.Version} 升级到 {CurrentDataVersion}");
                     }
                 }
-                catch (JsonException)
+            }
+            catch (JsonException)
+            {
+                // 如果反序列化为 GameData 对象失败, 可能是旧版本数据格式, 将文件出现的所有"Difficulty": 3替换为"Difficulty": 4
+                var updatedJson = fileContent.Replace("\"Difficulty\": 3", "\"Difficulty\": 4");
+
+                // 尝试反序列化为 List<GameResult> 对象
+                var oldGameResults = JsonSerializer.Deserialize<List<GameResult>>(updatedJson, Constants.JsonOptions);
+
+                // 如果存在旧数据
+                if (oldGameResults != null)
                 {
-                    // 如果反序列化为 GameData 对象失败, 可能是旧版本数据格式
-                    stream.Position = 0;
-                    using var reader = new StreamReader(stream);
-                    var json = await reader.ReadToEndAsync();
+                    // 将旧数据添加到游戏结果列表
+                    _gameResults.AddRange(oldGameResults);
 
-                    // 将文件出现的所有"Difficulty": 3替换为"Difficulty": 4
-                    var updatedJson = json.Replace("\"Difficulty\": 3", "\"Difficulty\": 4");
+                    // 游戏结果比较器, 用于按时间倒序排列
+                    var comparer = new GameResultComparer(nameof(GameResult.StartTime), SortOrder.Descending);
 
-                    // 尝试反序列化为 List<GameResult> 对象
-                    var oldGameResults = JsonSerializer.Deserialize<List<GameResult>>(updatedJson, Constants.JsonOptions);
+                    // 按时间倒序排列
+                    _gameResults.Sort(comparer);
 
-                    // 如果存在旧数据
-                    if (oldGameResults != null)
-                    {
-                        // 将旧数据添加到游戏结果列表
-                        _gameResults.AddRange(oldGameResults);
-
-                        // 按时间倒序排列
-                        _gameResults.Sort(new GameResultComparer(nameof(GameResult.StartTime), SortOrder.Descending));
-
-                        // 记录数据加载信息
-                        FileLogger.LogInfo($"成功加载游戏数据: {oldGameResults.Count} 条记录");
-                    }
-
-                    // 保存更新后的数据
-                    await SaveGameResultsAsync();
-
-                    // 记录数据升级信息
-                    FileLogger.LogInfo($"游戏数据已从旧版本升级到新版本");
+                    // 记录数据加载信息
+                    FileLogger.LogInfo($"成功加载旧版本游戏数据: {oldGameResults.Count} 条记录");
                 }
+
+                // 保存更新后的数据
+                await SaveGameResultsAsync();
+
+                // 记录数据升级信息
+                FileLogger.LogInfo($"游戏数据已从旧版本升级到新版本");
             }
         }
         catch (Exception ex)
