@@ -1,6 +1,6 @@
-using System.Diagnostics;
-using MineClearance.Services;
+﻿using MineClearance.Services;
 using MineClearance.Utilities;
+using System.Diagnostics;
 
 namespace MineClearance.UI.Main;
 

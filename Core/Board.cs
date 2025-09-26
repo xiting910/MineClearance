@@ -1,4 +1,4 @@
-using MineClearance.Models;
+﻿using MineClearance.Models;
 using MineClearance.Models.Enums;
 
 namespace MineClearance.Core;
@@ -105,7 +105,7 @@ internal sealed class Board
             }
         }
 
-        _unopenedSafeCount = (height * width) - mineCount;
+        _unopenedSafeCount = height * width - mineCount;
         _mines = new(width, height, mineCount);
         _isFirstClick = true;
     }
@@ -116,10 +116,7 @@ internal sealed class Board
     /// <param name="row">行索引</param>
     /// <param name="col">列索引</param>
     /// <returns>如果是地雷返回 true, 否则返回 false</returns>
-    public bool IsMine(int row, int col)
-    {
-        return _mines.MineGrid[row, col] == -1;
-    }
+    public bool IsMine(int row, int col) => _mines.MineGrid[row, col] == -1;
 
     /// <summary>
     /// 左键点击格子

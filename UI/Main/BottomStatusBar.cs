@@ -1,6 +1,6 @@
-using System.Diagnostics;
+﻿using MineClearance.Models.Enums;
 using MineClearance.Services;
-using MineClearance.Models.Enums;
+using System.Diagnostics;
 
 namespace MineClearance.UI.Main;
 
@@ -67,6 +67,7 @@ internal sealed class BottomStatusBar : StatusStrip
         // 设置状态栏属性
         Dock = DockStyle.Bottom;
         ShowItemToolTips = true;
+        SizingGrip = false;
 
         // 左侧状态标签
         _statusLabel = new()
@@ -172,19 +173,16 @@ internal sealed class BottomStatusBar : StatusStrip
     /// 设置左侧状态文本
     /// </summary>
     /// <param name="status">状态</param>
-    public void SetStatus(StatusBarState status)
+    public void SetStatus(StatusBarState status) => _statusLabel.Text = status switch
     {
-        _statusLabel.Text = status switch
-        {
-            StatusBarState.Ready => "状态: 就绪",
-            StatusBarState.History => "状态: 历史记录",
-            StatusBarState.Preparing => "状态: 准备游戏",
-            StatusBarState.WaitingStart => "状态: 等待游戏开始",
-            StatusBarState.InGame => "状态: 游戏中",
-            StatusBarState.Paused => "状态: 游戏暂停",
-            StatusBarState.GameWon => "状态: 游戏胜利",
-            StatusBarState.GameLost => "状态: 游戏失败",
-            _ => "状态: 未知"
-        };
-    }
+        StatusBarState.Ready => "状态: 就绪",
+        StatusBarState.History => "状态: 历史记录",
+        StatusBarState.Preparing => "状态: 准备游戏",
+        StatusBarState.WaitingStart => "状态: 等待游戏开始",
+        StatusBarState.InGame => "状态: 游戏中",
+        StatusBarState.Paused => "状态: 游戏暂停",
+        StatusBarState.GameWon => "状态: 游戏胜利",
+        StatusBarState.GameLost => "状态: 游戏失败",
+        _ => "状态: 未知"
+    };
 }

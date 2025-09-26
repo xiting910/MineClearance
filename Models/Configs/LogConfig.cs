@@ -1,5 +1,5 @@
+﻿using MineClearance.Models.Enums;
 using System.Text.Json.Serialization;
-using MineClearance.Models.Enums;
 
 namespace MineClearance.Models.Configs;
 

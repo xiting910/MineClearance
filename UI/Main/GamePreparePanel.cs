@@ -1,8 +1,8 @@
-using MineClearance.Core;
-using MineClearance.Services;
-using MineClearance.Utilities;
-using MineClearance.UI.Assist;
+﻿using MineClearance.Core;
 using MineClearance.Models.Enums;
+using MineClearance.Services;
+using MineClearance.UI.Assist;
+using MineClearance.Utilities;
 
 namespace MineClearance.UI.Main;
 

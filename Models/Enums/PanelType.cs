@@ -1,4 +1,4 @@
-namespace MineClearance.Models.Enums;
+﻿namespace MineClearance.Models.Enums;
 
 /// <summary>
 /// 面板类型枚举

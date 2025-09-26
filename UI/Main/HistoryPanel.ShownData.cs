@@ -1,8 +1,8 @@
-using System.Globalization;
-using MineClearance.Models;
+﻿using MineClearance.Models;
 using MineClearance.Models.Enums;
-using MineClearance.Utilities;
 using MineClearance.UI.Assist;
+using MineClearance.Utilities;
+using System.Globalization;
 
 namespace MineClearance.UI.Main;
 
@@ -132,10 +132,9 @@ internal partial class HistoryPanel
     /// <param name="result">要添加的游戏结果</param>
     /// <param name="stats">要更新的统计信息</param>
     /// <returns>返回更新后的统计信息</returns>
-    private static Stats AddResultToStats(GameResult result, Stats stats)
-    {
+    private static Stats AddResultToStats(GameResult result, Stats stats) =>
         // 更新统计信息
-        return new()
+        new()
         {
             Total = stats.Total + 1,
             Wins = stats.Wins + (result.IsWin ? 1 : 0),
@@ -143,7 +142,6 @@ internal partial class HistoryPanel
             TotalCompletion = stats.TotalCompletion + (result.Completion ?? 100.0),
             ShortestDuration = (result.IsWin && result.Duration < stats.ShortestDuration) ? result.Duration : stats.ShortestDuration
         };
-    }
 
     /// <summary>
     /// 将stats结构体添加到统计信息数据网格视图

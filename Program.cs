@@ -1,6 +1,6 @@
+﻿using MineClearance.Services;
 using MineClearance.UI;
 using MineClearance.UI.Main;
-using MineClearance.Services;
 
 namespace MineClearance;
 
@@ -32,7 +32,7 @@ file static class Program
     private static void Main()
     {
         // 检测是否为Windows操作系统
-        if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+        if (!OperatingSystem.IsWindows())
         {
             // 如果不是Windows操作系统, 则显示错误信息并退出程序
             _ = MessageBox.Show("本程序仅支持在Windows操作系统上运行", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -89,7 +89,7 @@ file static class Program
         finally
         {
             // 只有获得互斥体时才释放
-            if (_mutex != null)
+            if (_mutex is not null)
             {
                 try
                 {

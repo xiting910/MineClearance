@@ -1,4 +1,4 @@
-namespace MineClearance.Models.Enums;
+﻿namespace MineClearance.Models.Enums;
 
 /// <summary>
 /// 格子类型枚举

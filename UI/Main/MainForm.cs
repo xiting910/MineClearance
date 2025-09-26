@@ -1,6 +1,6 @@
-using System.Runtime.InteropServices;
-using MineClearance.Models.Enums;
+﻿using MineClearance.Models.Enums;
 using MineClearance.Services;
+using System.Runtime.InteropServices;
 
 namespace MineClearance.UI.Main;
 
@@ -58,6 +58,7 @@ internal sealed class MainForm : Form
         Size = new(UIConstants.MainFormWidth, UIConstants.MainFormHeight);
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedSingle;
+        SizeGripStyle = SizeGripStyle.Hide;
         MaximizeBox = false;
 
         // 添加所有面板到窗体
@@ -79,17 +80,14 @@ internal sealed class MainForm : Form
     /// <param name="panelType">面板类型</param>
     /// <returns>面板实例</returns>
     /// <exception cref="ArgumentOutOfRangeException">如果面板类型未知则抛出异常</exception>
-    private static Panel GetPanel(PanelType panelType)
+    private static Panel GetPanel(PanelType panelType) => panelType switch
     {
-        return panelType switch
-        {
-            PanelType.Game => GamePanel.Instance,
-            PanelType.Menu => MenuPanel.Instance,
-            PanelType.History => HistoryPanel.Instance,
-            PanelType.GamePrepare => GamePreparePanel.Instance,
-            _ => throw new ArgumentOutOfRangeException(nameof(panelType), panelType, null)
-        };
-    }
+        PanelType.Game => GamePanel.Instance,
+        PanelType.Menu => MenuPanel.Instance,
+        PanelType.History => HistoryPanel.Instance,
+        PanelType.GamePrepare => GamePreparePanel.Instance,
+        _ => throw new ArgumentOutOfRangeException(nameof(panelType), panelType, null)
+    };
 
     /// <summary>
     /// 重写OnLoad方法, 恢复窗口位置和大小
@@ -180,7 +178,7 @@ internal sealed class MainForm : Form
             var workingArea = Screen.GetWorkingArea(this);
 
             // 获取窗口的当前位置
-            var rectObj = Marshal.PtrToStructure(m.LParam, typeof(RECT));
+            var rectObj = Marshal.PtrToStructure<RECT>(m.LParam);
 
             if (rectObj is RECT rect)
             {

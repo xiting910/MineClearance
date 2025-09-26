@@ -1,6 +1,6 @@
-using MineClearance.Models.Enums;
-using MineClearance.Utilities;
+﻿using MineClearance.Models.Enums;
 using MineClearance.UI.Assist;
+using MineClearance.Utilities;
 
 namespace MineClearance.UI.Main;
 
@@ -200,7 +200,7 @@ internal sealed partial class HistoryPanel : Panel
         buttonWidth = (int)(70 * UIConstants.DpiScale);
 
         // 更新按钮X位置
-        buttonXPosition = UIConstants.MainFormWidth - buttonWidth - (4 * buttonSpacing);
+        buttonXPosition = UIConstants.MainFormWidth - buttonWidth - 4 * buttonSpacing;
 
         // 更新按钮间距
         buttonSpacing *= 3;

@@ -1,4 +1,4 @@
-namespace MineClearance.Models.Enums;
+﻿namespace MineClearance.Models.Enums;
 
 /// <summary>
 /// 底部状态栏状态枚举

@@ -1,4 +1,4 @@
-using MineClearance.Models.Enums;
+﻿using MineClearance.Models.Enums;
 
 namespace MineClearance.Core;
 

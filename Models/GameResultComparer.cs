@@ -1,4 +1,4 @@
-using MineClearance.Models.Enums;
+﻿using MineClearance.Models.Enums;
 
 namespace MineClearance.Models;
 
@@ -28,7 +28,7 @@ internal sealed class GameResultComparer(string propertyName, SortOrder sortOrde
     /// <exception cref="ArgumentException">如果属性名不支持</exception>
     public int Compare(GameResult? x, GameResult? y)
     {
-        if (x == null || y == null)
+        if (x is null || y is null)
         {
             return 0;
         }

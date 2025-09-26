@@ -1,6 +1,6 @@
-using System.Text.Json;
+﻿using MineClearance.Models.Configs;
 using MineClearance.Utilities;
-using MineClearance.Models.Configs;
+using System.Text.Json;
 
 namespace MineClearance.Services;
 
@@ -75,7 +75,7 @@ internal static class LogConfigManager
             var config = JsonSerializer.Deserialize<LogConfig>(json, Constants.JsonOptions);
 
             // 如果反序列化失败, 则返回默认配置
-            if (config == null)
+            if (config is null)
             {
                 needSave = true;
                 return new();

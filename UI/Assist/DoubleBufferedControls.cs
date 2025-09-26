@@ -1,4 +1,4 @@
-namespace MineClearance.UI.Assist;
+﻿namespace MineClearance.UI.Assist;
 
 /// <summary>
 /// 自定义双缓冲面板

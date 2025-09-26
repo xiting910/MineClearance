@@ -1,6 +1,6 @@
+﻿using MineClearance.Models.Enums;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using MineClearance.Models.Enums;
 
 namespace MineClearance.Utilities;
 
@@ -63,16 +63,13 @@ internal static class Constants
     /// <returns>棋盘宽度、高度和地雷数量的元组</returns>
     /// <exception cref="ArgumentException">如果难度级别为自定义, 则抛出异常</exception>
     /// <exception cref="ArgumentOutOfRangeException">如果难度级别不在预定义范围内</exception>
-    public static (int width, int height, int mineCount) GetSettings(DifficultyLevel level)
+    public static (int width, int height, int mineCount) GetSettings(DifficultyLevel level) => level switch
     {
-        return level switch
-        {
-            DifficultyLevel.Easy => (9, 9, 10),
-            DifficultyLevel.Medium => (16, 16, 40),
-            DifficultyLevel.Hard => (30, 16, 99),
-            DifficultyLevel.Hell => (50, 30, 309),
-            DifficultyLevel.Custom => throw new ArgumentException("自定义难度需要手动设置棋盘参数", nameof(level)),
-            _ => throw new ArgumentOutOfRangeException(nameof(level), level, "未知的难度级别")
-        };
-    }
+        DifficultyLevel.Easy => (9, 9, 10),
+        DifficultyLevel.Medium => (16, 16, 40),
+        DifficultyLevel.Hard => (30, 16, 99),
+        DifficultyLevel.Hell => (50, 30, 309),
+        DifficultyLevel.Custom => throw new ArgumentException("自定义难度需要手动设置棋盘参数", nameof(level)),
+        _ => throw new ArgumentOutOfRangeException(nameof(level), level, "未知的难度级别")
+    };
 }

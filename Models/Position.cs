@@ -1,4 +1,4 @@
-namespace MineClearance.Models;
+﻿namespace MineClearance.Models;
 
 /// <summary>
 /// 位置类, 用于表示扫雷游戏中的位置
@@ -28,10 +28,7 @@ internal sealed class Position(int row, int col) : IEquatable<Position>
     /// <param name="left">左操作数</param>
     /// <param name="right">右操作数</param>
     /// <returns>返回新的位置</returns>
-    public static Position operator +(Position left, Position right)
-    {
-        return new(left.Row + right.Row, left.Col + right.Col);
-    }
+    public static Position operator +(Position left, Position right) => new(left.Row + right.Row, left.Col + right.Col);
 
     /// <summary>
     /// 重写==运算符
@@ -39,10 +36,7 @@ internal sealed class Position(int row, int col) : IEquatable<Position>
     /// <param name="left">左操作数</param>
     /// <param name="right">右操作数</param>
     /// <returns>返回是否相等</returns>
-    public static bool operator ==(Position left, Position right)
-    {
-        return left.Row == right.Row && left.Col == right.Col;
-    }
+    public static bool operator ==(Position left, Position right) => left.Row == right.Row && left.Col == right.Col;
 
     /// <summary>
     /// 重写!=运算符
@@ -50,37 +44,25 @@ internal sealed class Position(int row, int col) : IEquatable<Position>
     /// <param name="left">左操作数</param>
     /// <param name="right">右操作数</param>
     /// <returns>返回是否不相等</returns>
-    public static bool operator !=(Position left, Position right)
-    {
-        return !(left == right);
-    }
+    public static bool operator !=(Position left, Position right) => !(left == right);
 
     /// <summary>
     /// 与其他位置比较
     /// </summary>
     /// <param name="other">其他位置</param>
     /// <returns>返回是否相等</returns>
-    public bool Equals(Position? other)
-    {
-        return other is not null && this == other;
-    }
+    public bool Equals(Position? other) => other is not null && this == other;
 
     /// <summary>
     /// 重写Equals方法
     /// </summary>
     /// <param name="obj">要比较的对象</param>
     /// <returns>返回是否相等</returns>
-    public override bool Equals(object? obj)
-    {
-        return obj is Position other && this == other;
-    }
+    public override bool Equals(object? obj) => obj is Position other && this == other;
 
     /// <summary>
     /// 重写GetHashCode方法
     /// </summary>
     /// <returns>返回对象的哈希代码</returns>
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Row, Col);
-    }
+    public override int GetHashCode() => HashCode.Combine(Row, Col);
 }

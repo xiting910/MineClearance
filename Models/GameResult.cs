@@ -1,5 +1,5 @@
+﻿using MineClearance.Models.Enums;
 using System.Text.Json.Serialization;
-using MineClearance.Models.Enums;
 
 namespace MineClearance.Models;
 
@@ -79,10 +79,7 @@ internal sealed class GameResult(DifficultyLevel difficulty, DateTime startTime,
     /// <param name="left">左侧游戏结果</param>
     /// <param name="right">右侧游戏结果</param>
     /// <returns>是否相等</returns>
-    public static bool operator ==(GameResult? left, GameResult? right)
-    {
-        return left is not null && left.Equals(right);
-    }
+    public static bool operator ==(GameResult? left, GameResult? right) => left is not null && left.Equals(right);
 
     /// <summary>
     /// 重写!=操作符, 用于比较两个游戏结果是否不相等
@@ -90,37 +87,25 @@ internal sealed class GameResult(DifficultyLevel difficulty, DateTime startTime,
     /// <param name="left">左侧游戏结果</param>
     /// <param name="right">右侧游戏结果</param>
     /// <returns>是否不相等</returns>
-    public static bool operator !=(GameResult? left, GameResult? right)
-    {
-        return !(left == right);
-    }
+    public static bool operator !=(GameResult? left, GameResult? right) => !(left == right);
 
     /// <summary>
     /// 判断当前游戏结果是否与另一个游戏结果相等
     /// </summary>
     /// <param name="other">另一个游戏结果</param>
     /// <returns>是否相等</returns>
-    public bool Equals(GameResult? other)
-    {
-        return ReferenceEquals(this, other) || (other is not null && StartTime == other.StartTime && Difficulty == other.Difficulty && Duration == other.Duration && IsWin == other.IsWin && Completion == other.Completion && BoardWidth == other.BoardWidth && BoardHeight == other.BoardHeight && MineCount == other.MineCount);
-    }
+    public bool Equals(GameResult? other) => ReferenceEquals(this, other) || (other is not null && StartTime == other.StartTime && Difficulty == other.Difficulty && Duration == other.Duration && IsWin == other.IsWin && Completion == other.Completion && BoardWidth == other.BoardWidth && BoardHeight == other.BoardHeight && MineCount == other.MineCount);
 
     /// <summary>
     /// 重写Equals方法, 用于比较两个游戏结果是否相等
     /// </summary>
     /// <param name="obj">要比较的对象</param>
     /// <returns>是否相等</returns>
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as GameResult);
-    }
+    public override bool Equals(object? obj) => Equals(obj as GameResult);
 
     /// <summary>
     /// 获取对象的哈希码
     /// </summary>
     /// <returns>对象的哈希码</returns>
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(StartTime, Difficulty, Duration, IsWin, Completion, BoardWidth, BoardHeight, MineCount);
-    }
+    public override int GetHashCode() => HashCode.Combine(StartTime, Difficulty, Duration, IsWin, Completion, BoardWidth, BoardHeight, MineCount);
 }

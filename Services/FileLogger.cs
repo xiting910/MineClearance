@@ -1,7 +1,7 @@
-using System.Globalization;
-using System.Collections.Concurrent;
-using MineClearance.Models.Enums;
+﻿using MineClearance.Models.Enums;
 using MineClearance.Utilities;
+using System.Collections.Concurrent;
+using System.Globalization;
 
 namespace MineClearance.Services;
 
@@ -57,28 +57,19 @@ internal static class FileLogger
     /// 记录信息
     /// </summary>
     /// <param name="message">日志消息</param>
-    public static void LogInfo(string? message)
-    {
-        Log(LogLevel.Info, message);
-    }
+    public static void LogInfo(string? message) => Log(LogLevel.Info, message);
 
     /// <summary>
     /// 记录警告
     /// </summary>
     /// <param name="message">日志消息</param>
-    public static void LogWarning(string? message)
-    {
-        Log(LogLevel.Warning, message);
-    }
+    public static void LogWarning(string? message) => Log(LogLevel.Warning, message);
 
     /// <summary>
     /// 记录异常
     /// </summary>
     /// <param name="exception">异常对象</param>
-    public static void LogException(Exception exception)
-    {
-        Log(LogLevel.Error, exception.ToString());
-    }
+    public static void LogException(Exception exception) => Log(LogLevel.Error, exception.ToString());
 
     /// <summary>
     /// 结束所有日志写入任务并重命名日志文件

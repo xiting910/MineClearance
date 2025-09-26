@@ -1,10 +1,10 @@
-using System.Diagnostics;
-using MineClearance.Core;
+﻿using MineClearance.Core;
 using MineClearance.Models;
 using MineClearance.Models.Enums;
 using MineClearance.Services;
-using MineClearance.Utilities;
 using MineClearance.UI.Assist;
+using MineClearance.Utilities;
+using System.Diagnostics;
 
 namespace MineClearance.UI.Main;
 

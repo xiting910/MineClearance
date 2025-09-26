@@ -1,4 +1,4 @@
-using MineClearance.Models;
+﻿using MineClearance.Models;
 
 namespace MineClearance.Core;
 
@@ -37,13 +37,13 @@ internal sealed class Mines(int width, int height, int mineCount)
     public void GenerateMines(Position firstClickPos)
     {
         // 首次点击位置的索引
-        var firstClickIndex = (firstClickPos.Row * _width) + firstClickPos.Col;
+        var firstClickIndex = firstClickPos.Row * _width + firstClickPos.Col;
 
         // 除了首次点击位置外的所有位置
         var allPositions = Enumerable.Range(0, _width * _height).Where(pos => pos != firstClickIndex);
 
         // 安全位置的索引(与首次点击位置相邻的格子)
-        var safePositions = allPositions.Where(pos => Math.Abs((pos / _width) - firstClickPos.Row) <= 1 && Math.Abs((pos % _width) - firstClickPos.Col) <= 1).ToArray();
+        var safePositions = allPositions.Where(pos => Math.Abs(pos / _width - firstClickPos.Row) <= 1 && Math.Abs(pos % _width - firstClickPos.Col) <= 1).ToArray();
 
         // 可放置地雷的位置(排除安全位置)
         var availablePositions = allPositions.Except(safePositions).ToArray();

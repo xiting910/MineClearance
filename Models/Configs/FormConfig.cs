@@ -1,4 +1,4 @@
-namespace MineClearance.Models.Configs;
+﻿namespace MineClearance.Models.Configs;
 
 /// <summary>
 /// 窗口配置数据类

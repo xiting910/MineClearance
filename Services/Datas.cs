@@ -1,6 +1,6 @@
-using System.Text.Json;
-using MineClearance.Models;
+﻿using MineClearance.Models;
 using MineClearance.Utilities;
+using System.Text.Json;
 
 namespace MineClearance.Services;
 
@@ -44,7 +44,7 @@ internal static class Datas
             var fileInfo = directoryInfo.EnumerateFiles().FirstOrDefault(f => f.FullName.Equals(Constants.HistoryFilePath, StringComparison.OrdinalIgnoreCase));
 
             // 如果没有找到历史记录文件, 直接返回
-            if (fileInfo == null)
+            if (fileInfo is null)
             {
                 return;
             }

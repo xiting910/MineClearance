@@ -1,4 +1,4 @@
-namespace MineClearance.UI.Assist;
+﻿namespace MineClearance.UI.Assist;
 
 /// <summary>
 /// 自定义确认对话框, 支持不再提示勾选框, 以及不同按钮的唯一标识

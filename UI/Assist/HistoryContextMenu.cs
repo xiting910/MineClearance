@@ -1,4 +1,4 @@
-using MineClearance.Models;
+﻿using MineClearance.Models;
 using MineClearance.Models.Enums;
 using MineClearance.Utilities;
 
@@ -167,10 +167,7 @@ internal sealed class HistoryContextMenu : ContextMenuStrip
                 filterItem.CheckedChanged += (sender, e) =>
                 {
                     // 筛选条件
-                    bool filter(GameResult result)
-                    {
-                        return result.Difficulty == difficulty;
-                    }
+                    bool filter(GameResult result) => result.Difficulty == difficulty;
 
                     // 选中筛选
                     if (filterItem.Checked)
@@ -200,10 +197,7 @@ internal sealed class HistoryContextMenu : ContextMenuStrip
             winItem.CheckedChanged += (sender, e) =>
             {
                 // 胜利筛选条件
-                bool filter(GameResult result)
-                {
-                    return result.IsWin;
-                }
+                bool filter(GameResult result) => result.IsWin;
 
                 // 选中胜利筛选
                 if (winItem.Checked)
@@ -220,10 +214,7 @@ internal sealed class HistoryContextMenu : ContextMenuStrip
             loseItem.CheckedChanged += (sender, e) =>
             {
                 // 失败筛选条件
-                bool filter(GameResult result)
-                {
-                    return !result.IsWin;
-                }
+                bool filter(GameResult result) => !result.IsWin;
 
                 // 选中失败筛选
                 if (loseItem.Checked)

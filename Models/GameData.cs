@@ -1,4 +1,4 @@
-namespace MineClearance.Models;
+﻿namespace MineClearance.Models;
 
 /// <summary>
 /// 带有版本号和最后更新时间的数据类, 用于游戏结果的存储和管理.

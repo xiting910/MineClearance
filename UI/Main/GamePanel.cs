@@ -1,4 +1,4 @@
-using MineClearance.Models;
+﻿using MineClearance.Models;
 using MineClearance.Models.Enums;
 using MineClearance.UI.Assist;
 using Timer = System.Windows.Forms.Timer;
@@ -377,7 +377,7 @@ internal sealed partial class GamePanel : Panel
     private void OnGameTimerTick(object? sender, EventArgs e)
     {
         // 如果游戏实例为空, 不做任何处理
-        if (_gameInstance == null)
+        if (_gameInstance is null)
         {
             return;
         }
@@ -482,8 +482,8 @@ internal sealed partial class GamePanel : Panel
     private Position GetGridPositionAtMousePosition(Point mousePosition)
     {
         // 计算鼠标位置对应的游戏格子行列
-        var col = (mousePosition.X / UIConstants.GridSize) - _gameStartPosition.Col;
-        var row = (mousePosition.Y / UIConstants.GridSize) - _gameStartPosition.Row;
+        var col = mousePosition.X / UIConstants.GridSize - _gameStartPosition.Col;
+        var row = mousePosition.Y / UIConstants.GridSize - _gameStartPosition.Row;
 
         if (row >= 0 && row < _gameInstance?.Board.Height && col >= 0 && col < _gameInstance?.Board.Width)
         {
@@ -504,7 +504,7 @@ internal sealed partial class GamePanel : Panel
     private void DrawGrid(Graphics g, int row, int col)
     {
         // 如果游戏实例为空, 不绘制
-        if (_gameInstance == null || row < _gameStartPosition.Row || col < _gameStartPosition.Col)
+        if (_gameInstance is null || row < _gameStartPosition.Row || col < _gameStartPosition.Col)
         {
             return;
         }
@@ -589,8 +589,8 @@ internal sealed partial class GamePanel : Panel
 
             // 计算文本位置并绘制
             var textSize = g.MeasureString(text, DefaultFont);
-            var textX = rect.X + ((rect.Width - textSize.Width) / 2);
-            var textY = rect.Y + ((rect.Height - textSize.Height) / 2);
+            var textX = rect.X + (rect.Width - textSize.Width) / 2;
+            var textY = rect.Y + (rect.Height - textSize.Height) / 2;
             using var textBrush = new SolidBrush(textColor);
             g.DrawString(text, DefaultFont, textBrush, textX, textY);
         }

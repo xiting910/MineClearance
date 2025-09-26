@@ -1,4 +1,4 @@
-using MineClearance.Models;
+﻿using MineClearance.Models;
 using MineClearance.Models.Enums;
 using MineClearance.Utilities;
 
@@ -69,7 +69,7 @@ internal sealed class Game
         StartTime = DateTime.MinValue;
         Duration = TimeSpan.Zero;
         TotalMines = mineCount;
-        TotalSafeCount = (width * height) - mineCount;
+        TotalSafeCount = width * height - mineCount;
     }
 
     /// <summary>
@@ -99,7 +99,7 @@ internal sealed class Game
         StartTime = DateTime.MinValue;
         Duration = TimeSpan.Zero;
         TotalMines = mineCount;
-        TotalSafeCount = (width * height) - mineCount;
+        TotalSafeCount = width * height - mineCount;
     }
 
     /// <summary>
@@ -108,10 +108,7 @@ internal sealed class Game
     public void Run()
     {
         // 监听棋盘的第一次点击事件
-        Board.FirstClick += () =>
-        {
-            StartTime = DateTime.Now;
-        };
+        Board.FirstClick += () => StartTime = DateTime.Now;
 
         // 监听棋盘的打开地雷事件, 触发时计算游戏结果, 并触发 GameLost 事件
         Board.HitMine += () =>
@@ -125,9 +122,7 @@ internal sealed class Game
 
         // 监听棋盘的胜利事件, 触发时计算游戏结果, 并触发 GameWon 事件
         Board.Won += () =>
-        {
             // 触发 GameWon 事件
             GameWon?.Invoke(new(Difficulty, StartTime, Duration, true, 100.0, Board.Width, Board.Height, TotalMines));
-        };
     }
 }

@@ -1,4 +1,4 @@
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 
 namespace MineClearance.Services;
 
@@ -22,10 +22,7 @@ internal static class AutoStartHelper
     /// </summary>
     /// <returns>RunKey 的 RegistryKey 对象</returns>
     /// <exception cref="InvalidOperationException">无法打开注册表 RunKey 项时抛出</exception>
-    private static RegistryKey OpenRunKey()
-    {
-        return Registry.CurrentUser.OpenSubKey(RunKey, true) ?? throw new InvalidOperationException("无法打开注册表 RunKey 项");
-    }
+    private static RegistryKey OpenRunKey() => Registry.CurrentUser.OpenSubKey(RunKey, true) ?? throw new InvalidOperationException("无法打开注册表 RunKey 项");
 
     /// <summary>
     /// 确保注册表的某一个键下指定名字的字符串值是正确的(如果不存在则不做任何操作)

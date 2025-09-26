@@ -1,5 +1,5 @@
+﻿using MineClearance.Models.Enums;
 using MineClearance.Services;
-using MineClearance.Models.Enums;
 
 namespace MineClearance.UI.Main;
 
@@ -202,16 +202,10 @@ internal sealed partial class SettingForm : Form
     private void Initialize()
     {
         // 绑定程序关闭后等待日志写入的最长时间选择框的值改变事件
-        _logFlushDelayNumericUpDown.ValueChanged += (sender, e) =>
-        {
-            LogConfigManager.Config.MaxLogWaitTime = (int)_logFlushDelayNumericUpDown.Value;
-        };
+        _logFlushDelayNumericUpDown.ValueChanged += (sender, e) => LogConfigManager.Config.MaxLogWaitTime = (int)_logFlushDelayNumericUpDown.Value;
 
         // 绑定日志文件最多保留时间选择框的值改变事件
-        _logRetentionNumericUpDown.ValueChanged += (sender, e) =>
-        {
-            LogConfigManager.Config.MaxLogFileRetentionDays = (int)_logRetentionNumericUpDown.Value;
-        };
+        _logRetentionNumericUpDown.ValueChanged += (sender, e) => LogConfigManager.Config.MaxLogFileRetentionDays = (int)_logRetentionNumericUpDown.Value;
 
         // 绑定开机自动启动复选框的值改变事件
         UpdateAutoStartCheckBox();
@@ -282,7 +276,7 @@ internal sealed partial class SettingForm : Form
         var controlSpacing = (int)(10 * UIConstants.DpiScale);
 
         // 控件总高度
-        var totalHeight = comboBoxHeight + numericUpDownHeight + logRetentionHeight + (buttonHeight * (_buttons.Count + 1)) + (controlSpacing * (_buttons.Count + 3));
+        var totalHeight = comboBoxHeight + numericUpDownHeight + logRetentionHeight + buttonHeight * (_buttons.Count + 1) + controlSpacing * (_buttons.Count + 3);
 
         // 控件总宽度
         var totalWidth = _logFlushDelayLabel.Width + _logFlushDelayNumericUpDown.Width;
@@ -343,8 +337,8 @@ internal sealed partial class SettingForm : Form
         // 如果位置不在工作区内, 则居中显示
         if (config.SettingFormLeft < workingArea.Left || config.SettingFormTop < workingArea.Top || config.SettingFormLeft + Width > workingArea.Right || config.SettingFormTop + Height > workingArea.Bottom)
         {
-            Left = workingArea.Left + ((workingArea.Width - Width) / 2);
-            Top = workingArea.Top + ((workingArea.Height - Height) / 2);
+            Left = workingArea.Left + (workingArea.Width - Width) / 2;
+            Top = workingArea.Top + (workingArea.Height - Height) / 2;
         }
         else
         {

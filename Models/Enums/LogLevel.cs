@@ -1,4 +1,4 @@
-namespace MineClearance.Models.Enums;
+﻿namespace MineClearance.Models.Enums;
 
 /// <summary>
 /// 日志级别枚举

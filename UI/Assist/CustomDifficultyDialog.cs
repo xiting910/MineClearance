@@ -1,4 +1,4 @@
-using MineClearance.Utilities;
+﻿using MineClearance.Utilities;
 
 namespace MineClearance.UI.Assist;
 
@@ -122,7 +122,7 @@ internal sealed class CustomDifficultyDialog : Form
             Location = new(inputX + inputLabelWidth, inputY),
             Size = new(inputWidth, inputHeight),
             Value = defaultMineCount,
-            Maximum = (defaultWidth * defaultHeight) - 1,
+            Maximum = defaultWidth * defaultHeight - 1,
             Minimum = 1
         };
 
@@ -177,7 +177,7 @@ internal sealed class CustomDifficultyDialog : Form
         var height = (int)heightInput.Value;
 
         // 允许的地雷数最大值
-        var maxMineCount = (width * height) - 1;
+        var maxMineCount = width * height - 1;
 
         // 如果允许的地雷数最大值小于1, 则取消本次更改
         if (maxMineCount < 1)

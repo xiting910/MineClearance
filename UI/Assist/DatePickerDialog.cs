@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace MineClearance.UI.Assist;
 
@@ -107,7 +107,7 @@ internal sealed class DatePickerDialog : Form
         var buttonSpacing = (int)(10 * UIConstants.DpiScale);
 
         // 按钮的宽度和高度
-        var buttonWidth = (dialogWidth - ((buttons.Count + 2) * buttonSpacing)) / buttons.Count;
+        var buttonWidth = (dialogWidth - (buttons.Count + 2) * buttonSpacing) / buttons.Count;
         var buttonHeight = (int)(25 * UIConstants.DpiScale);
 
         // 按钮位置
