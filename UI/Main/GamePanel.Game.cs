@@ -74,7 +74,7 @@ internal partial class GamePanel
     public void StartGame(Game game)
     {
         // 如果当前游戏实例不为空, 抛出异常
-        if (_gameInstance != null)
+        if (_gameInstance is not null)
         {
             throw new InvalidOperationException("当前已经存在游戏实例");
         }
@@ -168,7 +168,7 @@ internal partial class GamePanel
         }
 
         // 取消订阅游戏事件
-        if (_gameInstance != null)
+        if (_gameInstance is not null)
         {
             _gameInstance.GameWon -= OnGameWon;
             _gameInstance.GameLost -= OnGameLost;
@@ -366,7 +366,7 @@ internal partial class GamePanel
     private void OnPauseResumeCheckBoxCheckedChanged(object? sender, EventArgs e)
     {
         // 游戏是否已经开始
-        var gameStarted = _gameInstance != null && _gameInstance.StartTime != DateTime.MinValue;
+        var gameStarted = _gameInstance is not null && _gameInstance.StartTime != DateTime.MinValue;
 
         // 游戏是否已经结束
         var gameEnded = _isGameWon || _isGameLost;

@@ -33,7 +33,7 @@ internal static class AutoStartHelper
     private static void EnsureCorrectStringValue(RegistryKey key, string name, string value)
     {
         var currentValue = key.GetValue(name);
-        if (currentValue == null)
+        if (currentValue is null)
         {
             return;
         }
@@ -95,7 +95,7 @@ internal static class AutoStartHelper
     public static bool IsAutoStartEnabled()
     {
         using var runKey = OpenRunKey();
-        if (runKey.GetValue(AutoStartName) == null)
+        if (runKey.GetValue(AutoStartName) is null)
         {
             return false;
         }

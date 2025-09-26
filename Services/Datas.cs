@@ -73,7 +73,7 @@ internal static class Datas
             {
                 // 尝试反序列化为 GameData 对象
                 var gameData = JsonSerializer.Deserialize<GameData>(fileContent, Constants.JsonOptions);
-                if (gameData != null)
+                if (gameData is not null)
                 {
                     // 更新游戏结果列表
                     _gameResults.AddRange(gameData.GameResults);
@@ -107,7 +107,7 @@ internal static class Datas
                 var oldGameResults = JsonSerializer.Deserialize<List<GameResult>>(updatedJson, Constants.JsonOptions);
 
                 // 如果存在旧数据
-                if (oldGameResults != null)
+                if (oldGameResults is not null)
                 {
                     // 将旧数据添加到游戏结果列表
                     _gameResults.AddRange(oldGameResults);

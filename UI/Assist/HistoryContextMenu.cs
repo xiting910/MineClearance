@@ -55,7 +55,7 @@ internal sealed class HistoryContextMenu : ContextMenuStrip
     {
         // 排序菜单项
         var sortMenuItem = CreateSortMenuItems(name);
-        if (sortMenuItem != null)
+        if (sortMenuItem is not null)
         {
             // 添加排序菜单项
             _ = Items.Add(sortMenuItem);
@@ -63,7 +63,7 @@ internal sealed class HistoryContextMenu : ContextMenuStrip
 
         // 筛选菜单项
         var filterMenuItem = CreateFilterMenuItems(name);
-        if (filterMenuItem != null)
+        if (filterMenuItem is not null)
         {
             // 添加筛选菜单项
             _ = Items.Add(filterMenuItem);
@@ -269,7 +269,7 @@ internal sealed class HistoryContextMenu : ContextMenuStrip
                 else
                 {
                     // 移除筛选条件
-                    if (filter != null)
+                    if (filter is not null)
                     {
                         ResultManager.RemoveFilterCondition(filter);
                         filter = null;

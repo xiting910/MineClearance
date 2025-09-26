@@ -19,7 +19,7 @@ internal sealed partial class SettingForm : Form
     public static void ShowForm()
     {
         // 如果实例已存在且未释放, 则直接显示
-        if (_instance != null && !_instance.IsDisposed)
+        if (_instance is not null && !_instance.IsDisposed)
         {
             // 如果当前窗口状态为最小化, 则恢复到正常状态
             if (_instance.WindowState == FormWindowState.Minimized)
