@@ -16,14 +16,14 @@ internal sealed class CustomMessageBox : Form
     private CheckBox? _doNotShowAgainCheckBox;
 
     /// <summary>
-    /// 显示自定义消息框, 如果该key已设置为不再显示，直接返回Yes
+    /// 显示自定义消息框, 如果该key已设置为不再显示, 直接返回Yes
     /// </summary>
     /// <param name="message">消息内容</param>
     /// <param name="caption">标题</param>
     /// <param name="key">唯一标识（如按钮名）</param>
     public static DialogResult Show(string message, string caption, string key)
     {
-        // 如果该key已设置为不再显示，直接返回Yes
+        // 如果该key已设置为不再显示, 直接返回Yes
         if (_doNotShowAgainDict.TryGetValue(key, out var skip) && skip)
         {
             return DialogResult.Yes;

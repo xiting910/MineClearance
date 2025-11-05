@@ -21,7 +21,7 @@ internal sealed class HistoryContextMenu : ContextMenuStrip
     /// <returns>返回对应列名的右键菜单实例</returns>
     public static HistoryContextMenu GetInstance(string name)
     {
-        // 如果字典中已经存在该列名的实例，则直接返回
+        // 如果字典中已经存在该列名的实例, 则直接返回
         if (_instances.TryGetValue(name, out var instance))
         {
             return instance;
@@ -103,7 +103,7 @@ internal sealed class HistoryContextMenu : ContextMenuStrip
                 }
                 else
                 {
-                    // 如果升序未选中，则移除对应的排序条件
+                    // 如果升序未选中, 则移除对应的排序条件
                     ResultManager.RemoveSortCondition(priority);
                 }
             };
@@ -122,7 +122,7 @@ internal sealed class HistoryContextMenu : ContextMenuStrip
                 }
                 else
                 {
-                    // 如果降序未选中，则移除对应的排序条件
+                    // 如果降序未选中, 则移除对应的排序条件
                     ResultManager.RemoveSortCondition(priority);
                 }
             };
@@ -134,7 +134,7 @@ internal sealed class HistoryContextMenu : ContextMenuStrip
         }
         catch (ArgumentException)
         {
-            // 如果获取优先级失败，返回 null
+            // 如果获取优先级失败, 返回 null
             return null;
         }
     }

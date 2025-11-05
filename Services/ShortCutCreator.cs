@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿#pragma warning disable SYSLIB1096
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MineClearance.Services;
@@ -67,7 +68,7 @@ internal sealed partial class ShortcutCreator
     /// <exception cref="InvalidOperationException">如果创建快捷方式失败</exception>
     public static void CreateDesktopShortcut(string targetPath, string shortcutName, string arguments = "", string description = "", string? iconPath = null, int iconIndex = 0)
     {
-        // 如果目标路径为空或无效，则不创建快捷方式
+        // 如果目标路径为空或无效, 则不创建快捷方式
         if (string.IsNullOrWhiteSpace(targetPath) || !File.Exists(targetPath))
         {
             return;
@@ -76,7 +77,7 @@ internal sealed partial class ShortcutCreator
         // 获取桌面快捷方式路径
         var shortcutPath = Path.Combine(DesktopPath, shortcutName + ".lnk");
 
-        // 如果快捷方式已存在，则删除
+        // 如果快捷方式已存在, 则删除
         if (File.Exists(shortcutPath))
         {
             File.Delete(shortcutPath);

@@ -196,7 +196,7 @@ internal sealed class DatePickerDialog : Form
         // 获取选中的索引
         var selectedIndices = selectedDatesListBox.SelectedIndices;
 
-        // 从后往前删除，避免索引错乱
+        // 从后往前删除, 避免索引错乱
         for (var i = selectedIndices.Count - 1; i >= 0; --i)
         {
             // 获取当前索引

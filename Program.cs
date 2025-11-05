@@ -15,7 +15,7 @@ file static class Program
     private const string AppId = "Local\\MineClearance_xiting910";
 
     /// <summary>
-    /// 全局互斥体，保证单实例
+    /// 全局互斥体, 保证单实例
     /// </summary>
     private static Mutex? _mutex;
 

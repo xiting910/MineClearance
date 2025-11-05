@@ -1,5 +1,6 @@
 ﻿using MineClearance.Models.Enums;
 using MineClearance.Services;
+using MineClearance.Utilities;
 
 namespace MineClearance.UI.Main;
 
@@ -191,7 +192,7 @@ internal sealed partial class SettingForm : Form
         Initialize();
 
         // 设置按钮的悬浮提示
-        _toolTip.SetToolTip(openLogFolderButton, "点击打开日志文件夹");
+        _toolTip.SetToolTip(openLogFolderButton, $"点击打开日志文件夹: {Constants.LogFolderPath}");
         _toolTip.SetToolTip(createShortcutButton, "点击创建桌面快捷方式");
         _toolTip.SetToolTip(resetButton, "点击重置所有设置");
     }

@@ -366,7 +366,7 @@ internal sealed partial class GamePanel : Panel
         _toolTip.SetToolTip(_restartButton, "点击重新开始一个与当前宽度、高度和总地雷数都相同的新游戏, 未结束的游戏将结束并且不会保存");
         _toolTip.SetToolTip(_backToMenuButton, "点击返回菜单, 未结束的游戏将结束并且不会保存");
         _toolTip.SetToolTip(_hintLabel, "提示: 灰色格子为未打开, 绿色格子表示插旗(作弊模式下橙色格子表示错误插旗), 均支持鼠标聚焦效果\n左键点击未打开格子将其打开, 右键点击则标记地雷(在打开一个格子之前无效), 支持按住鼠标滑动操作多个格子\n左键点击数字格子时, 如果周围插旗数量等于数字, 则打开周围所有未插旗的格子(注意: 如果错误插旗可能会导致打开到地雷)\n右键点击数字格子时, 如果周围未打开格子数量等于数字, 则插旗所有周围未插旗的格子\n当数字格子周围插旗的数量大于其数字时, 该数字格子会变为黄色表示警告\n将鼠标移动到左侧游戏信息栏的标签上可以查看该标签的更详细的信息");
-        _toolTip.SetToolTip(_gameTimeLabel, $"计时器更新频率: {_gameTimer.Interval / 1000.0:0.###}s");
+        _toolTip.SetToolTip(_gameTimeLabel, $"时间标签更新频率: {_gameTimer.Interval / 1000.0:0.###}s");
     }
 
     /// <summary>

@@ -51,7 +51,7 @@ internal partial class HistoryPanel
     /// <param name="showHistory">是否显示详细历史记录</param>
     public void RestartHistoryPanel(bool showHistory = false)
     {
-        // 如果是显示详细历史记录，则显示历史记录数据网格视图
+        // 如果是显示详细历史记录, 则显示历史记录数据网格视图
         if (showHistory)
         {
             // 提示信息标签可见
@@ -250,7 +250,7 @@ internal partial class HistoryPanel
         // 添加确认对话框
         var confirmResult = MessageBox.Show("确定要清除所有历史记录吗？\n注意: 一旦清除将无法找回！！！", "清除历史记录", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
 
-        // 用户选择取消，直接返回
+        // 用户选择取消, 直接返回
         if (confirmResult != DialogResult.Yes)
         {
             return;
