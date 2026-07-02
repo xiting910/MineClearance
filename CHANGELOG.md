@@ -11,6 +11,12 @@
 
 ### Added
 
+- **领域模型设计**: 定义完整的扫雷游戏领域模型
+  - 枚举: `CellType`（格子类型）、`GameDifficulty`（难度）、`GameStatus`（游戏状态）、`HintStrategyType`（提示策略）
+  - 接口: `IGame`（游戏核心）、`IGameBoard`（棋盘）、`IGameManager`（游戏管理器）、`IGameResultRepository`（结果仓储）、`IGameTimer`（计时器）、`IHintProvider`（提示提供者）、`IMineField`（地雷场）、`IMineGenerator`（地雷生成器）
+  - 模型: `Cell`（格子，含 `INotifyPropertyChanged`）、`Position`（位置 record struct）、`GameConfig`（游戏配置 record）、`GameResult`（游戏结果 record）、`GameSaveData`（存档数据 record）
+  - 事件参数: `GameChangedEventArgs`、`GameStatusChangedEventArgs`、`GameTimerTickEventArgs`、`MineFieldGeneratedEventArgs`
+- 添加 `Constants` 常量类，包含内置难度对应的 `GameConfig` 预置实例
 - 项目初始化，搭建 Clean Architecture 三层架构（Core / Infrastructure / UI）
 - 使用 `.slnx` 解决方案文件格式（新版 .NET XML 格式）
 - 引入 .NET 10.0 目标框架，全局启用可空引用类型与 XML 文档生成
