@@ -1,4 +1,4 @@
-﻿# =============================================================================
+# =============================================================================
 # Release 清理工作流: 删除 tag 时自动删除对应的 GitHub Release
 # =============================================================================
 name: Release Cleanup
@@ -20,7 +20,7 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
 
-    # 仅在删除的是以 'v' 开头的 tag 时执行
+    # 仅在删除的是以 v 开头的 tag 时才执行
     if: github.event.ref_type == 'tag' && startsWith(github.event.ref, 'v')
 
     # 删除对应的 Release
@@ -31,8 +31,6 @@ jobs:
           TAG="${{ github.event.ref }}"
           echo "正在查找 tag '${TAG}' 对应的 Release..."
 
-          # tag 删除后 Release 会被 GitHub 自动转为草稿，gh release view 查不到
-          # 改用 API 遍历所有 Release，按 tag_name 精确匹配
           RELEASE_ID=$(gh api "repos/${{ github.repository }}/releases?per_page=100" \
               -q ".[] | select(.tag_name == \"${TAG}\") | .id")
 

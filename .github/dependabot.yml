@@ -1,5 +1,5 @@
 # =============================================================================
-# Dependabot 自动依赖更新配置, 每周一自动检查 NuGet 包和 GitHub Actions 是否有新版本
+# Dependabot 自动依赖更新配置, 每周自动检查 NuGet 包和 GitHub Actions 是否有新版本
 # =============================================================================
 version: 2
 updates:
@@ -11,14 +11,43 @@ updates:
       day: "monday"
       time: "08:00"
       timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 5
     rebase-strategy: auto
     labels:
       - "dependencies"
       - "nuget"
     groups:
-      # TODO: 根据项目主要依赖的 NuGet 包添加特定的更新组
-
-      # 其他 NuGet 包合并更新
+      # Microsoft.Extensions.* 系列包合并更新
+      microsoft-extensions:
+        patterns:
+          - "Microsoft.Extensions.*"
+        update-types:
+          - "minor"
+          - "patch"
+      # xUnit 系列包合并更新
+      xunit:
+        patterns:
+          - "xunit*"
+        update-types:
+          - "minor"
+          - "patch"
+      # 测试 SDK、覆盖率工具、Mock 框架合并更新
+      test-sdk:
+        patterns:
+          - "Microsoft.NET.Test.Sdk"
+          - "coverlet.collector"
+          - "Moq"
+        update-types:
+          - "minor"
+          - "patch"
+      # Avalonia 系列包合并更新 (版本必须保持一致)
+      avalonia:
+        patterns:
+          - "Avalonia*"
+        update-types:
+          - "minor"
+          - "patch"
+      # 其余包合并为一组
       nuget-catchall:
         patterns:
           - "*"
@@ -34,6 +63,7 @@ updates:
       day: "monday"
       time: "08:00"
       timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 5
     rebase-strategy: auto
     labels:
       - "dependencies"

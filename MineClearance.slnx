@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/other/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/MineClearance.Core/MineClearance.Core.csproj" Id="9fc2dfa9-73e0-495a-9329-c8ea0465591f" />
+    <Project Path="src/MineClearance.Infrastructure/MineClearance.Infrastructure.csproj" Id="09c094aa-b973-4a14-a1af-d32153d2a94f" />
+    <Project Path="src/MineClearance.UI/MineClearance.UI.csproj" Id="58086b35-91d4-4577-acb9-c14d42f42a7e" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MineClearance.Core.Tests/MineClearance.Core.Tests.csproj" Id="3bb2a549-1bfc-4fe2-bee4-9323c56510db" />
+    <Project Path="tests/MineClearance.Infrastructure.Tests/MineClearance.Infrastructure.Tests.csproj" Id="acb76cda-b5ba-482d-927f-e8ed9f50c103" />
+  </Folder>
+</Solution>

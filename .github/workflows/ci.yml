@@ -1,4 +1,4 @@
-﻿# =============================================================================
+# =============================================================================
 # CI 工作流: 每次 push / PR 时自动构建、测试、上传测试结果
 # =============================================================================
 name: CI
@@ -19,7 +19,54 @@ permissions:
 # 作业定义: 包含构建、测试等步骤
 jobs:
   build-and-test:
-    # TODO: 根据项目需要选择合适的运行环境
     runs-on: ubuntu-latest
 
-    # TODO: 根据项目构建方式调整步骤
+    steps:
+      # 1. 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # 2. 安装 .NET 10 SDK
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: |
+            **/*.csproj
+            **/*.slnx
+
+      # 3. 还原 NuGet 依赖包
+      - name: Restore NuGet packages
+        run: dotnet restore
+
+      # 4. 以 Release 模式编译整个解决方案
+      - name: Build solution (Release)
+        run: dotnet build --no-restore --configuration Release
+
+      # 5. 运行所有单元测试并收集代码覆盖率
+      - name: Run tests with coverage
+        run: |
+          dotnet test --configuration Release --verbosity normal \
+            --logger "trx;LogFileName=test-results.trx" \
+            --collect "XPlat Code Coverage" \
+            --results-directory ./TestResults
+
+      # 6. 上传测试结果
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: TestResults/
+          retention-days: 7
+
+      # 7. 在 PR 评论中显示测试摘要
+      - name: Upload coverage to PR comment
+        if: github.event_name == 'pull_request' && always()
+        uses: dorny/test-reporter@v3
+        with:
+          name: Test Results
+          path: TestResults/**/*.trx
+          reporter: dotnet-trx
+          fail-on-error: false
