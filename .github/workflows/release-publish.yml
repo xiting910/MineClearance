@@ -1,4 +1,4 @@
-﻿# =============================================================================
+# =============================================================================
 # Release 发布工作流: 推送 tag 时自动构建、测试、发布到 GitHub Release
 # =============================================================================
 name: Release Publish
@@ -6,17 +6,223 @@ name: Release Publish
 # 触发条件: 当推送以 v 开头的 tag 时执行
 on:
   push:
-    tags:
-      - "v*"
+    tags: ["v*"]
 
-# 权限: 需要写入 contents 才能创建 Release 并上传产物
+# 权限: contents 用于创建 Release 并上传产物, actions 用于跨 job 下载 artifact
 permissions:
   contents: write
+  actions: read
 
-# 作业定义: 包含构建、测试、发布步骤
+# 环境变量: APP_NAME 用于指定应用名称
+env:
+  APP_NAME: "MineClearance"
+
+# 作业定义: 构建作业和发布作业
 jobs:
-  release:
-    # TODO: 根据项目需求选择合适的运行环境
+  # 构建作业: 编译、测试、打包产物
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # 2. 从 tag 提取版本号
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          VERSION="${TAG_NAME#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "📌 Version: $VERSION (tag: $TAG_NAME)"
+
+      # 3. 安装 .NET 10 SDK
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: |
+            **/*.csproj
+            **/*.slnx
+
+      # 4. 运行全部单元测试
+      - name: Run tests
+        run: dotnet test --configuration Release --verbosity normal
+
+      # 5. 发布 UI 项目
+      - name: Publish application
+        run: |
+          dotnet publish src/${{ env.APP_NAME }}.UI/${{ env.APP_NAME }}.UI.csproj \
+            --configuration Release \
+            --runtime linux-x64 \
+            --output ./publish/linux-x64
+
+          dotnet publish src/${{ env.APP_NAME }}.UI/${{ env.APP_NAME }}.UI.csproj \
+            --configuration Release \
+            --runtime osx-x64 \
+            --output ./publish/osx-x64
+
+          dotnet publish src/${{ env.APP_NAME }}.UI/${{ env.APP_NAME }}.UI.csproj \
+            --configuration Release \
+            --runtime win-x64 \
+            --output ./publish/win-x64
+
+      # 6. 重命名产物文件
+      - name: Rename artifacts
+        run: |
+          mv ./publish/linux-x64/${{ env.APP_NAME }}.UI     ./publish/${{ env.APP_NAME }}-linux-x64
+          mv ./publish/osx-x64/${{ env.APP_NAME }}.UI       ./publish/${{ env.APP_NAME }}-osx-x64
+          mv ./publish/win-x64/${{ env.APP_NAME }}.UI.exe   ./publish/${{ env.APP_NAME }}-win-x64.exe
+
+      # 7. 上传产物供后续 job 使用
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-package
+          path: |
+            publish/${{ env.APP_NAME }}-linux-x64
+            publish/${{ env.APP_NAME }}-osx-x64
+            publish/${{ env.APP_NAME }}-win-x64.exe
+          retention-days: 1
+
+  # 发布作业: 提取变更日志、生成提交记录、创建 GitHub Release
+  github-release:
+    needs: build
     runs-on: ubuntu-latest
 
-    # TODO: 根据项目需求调整步骤
+    steps:
+      # 1. 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # 2. 下载构建产物
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: app-package
+
+      # 3. 从 CHANGELOG.md 提取对应版本条目
+      - name: Extract changelog
+        id: changelog
+        run: |
+          VERSION="${{ needs.build.outputs.version }}"
+          CHANGELOG=$(awk -v ver="$VERSION" '
+          BEGIN { found=0; output="" }
+          $0 ~ "^## \\[" ver "\\]" { found=1; next }
+          found && $0 ~ "^## \\[" { exit }
+          found { output = output $0 "\n" }
+          END { print output }
+          ' CHANGELOG.md)
+
+          if [ -z "$(echo "$CHANGELOG" | tr -d '[:space:]')" ]; then
+            echo "⚠️  No changelog for v$VERSION, using [Unreleased]"
+            CHANGELOG=$(awk '
+              BEGIN { found=0; output="" }
+              $0 ~ "^## \\[Unreleased\\]" { found=1; next }
+              found && $0 ~ "^## \\[" { exit }
+              found { output = output $0 "\n" }
+              END { print output }
+            ' CHANGELOG.md)
+          fi
+
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      # 4. 生成此版本的提交历史与贡献者列表
+      - name: Generate commit history & contributors
+        id: gitinfo
+        run: |
+          PREV_TAG=$(git tag --sort=-creatordate | grep -v "${{ needs.build.outputs.tag }}" | head -1)
+
+          if [ -n "$PREV_TAG" ]; then
+            RANGE="${PREV_TAG}..HEAD"
+            echo "📌 Previous tag: $PREV_TAG"
+          else
+            RANGE="HEAD"
+            echo "📌 No previous tag — first release"
+          fi
+
+          # Commit history (exclude merge commits)
+          COMMITS=$(git log --oneline --no-merges $RANGE | sed 's/^/- /')
+          if [ -z "$COMMITS" ]; then
+            COMMITS="_（无新提交）_"
+          fi
+          {
+            echo "commits<<EOF"
+            echo "$COMMITS"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+          # Contributors (unique authors)
+          CONTRIBS=$(git log --format='- @%an' $RANGE | sort -u)
+          if [ -z "$CONTRIBS" ]; then
+            CONTRIBS="_（无贡献者）_"
+          fi
+          {
+            echo "contributors<<EOF"
+            echo "$CONTRIBS"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+          echo "✅ Commits:"
+          echo "$COMMITS"
+          echo "✅ Contributors:"
+          echo "$CONTRIBS"
+
+      # 5. 创建 GitHub Release 并上传产物
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          name: "v${{ needs.build.outputs.version }} — MineClearance"
+          tag_name: ${{ needs.build.outputs.tag }}
+          files: |
+            ${{ env.APP_NAME }}-linux-x64
+            ${{ env.APP_NAME }}-osx-x64
+            ${{ env.APP_NAME }}-win-x64.exe
+          body: |
+            ## 🔧 MineClearance v${{ needs.build.outputs.version }}
+
+            ${{ steps.changelog.outputs.changelog }}
+
+            ---
+
+            ### 📝 此版本提交
+
+            ${{ steps.gitinfo.outputs.commits }}
+
+            ---
+
+            ###  下载
+
+            | 平台 | 文件 |
+            |------|------|
+            | 🪟 Windows x64 | `${{ env.APP_NAME }}-win-x64.exe` |
+            | 🐧 Linux x64 | `${{ env.APP_NAME }}-linux-x64` |
+            | 🍎 macOS x64 | `${{ env.APP_NAME }}-osx-x64` |
+
+            下载对应平台的文件即可运行。
+
+            ### 🔗 链接
+
+            - [源代码](https://github.com/${{ github.repository }})
+            - [问题反馈](https://github.com/${{ github.repository }}/issues)
+            - [完整更新日志](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+
+            <details>
+            <summary>Contributors</summary>
+
+            ${{ steps.gitinfo.outputs.contributors }}
+
+            </details>
+          draft: false
+          prerelease: false
+          make_latest: true
