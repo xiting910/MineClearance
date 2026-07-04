@@ -39,7 +39,7 @@ public sealed record GameSaveData(
     int? MineCount)
 {
     /// <summary>
-    /// 初始化 <see cref="GameSaveData"/> 的新实例, 用于非自定义难度的游戏存档数据
+    /// 创建非自定义难度的游戏存档数据
     /// </summary>
     /// <param name="seed">随机种子</param>
     /// <param name="difficulty">游戏难度</param>
@@ -47,26 +47,19 @@ public sealed record GameSaveData(
     /// <param name="duration">游戏已进行的时间</param>
     /// <param name="mineField">地雷分布</param>
     /// <param name="cellStates">单元格状态</param>
+    /// <returns>游戏存档数据</returns>
     /// <exception cref="ArgumentException">
     /// 当 <paramref name="difficulty"/> 为 <see cref="Enums.GameDifficulty.Custom"/> 时抛出
     /// </exception>
-    public GameSaveData(
-        int seed,
-        Enums.GameDifficulty difficulty,
-        DateTime startTime,
-        TimeSpan duration,
-        BitArray mineField,
-        IReadOnlyDictionary<Position, Enums.CellType> cellStates)
-        : this(seed, difficulty, startTime, duration, mineField, cellStates, null, null, null)
+    public static GameSaveData Create(int seed, Enums.GameDifficulty difficulty, DateTime startTime, TimeSpan duration, BitArray mineField, IReadOnlyDictionary<Position, Enums.CellType> cellStates)
     {
-        if (difficulty is Enums.GameDifficulty.Custom)
-        {
-            throw new ArgumentException("Custom difficulty requires board dimensions and mine count.", nameof(difficulty));
-        }
+        return difficulty is Enums.GameDifficulty.Custom
+            ? throw new ArgumentException("Custom difficulty requires board dimensions and mine count.", nameof(difficulty))
+            : new(seed, difficulty, startTime, duration, mineField, cellStates, null, null, null);
     }
 
     /// <summary>
-    /// 初始化 <see cref="GameSaveData"/> 的新实例, 用于自定义难度的游戏存档数据
+    /// 创建自定义难度的游戏存档数据
     /// </summary>
     /// <param name="seed">随机种子</param>
     /// <param name="startTime">游戏开始时间</param>
@@ -76,27 +69,21 @@ public sealed record GameSaveData(
     /// <param name="boardHeight">游戏板高度</param>
     /// <param name="boardWidth">游戏板宽度</param>
     /// <param name="mineCount">地雷数量</param>
+    /// <returns>自定义难度游戏存档数据</returns>
     /// <exception cref="ArgumentOutOfRangeException">
     /// 当 <paramref name="boardHeight"/> 或 <paramref name="boardWidth"/> 为负数或零,
     /// 或 <paramref name="mineCount"/> 为负数或零,
     /// 或 <paramref name="mineCount"/> 大于等于
     /// <paramref name="boardHeight"/> * <paramref name="boardWidth"/> 时抛出
     /// </exception>
-    public GameSaveData(
-        int seed,
-        DateTime startTime,
-        TimeSpan duration,
-        BitArray mineField,
-        IReadOnlyDictionary<Position, Enums.CellType> cellStates,
-        int boardHeight,
-        int boardWidth,
-        int mineCount)
-        : this(seed, Enums.GameDifficulty.Custom, startTime, duration, mineField, cellStates, boardHeight, boardWidth, mineCount)
+    public static GameSaveData CreateCustom(int seed, DateTime startTime, TimeSpan duration, BitArray mineField, IReadOnlyDictionary<Position, Enums.CellType> cellStates, int boardHeight, int boardWidth, int mineCount)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(boardHeight, nameof(boardHeight));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(boardWidth, nameof(boardWidth));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(mineCount, nameof(mineCount));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(mineCount, boardHeight * boardWidth, nameof(mineCount));
+
+        return new(seed, Enums.GameDifficulty.Custom, startTime, duration, mineField, cellStates, boardHeight, boardWidth, mineCount);
     }
 
     /// <summary>
