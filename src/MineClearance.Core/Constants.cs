@@ -11,22 +11,27 @@ public static class Constants
     public const double MaxCompletion = 1.0;
 
     /// <summary>
+    /// 周围地雷数量数组中表示地雷的特殊值
+    /// </summary>
+    public const int MineValue = -1;
+
+    /// <summary>
     /// <see cref="Enums.GameDifficulty.Beginner"/> 对应的 <see cref="Models.Records.GameConfig"/> 实例
     /// </summary>
-    public static Models.Records.GameConfig BeginnerConfig { get; } = new(9, 9, 10, null);
+    public static Models.Records.GameConfig BeginnerConfig { get; } = new(9, 9, 10);
 
     /// <summary>
     /// <see cref="Enums.GameDifficulty.Intermediate"/> 对应的 <see cref="Models.Records.GameConfig"/> 实例
     /// </summary>
-    public static Models.Records.GameConfig IntermediateConfig { get; } = new(16, 16, 40, null);
+    public static Models.Records.GameConfig IntermediateConfig { get; } = new(16, 16, 40);
 
     /// <summary>
     /// <see cref="Enums.GameDifficulty.Expert"/> 对应的 <see cref="Models.Records.GameConfig"/> 实例
     /// </summary>
-    public static Models.Records.GameConfig ExpertConfig { get; } = new(16, 30, 99, null);
+    public static Models.Records.GameConfig ExpertConfig { get; } = new(16, 30, 99);
 
     /// <summary>
     /// <see cref="Enums.GameDifficulty.Master"/> 对应的 <see cref="Models.Records.GameConfig"/> 实例
     /// </summary>
-    public static Models.Records.GameConfig MasterConfig { get; } = new(30, 50, 309, null);
+    public static Models.Records.GameConfig MasterConfig { get; } = new(30, 50, 309);
 }

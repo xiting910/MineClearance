@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 namespace MineClearance.Core.Interfaces;
 
 /// <summary>
-/// 游戏结果仓储接口, 用于保存和获取游戏结果
+/// 游戏数据仓储接口, 用于管理游戏存档和游戏结果记录
 /// </summary>
-public interface IGameResultRepository
+public interface IGameDataRepository
 {
     /// <summary>
     /// 获取是否存在未完成的游戏存档

@@ -14,10 +14,11 @@ internal interface IMineField
     /// <remarks>
     /// 该方法用于创建新游戏后首次点击时生成地雷场, 以确保首次点击的格子不是地雷
     /// </remarks>
-    /// <param name="config">对局配置</param>
+    /// <param name="config">游戏配置</param>
     /// <param name="firstClick">首次点击位置</param>
+    /// <param name="seed">随机种子, 用于生成固定的地雷布局</param>
     /// <returns>按行优先顺序排列的周围地雷数量数组</returns>
-    int[] Generate(Models.Records.GameConfig config, Models.Records.Position firstClick);
+    int[] Generate(Models.Records.GameConfig config, Models.Records.Position firstClick, int seed);
 
     /// <summary>
     /// 从指定的位图表示中创建地雷场, 该方法会根据指定的位图生成地雷场
@@ -25,9 +26,10 @@ internal interface IMineField
     /// <remarks>
     /// 该方法用于从保存的游戏状态中恢复地雷场, 以确保恢复后的地雷场与保存时一致
     /// </remarks>
+    /// <param name="config">游戏配置</param>
     /// <param name="mineMap">地雷场的位图表示, 其中每一位表示一个格子是否是地雷</param>
     /// <returns>按行优先顺序排列的周围地雷数量数组</returns>
-    int[] Generate(BitArray mineMap);
+    int[] Generate(Models.Records.GameConfig config, BitArray mineMap);
 
     /// <summary>
     /// 获取地雷场的位图表示, 其中每一位表示一个格子是否是地雷

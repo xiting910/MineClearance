@@ -36,6 +36,16 @@ public readonly record struct Position(int Row, int Col)
     }
 
     /// <summary>
+    /// 将位置转换为一维索引, 按行优先顺序排列
+    /// </summary>
+    /// <param name="colCount">列数</param>
+    /// <returns>一维索引</returns>
+    public int ToIndex(int colCount)
+    {
+        return (Row * colCount) + Col;
+    }
+
+    /// <summary>
     /// 获取当前位置的所有相邻位置, 包括对角线方向
     /// </summary>
     /// <param name="rowCount">行数</param>
