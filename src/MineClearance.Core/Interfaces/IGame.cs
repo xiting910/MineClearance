@@ -10,27 +10,17 @@ public interface IGame
     /// <summary>
     /// 游戏状态变更事件
     /// </summary>
-    event EventHandler<Models.Args.GameStatusChangedEventArgs> StatusChanged;
+    event EventHandler<Models.Args.GameStatusChangedEventArgs>? StatusChanged;
 
     /// <summary>
-    /// 获取当前游戏棋盘
+    /// 获取当前游戏棋盘字典
     /// </summary>
-    IGameBoard Board { get; }
-
-    /// <summary>
-    /// 获取当前游戏地雷场
-    /// </summary>
-    IMineField Minefield { get; }
+    IGameBoardDictionary Board { get; }
 
     /// <summary>
     /// 获取当前游戏计时器
     /// </summary>
     IGameTimer Timer { get; }
-
-    /// <summary>
-    /// 获取当前游戏提示提供者
-    /// </summary>
-    IHintProvider HintProvider { get; }
 
     /// <summary>
     /// 获取当前游戏状态
@@ -43,9 +33,14 @@ public interface IGame
     Enums.GameDifficulty Difficulty { get; }
 
     /// <summary>
-    /// 获取当前游戏随机种子
+    /// 获取棋盘行数
     /// </summary>
-    int Seed { get; }
+    int Rows { get; }
+
+    /// <summary>
+    /// 获取棋盘列数
+    /// </summary>
+    int Columns { get; }
 
     /// <summary>
     /// 获取地雷总数
@@ -56,6 +51,11 @@ public interface IGame
     /// 获取当前游戏完成度, 范围为 0.0 到 <see cref="Constants.MaxCompletion"/>
     /// </summary>
     double Completion { get; }
+
+    /// <summary>
+    /// 获取当前游戏随机种子
+    /// </summary>
+    int Seed { get; }
 
     /// <summary>
     /// 暂停游戏

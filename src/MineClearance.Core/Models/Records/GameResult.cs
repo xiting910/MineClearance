@@ -40,49 +40,39 @@ public sealed record GameResult(
     int? MineCount)
 {
     /// <summary>
-    /// 初始化 <see cref="GameResult"/> 的新实例, 用于非自定义难度的获胜游戏结果
+    /// 创建非自定义难度的获胜游戏结果
     /// </summary>
     /// <param name="seed">游戏使用的随机种子</param>
     /// <param name="difficulty">游戏难度</param>
     /// <param name="startTime">游戏开始时间</param>
     /// <param name="duration">游戏持续时间</param>
+    /// <returns>获胜游戏结果</returns>
     /// <exception cref="ArgumentException">
     /// 当 <paramref name="difficulty"/> 为 <see cref="Enums.GameDifficulty.Custom"/> 时抛出
     /// </exception>
-    public GameResult(
-        int seed,
-        Enums.GameDifficulty difficulty,
-        DateTime startTime,
-        TimeSpan duration)
-        : this(seed, difficulty, startTime, duration, true, null, null, null, null)
+    public static GameResult CreateWin(int seed, Enums.GameDifficulty difficulty, DateTime startTime, TimeSpan duration)
     {
-        if (difficulty is Enums.GameDifficulty.Custom)
-        {
-            throw new ArgumentException("Custom difficulty requires board dimensions and mine count.", nameof(difficulty));
-        }
+        return difficulty is Enums.GameDifficulty.Custom
+            ? throw new ArgumentException("Custom difficulty requires board dimensions and mine count.", nameof(difficulty))
+            : new(seed, difficulty, startTime, duration, true, null, null, null, null);
     }
 
     /// <summary>
-    /// 初始化 <see cref="GameResult"/> 的新实例, 用于非自定义难度的失败游戏结果
+    /// 创建非自定义难度的失败游戏结果
     /// </summary>
     /// <param name="seed">游戏使用的随机种子</param>
     /// <param name="difficulty">游戏难度</param>
     /// <param name="startTime">游戏开始时间</param>
     /// <param name="duration">游戏持续时间</param>
     /// <param name="completion">完成度, 范围为 0.0 到 1.0</param>
+    /// <returns>失败游戏结果</returns>
     /// <exception cref="ArgumentException">
     /// 当 <paramref name="difficulty"/> 为 <see cref="Enums.GameDifficulty.Custom"/> 时抛出
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     /// 当 <paramref name="completion"/> 为负数或大于 <see cref="Constants.MaxCompletion"/> 时抛出
     /// </exception>
-    public GameResult(
-        int seed,
-        Enums.GameDifficulty difficulty,
-        DateTime startTime,
-        TimeSpan duration,
-        double completion)
-        : this(seed, difficulty, startTime, duration, false, completion, null, null, null)
+    public static GameResult CreateLoss(int seed, Enums.GameDifficulty difficulty, DateTime startTime, TimeSpan duration, double completion)
     {
         if (difficulty is Enums.GameDifficulty.Custom)
         {
@@ -91,10 +81,12 @@ public sealed record GameResult(
 
         ArgumentOutOfRangeException.ThrowIfNegative(completion, nameof(completion));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(completion, Constants.MaxCompletion, nameof(completion));
+
+        return new(seed, difficulty, startTime, duration, false, completion, null, null, null);
     }
 
     /// <summary>
-    /// 初始化 <see cref="GameResult"/> 的新实例, 用于自定义难度的获胜游戏结果
+    /// 创建自定义难度的获胜游戏结果
     /// </summary>
     /// <param name="seed">游戏使用的随机种子</param>
     /// <param name="startTime">游戏开始时间</param>
@@ -102,29 +94,25 @@ public sealed record GameResult(
     /// <param name="boardHeight">棋盘高度</param>
     /// <param name="boardWidth">棋盘宽度</param>
     /// <param name="mineCount">地雷数量</param>
+    /// <returns>自定义难度获胜游戏结果</returns>
     /// <exception cref="ArgumentOutOfRangeException">
     /// 当 <paramref name="boardHeight"/> 或 <paramref name="boardWidth"/> 为负数或零,
     /// 或 <paramref name="mineCount"/> 为负数或零,
     /// 或 <paramref name="mineCount"/> 大于等于
     /// <paramref name="boardHeight"/> * <paramref name="boardWidth"/> 时抛出
     /// </exception>
-    public GameResult(
-        int seed,
-        DateTime startTime,
-        TimeSpan duration,
-        int boardHeight,
-        int boardWidth,
-        int mineCount)
-        : this(seed, Enums.GameDifficulty.Custom, startTime, duration, true, null, boardHeight, boardWidth, mineCount)
+    public static GameResult CreateCustomWin(int seed, DateTime startTime, TimeSpan duration, int boardHeight, int boardWidth, int mineCount)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(boardHeight, nameof(boardHeight));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(boardWidth, nameof(boardWidth));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(mineCount, nameof(mineCount));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(mineCount, boardHeight * boardWidth, nameof(mineCount));
+
+        return new(seed, Enums.GameDifficulty.Custom, startTime, duration, true, null, boardHeight, boardWidth, mineCount);
     }
 
     /// <summary>
-    /// 初始化 <see cref="GameResult"/> 的新实例, 用于自定义难度的失败游戏结果
+    /// 创建自定义难度的失败游戏结果
     /// </summary>
     /// <param name="seed">游戏使用的随机种子</param>
     /// <param name="startTime">游戏开始时间</param>
@@ -133,6 +121,7 @@ public sealed record GameResult(
     /// <param name="boardHeight">棋盘高度</param>
     /// <param name="boardWidth">棋盘宽度</param>
     /// <param name="mineCount">地雷数量</param>
+    /// <returns>自定义难度失败游戏结果</returns>
     /// <exception cref="ArgumentOutOfRangeException">
     /// 当 <paramref name="completion"/> 为负数或大于 <see cref="Constants.MaxCompletion"/> 时抛出,
     /// 或 <paramref name="boardHeight"/> 或 <paramref name="boardWidth"/> 为负数或零,
@@ -140,15 +129,7 @@ public sealed record GameResult(
     /// 或 <paramref name="mineCount"/> 大于等于
     /// <paramref name="boardHeight"/> * <paramref name="boardWidth"/> 时抛出
     /// </exception>
-    public GameResult(
-        int seed,
-        DateTime startTime,
-        TimeSpan duration,
-        double completion,
-        int boardHeight,
-        int boardWidth,
-        int mineCount)
-        : this(seed, Enums.GameDifficulty.Custom, startTime, duration, false, completion, boardHeight, boardWidth, mineCount)
+    public static GameResult CreateCustomLoss(int seed, DateTime startTime, TimeSpan duration, double completion, int boardHeight, int boardWidth, int mineCount)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(completion, nameof(completion));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(completion, Constants.MaxCompletion, nameof(completion));
@@ -156,6 +137,8 @@ public sealed record GameResult(
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(boardWidth, nameof(boardWidth));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(mineCount, nameof(mineCount));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(mineCount, boardHeight * boardWidth, nameof(mineCount));
+
+        return new(seed, Enums.GameDifficulty.Custom, startTime, duration, false, completion, boardHeight, boardWidth, mineCount);
     }
 
     /// <summary>

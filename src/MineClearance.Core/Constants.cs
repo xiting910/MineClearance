@@ -11,11 +11,6 @@ public static class Constants
     public const double MaxCompletion = 1.0;
 
     /// <summary>
-    /// 一个格子周围的格子数量
-    /// </summary>
-    public const int NeighborCount = 8;
-
-    /// <summary>
     /// <see cref="Enums.GameDifficulty.Beginner"/> 对应的 <see cref="Models.Records.GameConfig"/> 实例
     /// </summary>
     public static Models.Records.GameConfig BeginnerConfig { get; } = new(9, 9, 10, null);
