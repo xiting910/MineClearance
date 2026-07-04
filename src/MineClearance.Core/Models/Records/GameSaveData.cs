@@ -123,7 +123,7 @@ public sealed record GameSaveData(
             }
 
             // 获取棋盘高度和宽度
-            (boardHeight, boardWidth, _, _) = GameConfig.FromDifficulty(Difficulty);
+            (boardHeight, boardWidth, _) = GameConfig.FromDifficulty(Difficulty);
         }
 
         // 验证地雷分布的长度是否与棋盘大小匹配

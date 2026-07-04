@@ -14,6 +14,12 @@ public static class IServiceCollectionExtensions
     /// <returns>服务集合</returns>
     public static IServiceCollection AddCore(this IServiceCollection services)
     {
-        return services;
+        return services
+            .AddSingleton<Interfaces.IGameBoardDictionaryFactory, Services.GameBoardDictionaryFactory>()
+            .AddSingleton<Interfaces.IGameFactory, Services.GameFactory>()
+            .AddSingleton<Interfaces.IGameManager, Services.GameManager>()
+            .AddScoped<Interfaces.IMineField, Services.MineField>()
+            .AddScoped<Interfaces.IGameTimer, Services.GameTimer>()
+            .AddTransient<Interfaces.IMineGenerator, Services.MineGenerator>();
     }
 }

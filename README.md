@@ -25,33 +25,39 @@
 ```
 MineClearance/
 ├── src/
-│   ├── MineClearance.Core/                         # 核心层 — 领域模型、接口、枚举、业务服务
-│   │   ├── Constants.cs                            #   游戏常量与难度预设配置
+│   ├── MineClearance.Core/                         # 核心层 — 领域模型、接口、枚举、领域服务
+│   │   ├── Constants.cs                            #   游戏常量
 │   │   ├── Enums/                                  #   枚举定义
 │   │   │   ├── CellType.cs                         #     格子类型
 │   │   │   ├── GameDifficulty.cs                   #     游戏难度
 │   │   │   └── GameStatus.cs                       #     游戏状态
 │   │   ├── Interfaces/                             #   接口定义
-│   │   │   ├── IGame.cs                            #     游戏核心接口
-│   │   │   ├── IGameBoardDictionary.cs             #     棋盘格子字典接口
+│   │   │   ├── IGame.cs                            #     游戏核心接口 (INotifyPropertyChanged + IDisposable)
+│   │   │   ├── IGameBoardDictionary.cs             #     棋盘格子字典接口 (IReadOnlyDictionary + INotifyPropertyChanged)
 │   │   │   ├── IGameBoardDictionaryFactory.cs      #     棋盘字典工厂接口 (internal)
+│   │   │   ├── IGameDataRepository.cs              #     游戏数据仓储接口 (存档 + 结果记录)
 │   │   │   ├── IGameFactory.cs                     #     游戏工厂接口 (internal)
 │   │   │   ├── IGameManager.cs                     #     游戏管理器接口
-│   │   │   ├── IGameResultRepository.cs            #     游戏结果仓储接口
-│   │   │   ├── IGameTimer.cs                       #     游戏计时器接口
+│   │   │   ├── IGameTimer.cs                       #     游戏计时器接口 (INotifyPropertyChanged)
 │   │   │   ├── IMineField.cs                       #     地雷场接口 (internal)
 │   │   │   └── IMineGenerator.cs                   #     地雷生成器接口 (internal)
 │   │   ├── Models/                                 #   领域模型
-│   │   │   ├── Cell.cs                             #     游戏格子 (实现 INotifyPropertyChanged)
-│   │   │   ├── Args/                               #     事件参数类
-│   │   │   │   ├── GameChangedEventArgs.cs         #       游戏变更事件
-│   │   │   │   ├── GameStatusChangedEventArgs.cs   #       状态变更事件
-│   │   │   │   └── GameTimerTickEventArgs.cs       #       计时器滴答事件
+│   │   │   ├── Cell.cs                             #     游戏格子 (INotifyPropertyChanged)
+│   │   │   ├── GameChangedEventArgs.cs             #     游戏变更事件参数
 │   │   │   └── Records/                            #     记录类型
 │   │   │       ├── GameConfig.cs                   #       游戏配置
 │   │   │       ├── GameResult.cs                   #       游戏结果
 │   │   │       ├── GameSaveData.cs                 #       游戏存档
 │   │   │       └── Position.cs                     #       位置
+│   │   ├── Services/                               #   领域服务实现 (internal)
+│   │   │   ├── Game.cs                             #     游戏核心实现
+│   │   │   ├── GameBoardDictionary.cs              #     棋盘字典实现
+│   │   │   ├── GameBoardDictionaryFactory.cs       #     棋盘字典工厂实现
+│   │   │   ├── GameFactory.cs                      #     游戏工厂实现
+│   │   │   ├── GameManager.cs                      #     游戏管理器实现
+│   │   │   ├── GameTimer.cs                        #     游戏计时器实现
+│   │   │   ├── MineField.cs                        #     地雷场实现
+│   │   │   └── MineGenerator.cs                    #     地雷生成器实现
 │   │   └── IServiceCollectionExtensions.cs         # DI 注册扩展
 │   ├── MineClearance.Infrastructure/               # 基础设施层 — 数据访问、外部服务实现
 │   └── MineClearance.UI/                           # 表示层 — Avalonia 桌面应用

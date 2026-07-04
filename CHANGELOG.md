@@ -11,13 +11,50 @@
 
 ### Added
 
+- **领域服务实现**: Core 层完成所有接口实现
+  - `Game` — 游戏核心逻辑（首次点击地雷生成、泛洪打开、状态管理、完成度计算、存档导出）
+  - `GameBoardDictionary` — 基于字典的棋盘实现，`INotifyPropertyChanged` 驱动计数属性
+  - `GameBoardDictionaryFactory` — 棋盘工厂
+  - `GameFactory` — 基于 `IServiceScopeFactory` 的游戏对象图组装（每局一个 DI Scope）
+  - `GameManager` — 游戏生命周期管理（开始新游戏、从存档恢复、保存并退出）
+  - `GameTimer` — 基于 `Stopwatch` 的计时器，通过 `Refresh()` 由外部 UI 驱动
+  - `MineField` — 地雷场实现，支持随机生成和位图恢复
+  - `MineGenerator` — 地雷生成器（桩，待实现）
+- **接口重构**: `INotifyPropertyChanged` 替代事件，`IServiceScopeFactory` 管理游戏生命周期
+  - `IGame`: 实现 `INotifyPropertyChanged` + `IDisposable`，移除 `StatusChanged` 事件 / `Minefield` 属性，`Board` 可空，新增 `Config` / `GetSaveData()`
+  - `IGameBoardDictionary`: 实现 `INotifyPropertyChanged`，移除 `Rows`/`Columns`/`SetAdjacentMineCounts`，新增 `GetCellStates()`
+  - `IGameTimer`: 实现 `INotifyPropertyChanged`，移除 `Tick` 事件 / `ReStart()` / `IDisposable`，新增 `FirstStartTime` / `Refresh()` / `SetInitialTime()`
+  - `IGameManager`: 方法签名重构（`RestoreFromSaveDataAsync`/`SaveAndExitAsync` 异步化，`StartNewGame` 拆分重载）
+  - `IMineField`: 改为 `internal`，`Generate()` 返回 `int[]` 替代事件
+  - `IMineGenerator.GenerateMines()`: 新增 `seed` 参数
+  - `IGameResultRepository` → 重命名为 `IGameDataRepository`
+- **Position 工具方法**: `DirectionOffsets`（8 方向静态偏移）、`GetAdjacentPositions()`、`GetAllPositions()`、`ToIndex()`
+- **Constants 新增**: `MineValue = -1`
+- **GameConfig 新增**: `GetTotalCellsToOpen()` 方法
+
+### Changed
+
+- `GameResult`/`GameSaveData` 自定义构造器替换为静态工厂方法
+- `Cell.AdjacentMineCount` 改为 `init`（构造后不可变）
+- `GameChangedEventArgs` 移至 `Models` 命名空间，`Game` 属性改为可空
+- `IServiceCollectionExtensions.AddCore()` 完成所有 Core 层服务 DI 注册
+- 项目结构: 删除 `Models/Args/` 文件夹，新增 `Services/` 文件夹
+
+### Removed
+
+- `GameStatusChangedEventArgs` / `GameTimerTickEventArgs` / `MineFieldGeneratedEventArgs` — 由 `INotifyPropertyChanged` 和返回值替代
+- `HintStrategyType` / `IHintProvider` — 暂不实现
+- `Constants.NeighborCount` — 由 `Position.DirectionOffsets` 替代
+
+---
+
 - **领域模型精化**: 重构和增强核心领域模型
   - `IGame` 接口: 用 `IGameBoardDictionary` 替代 `IGameBoard`，新增 `Rows`/`Columns` 只读属性
   - `IGameBoardDictionary` 接口: 棋盘格子字典，继承 `IReadOnlyDictionary<Position, Cell>`，提供 `OpenedCount`/`FlagCount`/`QuestionCount` 统计属性
   - `IGameBoardDictionaryFactory` 接口 (internal): 棋盘字典工厂
   - `IGameFactory` 接口 (internal): 游戏工厂，支持从 `GameConfig` 或 `GameSaveData` 创建游戏
   - `IMineField` 接口 (internal): 内部地雷场接口，提供地雷生成和查询方法
-  - `IGameResultRepository` 接口: 新增存档数据管理（`HasGameSaveData`/`GetGameSaveDataAsync`/`SaveGameSaveDataAsync`）和结果记录 CRUD 方法
+  - `IGameDataRepository` 接口: 新增存档数据管理（`HasGameSaveData`/`GetGameSaveDataAsync`/`SaveGameSaveDataAsync`）和结果记录 CRUD 方法
   - `Position` record struct: 新增 `DirectionOffsets` 只读属性和 `GetAdjacentPositions`/`GetAllPositions` 方法
   - `GameResult`/`GameSaveData` record: 重构自定义构造函数为静态工厂方法模式
   - `Cell` 类: `AdjacentMineCount` 属性改为只读

@@ -1,93 +1,99 @@
 using System;
+using System.ComponentModel;
 
 namespace MineClearance.Core.Interfaces;
 
 /// <summary>
 /// 游戏核心接口
 /// </summary>
-public interface IGame
+public interface IGame : INotifyPropertyChanged, IDisposable
 {
     /// <summary>
-    /// 游戏状态变更事件
+    /// 获取当前游戏棋盘字典, 在地雷生成之前为 <see langword="null"/>
     /// </summary>
-    event EventHandler<Models.Args.GameStatusChangedEventArgs>? StatusChanged;
-
-    /// <summary>
-    /// 获取当前游戏棋盘字典
-    /// </summary>
-    IGameBoardDictionary Board { get; }
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
+    IGameBoardDictionary? Board { get; }
 
     /// <summary>
     /// 获取当前游戏计时器
     /// </summary>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
     IGameTimer Timer { get; }
 
     /// <summary>
     /// 获取当前游戏状态
     /// </summary>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
     Enums.GameStatus Status { get; }
 
     /// <summary>
     /// 获取当前游戏难度
     /// </summary>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
     Enums.GameDifficulty Difficulty { get; }
 
     /// <summary>
-    /// 获取棋盘行数
+    /// 获取当前游戏配置
     /// </summary>
-    int Rows { get; }
-
-    /// <summary>
-    /// 获取棋盘列数
-    /// </summary>
-    int Columns { get; }
-
-    /// <summary>
-    /// 获取地雷总数
-    /// </summary>
-    int TotalMines { get; }
-
-    /// <summary>
-    /// 获取当前游戏完成度, 范围为 0.0 到 <see cref="Constants.MaxCompletion"/>
-    /// </summary>
-    double Completion { get; }
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
+    Models.Records.GameConfig Config { get; }
 
     /// <summary>
     /// 获取当前游戏随机种子
     /// </summary>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
     int Seed { get; }
+
+    /// <summary>
+    /// 获取当前游戏完成度, 范围为 0.0 到 <see cref="Constants.MaxCompletion"/>
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
+    double Completion { get; }
 
     /// <summary>
     /// 暂停游戏
     /// </summary>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
     void Pause();
 
     /// <summary>
     /// 取消暂停游戏
     /// </summary>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
     void CancelPause();
 
     /// <summary>
     /// 打开指定位置的格子
     /// </summary>
     /// <param name="position">要打开的格子的位置</param>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
     void OpenCell(Models.Records.Position position);
 
     /// <summary>
     /// 在指定位置插旗
     /// </summary>
     /// <param name="position">要插旗的格子的位置</param>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
     void FlagCell(Models.Records.Position position);
 
     /// <summary>
     /// 在指定位置标记问号
     /// </summary>
     /// <param name="position">要标记问号的格子的位置</param>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
     void QuestionCell(Models.Records.Position position);
 
     /// <summary>
     /// 取消指定位置的插旗或者问号标记, 将格子恢复为未打开状态
     /// </summary>
     /// <param name="position">要取消标记的格子的位置</param>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
     void UnmarkCell(Models.Records.Position position);
+
+    /// <summary>
+    /// 获取当前游戏的存档数据, 用于保存游戏进度
+    /// </summary>
+    /// <returns>游戏存档数据</returns>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
+    Models.Records.GameSaveData? GetSaveData();
 }

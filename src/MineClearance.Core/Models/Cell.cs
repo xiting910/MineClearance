@@ -21,7 +21,7 @@ public sealed class Cell : INotifyPropertyChanged
                 PropertyChanged?.Invoke(this, new(nameof(Type)));
             }
         }
-    }
+    } = Enums.CellType.Unopened;
 
     /// <summary>
     /// 周围地雷数量, 只会在生成棋盘时被赋值, 之后不会再改变

@@ -9,12 +9,7 @@ namespace MineClearance.Core.Models.Records;
 /// <param name="BoardHeight">棋盘高度</param>
 /// <param name="BoardWidth">棋盘宽度</param>
 /// <param name="MineCount">地雷数量</param>
-/// <param name="Seed">随机种子</param>
-public sealed record GameConfig(
-    int BoardHeight,
-    int BoardWidth,
-    int MineCount,
-    int? Seed)
+public readonly record struct GameConfig(int BoardHeight, int BoardWidth, int MineCount)
 {
     /// <summary>
     /// 通过 <see cref="Enums.GameDifficulty"/> 获取内置的 <see cref="GameConfig"/> 实例
@@ -50,7 +45,7 @@ public sealed record GameConfig(
         Debug.Assert(result.IsValid(), "GameResult must be valid to extract GameConfig.");
 
         return result.Difficulty is Enums.GameDifficulty.Custom
-            ? new(result.BoardHeight!.Value, result.BoardWidth!.Value, result.MineCount!.Value, result.Seed)
+            ? new(result.BoardHeight!.Value, result.BoardWidth!.Value, result.MineCount!.Value)
             : FromDifficulty(result.Difficulty);
     }
 
@@ -64,8 +59,17 @@ public sealed record GameConfig(
         Debug.Assert(data.IsValid(), "GameSaveData must be valid to extract GameConfig.");
 
         return data.Difficulty is Enums.GameDifficulty.Custom
-            ? new(data.BoardHeight!.Value, data.BoardWidth!.Value, data.MineCount!.Value, data.Seed)
+            ? new(data.BoardHeight!.Value, data.BoardWidth!.Value, data.MineCount!.Value)
             : FromDifficulty(data.Difficulty);
+    }
+
+    /// <summary>
+    /// 获取当前配置下要打开的格子总数
+    /// </summary>
+    /// <returns>要打开的格子总数</returns>
+    public int GetTotalCellsToOpen()
+    {
+        return (BoardHeight * BoardWidth) - MineCount;
     }
 
     /// <summary>
@@ -74,6 +78,6 @@ public sealed record GameConfig(
     /// <returns>游戏配置的字符串表示</returns>
     public override string ToString()
     {
-        return $"GameConfig: {BoardHeight}x{BoardWidth}, {MineCount} mines, Seed: {Seed}";
+        return $"GameConfig: {BoardHeight}x{BoardWidth}, {MineCount} mines";
     }
 }
