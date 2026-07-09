@@ -13,6 +13,7 @@
 
 - 🖥️ **跨平台支持** — Windows / Linux / macOS，单文件自包含发布
 - 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
+- 🎮 **经典扫雷玩法** — 左键翻开、右键标旗/问号、双击数字格自动翻开周围、右键数字格自动标旗周围、警告数字检测
 - 🧩 **MVVM 模式** — 基于 CommunityToolkit.Mvvm 源代码生成器
 - 🧪 **完善的测试** — xUnit + Moq 单元测试，coverlet 代码覆盖率
 - 🔁 **CI/CD 自动化** — GitHub Actions 自动构建、测试、CodeQL 安全分析、Release 发布
@@ -35,7 +36,7 @@ MineClearance/
 │   │   │   ├── IGame.cs                            #     游戏核心接口 (INotifyPropertyChanged + IDisposable)
 │   │   │   ├── IGameBoardDictionary.cs             #     棋盘格子字典接口 (IReadOnlyDictionary + INotifyPropertyChanged)
 │   │   │   ├── IGameBoardDictionaryFactory.cs      #     棋盘字典工厂接口 (internal)
-│   │   │   ├── IGameDataRepository.cs              #     游戏数据仓储接口 (存档 + 结果记录)
+│   │   │   ├── IGameDataRepository.cs              #     游戏数据仓储接口
 │   │   │   ├── IGameFactory.cs                     #     游戏工厂接口 (internal)
 │   │   │   ├── IGameManager.cs                     #     游戏管理器接口
 │   │   │   ├── IGameTimer.cs                       #     游戏计时器接口 (INotifyPropertyChanged)

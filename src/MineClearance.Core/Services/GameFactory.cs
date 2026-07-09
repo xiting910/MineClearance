@@ -1,6 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MineClearance.Core.Services;
 

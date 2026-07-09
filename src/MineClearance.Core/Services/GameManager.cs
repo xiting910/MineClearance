@@ -1,12 +1,10 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using MineClearance.Core.Enums;
-using MineClearance.Core.Models.Records;
 
 namespace MineClearance.Core.Services;
 
-// TODO: 添加游戏胜利或失败后自动将游戏结果保存到游戏数据存储库的功能
 /// <summary>
 /// 游戏管理器实现类, 负责游戏实例的创建、销毁和存档管理
 /// </summary>
@@ -37,19 +35,43 @@ internal sealed class GameManager(
         {
             if (field != value)
             {
+                field?.PropertyChanged -= OnGameChanged;
                 field = value;
+                field?.PropertyChanged += OnGameChanged;
                 GameChanged?.Invoke(this, new(field));
             }
         }
     }
 
     /// <inheritdoc/>
-    public void StartNewGame(GameDifficulty difficulty)
+    public void RestartCurrentGame()
+    {
+        // 如果当前没有游戏正在进行, 则不需要重新开始
+        if (Game is null) { return; }
+
+        // 获取当前游戏的难度
+        var difficulty = Game.Difficulty;
+
+        // 根据当前游戏的难度重新开始游戏
+        if (difficulty is Enums.GameDifficulty.Custom)
+        {
+            // 如果当前游戏是自定义难度, 则使用当前游戏的配置和种子重新开始游戏
+            StartNewGame(Game.Config, Game.Seed);
+        }
+        else
+        {
+            // 如果当前游戏是非自定义难度, 则使用当前游戏的难度重新开始游戏
+            StartNewGame(difficulty);
+        }
+    }
+
+    /// <inheritdoc/>
+    public void StartNewGame(Enums.GameDifficulty difficulty)
     {
         // 如果难度为自定义, 则不允许使用此方法创建游戏, 应该使用 StartNewGame(GameConfig config, int? seed) 方法
-        if (difficulty is GameDifficulty.Custom)
+        if (difficulty is Enums.GameDifficulty.Custom)
         {
-            throw new ArgumentException("Cannot start a new game with custom difficulty using this method. Use StartNewGame(GameConfig config, int? seed) instead.", nameof(difficulty));
+            throw new ArgumentException(Constants.CustomDifficultyMissingInfoMessage, nameof(difficulty));
         }
 
         // 释放当前游戏实例
@@ -60,7 +82,7 @@ internal sealed class GameManager(
     }
 
     /// <inheritdoc/>
-    public void StartNewGame(GameConfig config, int? seed = null)
+    public void StartNewGame(Models.Records.GameConfig config, int? seed = null)
     {
         // 释放当前游戏实例
         Game?.Dispose();
@@ -105,5 +127,40 @@ internal sealed class GameManager(
 
         // 返回保存结果
         return saveResult;
+    }
+
+    /// <inheritdoc/>
+    public void ExitWithoutSaving()
+    {
+        // 释放当前游戏实例
+        Game?.Dispose();
+
+        // 将当前游戏实例设置为 null, 表示没有游戏正在进行
+        Game = null;
+    }
+
+    /// <summary>
+    /// 游戏状态变更事件处理, 在游戏胜利或失败时自动保存游戏结果到游戏数据存储库
+    /// </summary>
+    /// <param name="sender">事件发送者</param>
+    /// <param name="e">事件参数</param>
+    private async void OnGameChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        // 如果事件发送者不是游戏实例, 则忽略此事件
+        if (sender is not Interfaces.IGame game) { return; }
+
+        // 游戏结果属性变更时, 将游戏结果保存到游戏数据存储库
+        if (e.PropertyName is nameof(Interfaces.IGame.Result))
+        {
+            // 此时游戏结果应该已经被设置为非 null, 因为游戏结果属性在游戏结束时才会被设置
+            Debug.Assert(game.Result is not null, "Game result should not be null when the game ends.");
+
+            // 将游戏结果保存到游戏数据存储库
+            if (!await _dataRepository.AddGameResultAsync(game.Result).ConfigureAwait(false))
+            {
+                // 如果保存失败, 则记录错误日志
+                Debug.WriteLine("Failed to save game result to the data repository.");
+            }
+        }
     }
 }

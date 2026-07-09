@@ -11,6 +11,13 @@
 
 ### Added
 
+- **相邻格子操作**: `IGame.OpenAdjacentCells(Position)` (双击数字格自动翻开周围) 和 `IGame.FlagAdjacentCells(Position)` (右键数字格自动标旗周围) 方法
+- **游戏结果属性**: `IGame.Result` 属性 (nullable), 游戏结束后可获取 `GameResult` 结果
+- **游戏管理方法**: `IGameManager.RestartCurrentGame()` 和 `IGameManager.ExitWithoutSaving()` 方法
+- **自动保存**: `GameManager` 通过监听 `IGame.PropertyChanged`, 在 `Result` 变化时自动调用 `IGameDataRepository.AddGameResultAsync` 持久化游戏结果
+- **警告数字检测**: `Game.CheckAndUpdateWarningStates()` 方法, 当标记数超过相邻地雷数时, 数字格切换为警告状态 (`WarningNumber`)
+- **统一异常消息常量**: `Constants.CustomDifficultyMissingInfoMessage` 和 `MineField.MineFieldNotGeneratedMessage`
+- **`InternalsVisibleTo`**: Infrastructure 项目添加 `[InternalsVisibleTo("MineClearance.Infrastructure.Tests")]`
 - **领域服务实现**: Core 层完成所有接口实现
   - `Game` — 游戏核心逻辑（首次点击地雷生成、泛洪打开、状态管理、完成度计算、存档导出）
   - `GameBoardDictionary` — 基于字典的棋盘实现，`INotifyPropertyChanged` 驱动计数属性
@@ -34,11 +41,24 @@
 
 ### Changed
 
+- `Game.FloodOpen` 重构: 添加游戏结束防护, 使用 `cell.AdjacentMineCount` 替代 `_mineField.GetAdjacentMineCount`; 地雷命中逻辑从 `OpenCell` 移至此处
+- `Game.IsGameCompleted()` 重构为 `CheckGameCompletion()` + `UpdateCompletion()` (返回 bool), 完成判定使用 `Constants.MaxCompletion` 倍率
+- `Game` 重复状态断言提取为 `AssertGamePerformable()` 方法, `CancelPause` 断言收紧为仅允许 `Paused` 状态
+- `GameConfig.ToString()` 移除 `"GameConfig: "` 前缀
+- `GameResult` / `GameSaveData` 硬编码异常消息替换为 `Constants.CustomDifficultyMissingInfoMessage`
+- `GameManager.Game` 属性 setter 增强, 正确订阅/取消订阅 `PropertyChanged` 事件并清理旧游戏
+- `Position.DirectionOffsets` 和 `GetAllPositions` 使用简化语法 (`new(...)`)
+- XML 文档注释增强 (`<see cref="Core"/>`)
+- using 指令重新排序 (`System` 在 `Microsoft.Extensions` 之后)
 - `GameResult`/`GameSaveData` 自定义构造器替换为静态工厂方法
 - `Cell.AdjacentMineCount` 改为 `init`（构造后不可变）
 - `GameChangedEventArgs` 移至 `Models` 命名空间，`Game` 属性改为可空
 - `IServiceCollectionExtensions.AddCore()` 完成所有 Core 层服务 DI 注册
 - 项目结构: 删除 `Models/Args/` 文件夹，新增 `Services/` 文件夹
+
+### Fixed
+
+- `GameBoardDictionary.OpenedCount` 不再将 `Mine` 类型格子计入已打开数量
 
 ### Removed
 

@@ -51,6 +51,12 @@ public interface IGame : INotifyPropertyChanged, IDisposable
     double Completion { get; }
 
     /// <summary>
+    /// 获取当前游戏的游戏结果, 在游戏结束之前为 <see langword="null"/>
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
+    Models.Records.GameResult? Result { get; }
+
+    /// <summary>
     /// 暂停游戏
     /// </summary>
     /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
@@ -89,6 +95,20 @@ public interface IGame : INotifyPropertyChanged, IDisposable
     /// <param name="position">要取消标记的格子的位置</param>
     /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
     void UnmarkCell(Models.Records.Position position);
+
+    /// <summary>
+    /// 打开某个数字格子周围的所有未打开格子
+    /// </summary>
+    /// <param name="position">要打开的数字格子的位置</param>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
+    void OpenAdjacentCells(Models.Records.Position position);
+
+    /// <summary>
+    /// 标记某个数字格子周围的所有未打开格子为旗子
+    /// </summary>
+    /// <param name="position">要标记的数字格子的位置</param>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
+    void FlagAdjacentCells(Models.Records.Position position);
 
     /// <summary>
     /// 获取当前游戏的存档数据, 用于保存游戏进度
