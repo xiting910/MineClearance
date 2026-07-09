@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 
 namespace MineClearance.Core.Interfaces;
 
-// TODO: 添加重新开始游戏方法
 /// <summary>
 /// 游戏管理器接口
 /// </summary>
@@ -18,6 +17,11 @@ public interface IGameManager
     /// 获取当前游戏实例, 如果当前没有游戏正在进行, 则返回 <see langword="null"/>
     /// </summary>
     IGame? Game { get; }
+
+    /// <summary>
+    /// 重新开始当前游戏
+    /// </summary>
+    void RestartCurrentGame();
 
     /// <summary>
     /// 开始非自定义难度的游戏, 如果当前有游戏正在进行, 则会结束当前游戏并开始新游戏
@@ -43,4 +47,9 @@ public interface IGameManager
     /// </summary>
     /// <returns><see langword="true"/> 如果保存成功, <see langword="false"/> 如果保存失败</returns>
     Task<bool> SaveAndExitAsync();
+
+    /// <summary>
+    /// 不保存当前游戏并退出
+    /// </summary>
+    void ExitWithoutSaving();
 }

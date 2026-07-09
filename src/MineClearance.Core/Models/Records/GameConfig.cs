@@ -31,7 +31,7 @@ public readonly record struct GameConfig(int BoardHeight, int BoardWidth, int Mi
             Enums.GameDifficulty.Expert => Constants.ExpertConfig,
             Enums.GameDifficulty.Master => Constants.MasterConfig,
             Enums.GameDifficulty.Custom => throw new ArgumentException("Custom difficulty requires custom configuration.", nameof(difficulty)),
-            _ => throw new ArgumentOutOfRangeException(nameof(difficulty), "Invalid game difficulty.")
+            _ => throw new ArgumentOutOfRangeException(nameof(difficulty))
         };
     }
 
@@ -42,7 +42,7 @@ public readonly record struct GameConfig(int BoardHeight, int BoardWidth, int Mi
     /// <returns>对应的 <see cref="GameConfig"/> 实例</returns>
     public static GameConfig FromGameResult(GameResult result)
     {
-        Debug.Assert(result.IsValid(), "GameResult must be valid to extract GameConfig.");
+        Debug.Assert(result.IsValid(), $"{nameof(result)} must be valid to extract.");
 
         return result.Difficulty is Enums.GameDifficulty.Custom
             ? new(result.BoardHeight!.Value, result.BoardWidth!.Value, result.MineCount!.Value)
@@ -56,7 +56,7 @@ public readonly record struct GameConfig(int BoardHeight, int BoardWidth, int Mi
     /// <returns>对应的 <see cref="GameConfig"/> 实例</returns>
     public static GameConfig FromGameSaveData(GameSaveData data)
     {
-        Debug.Assert(data.IsValid(), "GameSaveData must be valid to extract GameConfig.");
+        Debug.Assert(data.IsValid(), $"{nameof(data)} must be valid to extract.");
 
         return data.Difficulty is Enums.GameDifficulty.Custom
             ? new(data.BoardHeight!.Value, data.BoardWidth!.Value, data.MineCount!.Value)
@@ -78,6 +78,6 @@ public readonly record struct GameConfig(int BoardHeight, int BoardWidth, int Mi
     /// <returns>游戏配置的字符串表示</returns>
     public override string ToString()
     {
-        return $"GameConfig: {BoardHeight}x{BoardWidth}, {MineCount} mines";
+        return $"{BoardHeight}x{BoardWidth}, {MineCount} mines";
     }
 }

@@ -10,6 +10,11 @@ namespace MineClearance.Core.Services;
 internal sealed class MineField(Interfaces.IMineGenerator mineGenerator) : Interfaces.IMineField
 {
     /// <summary>
+    /// 地雷场尚未生成的异常信息
+    /// </summary>
+    private const string MineFieldNotGeneratedMessage = "The minefield has not been generated yet.";
+
+    /// <summary>
     /// 行数
     /// </summary>
     private int _rows;
@@ -20,7 +25,7 @@ internal sealed class MineField(Interfaces.IMineGenerator mineGenerator) : Inter
     private int _columns;
 
     /// <summary>
-    /// 表示每个位置周围地雷数量的数组, -1 表示该位置是地雷, 按行优先顺序排列
+    /// 表示每个位置周围地雷数量的数组, <see cref="Constants.MineValue"/> 表示该位置是地雷, 按行优先顺序排列
     /// </summary>
     private int[]? _adjacentMineCounts;
 
@@ -106,7 +111,7 @@ internal sealed class MineField(Interfaces.IMineGenerator mineGenerator) : Inter
         // 如果地雷场尚未生成, 则抛出异常
         if (_adjacentMineCounts is null)
         {
-            throw new InvalidOperationException("The minefield has not been generated yet.");
+            throw new InvalidOperationException(MineFieldNotGeneratedMessage);
         }
 
         // 创建一个新的 BitArray, 用于表示地雷场的位图, 其中每一位表示一个格子是否是地雷
@@ -128,7 +133,7 @@ internal sealed class MineField(Interfaces.IMineGenerator mineGenerator) : Inter
         // 如果地雷场尚未生成, 则抛出异常
         if (_adjacentMineCounts is null)
         {
-            throw new InvalidOperationException("The minefield has not been generated yet.");
+            throw new InvalidOperationException(MineFieldNotGeneratedMessage);
         }
 
         // 返回该位置是否是地雷
@@ -141,7 +146,7 @@ internal sealed class MineField(Interfaces.IMineGenerator mineGenerator) : Inter
         // 如果地雷场尚未生成, 则抛出异常
         if (_adjacentMineCounts is null)
         {
-            throw new InvalidOperationException("The minefield has not been generated yet.");
+            throw new InvalidOperationException(MineFieldNotGeneratedMessage);
         }
 
         // 返回该位置周围的地雷数量

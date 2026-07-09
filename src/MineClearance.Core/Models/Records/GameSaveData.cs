@@ -54,7 +54,7 @@ public sealed record GameSaveData(
     public static GameSaveData Create(int seed, Enums.GameDifficulty difficulty, DateTime startTime, TimeSpan duration, BitArray mineField, IReadOnlyDictionary<Position, Enums.CellType> cellStates)
     {
         return difficulty is Enums.GameDifficulty.Custom
-            ? throw new ArgumentException("Custom difficulty requires board dimensions and mine count.", nameof(difficulty))
+            ? throw new ArgumentException(Constants.CustomDifficultyMissingInfoMessage, nameof(difficulty))
             : new(seed, difficulty, startTime, duration, mineField, cellStates, null, null, null);
     }
 

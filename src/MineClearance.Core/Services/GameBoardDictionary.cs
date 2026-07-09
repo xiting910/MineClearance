@@ -84,7 +84,7 @@ internal sealed class GameBoardDictionary : Interfaces.IGameBoardDictionary
     /// <param name="adjacentMineCounts">按行优先顺序排列的周围地雷数量数组</param>
     public GameBoardDictionary(int rows, int columns, int[] adjacentMineCounts)
     {
-        Debug.Assert(adjacentMineCounts.Length == rows * columns, "The length of adjacentMineCounts must be equal to rows * columns.");
+        Debug.Assert(adjacentMineCounts.Length == rows * columns, $"The length of {nameof(adjacentMineCounts)} must be equal to {nameof(rows)} * {nameof(columns)}.");
         foreach (var position in Models.Records.Position.GetAllPositions(rows, columns))
         {
             _cells[position] = new()
@@ -135,7 +135,7 @@ internal sealed class GameBoardDictionary : Interfaces.IGameBoardDictionary
     {
         if (e.PropertyName is nameof(Models.Cell.Type))
         {
-            OpenedCount = _cells.Values.Count(cell => cell.Type is Enums.CellType.Empty or Enums.CellType.Number or Enums.CellType.WarningNumber or Enums.CellType.Mine);
+            OpenedCount = _cells.Values.Count(cell => cell.Type is Enums.CellType.Empty or Enums.CellType.Number or Enums.CellType.WarningNumber);
             FlagCount = _cells.Values.Count(cell => cell.Type is Enums.CellType.Flagged);
             QuestionCount = _cells.Values.Count(cell => cell.Type is Enums.CellType.Question);
         }

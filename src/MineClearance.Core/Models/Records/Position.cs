@@ -13,15 +13,15 @@ public readonly record struct Position(int Row, int Col)
     /// <summary>
     /// 获取方向的位置偏移量数组, 按顺时针顺序排列
     /// </summary>
-    public static ImmutableArray<Position> DirectionOffsets { get; } = ImmutableArray.Create(
-        new Position(-1, 0), // 上
-        new Position(-1, 1), // 右上
-        new Position(0, 1),  // 右
-        new Position(1, 1),  // 右下
-        new Position(1, 0),  // 下
-        new Position(1, -1), // 左下
-        new Position(0, -1), // 左
-        new Position(-1, -1) // 左上
+    public static ImmutableArray<Position> DirectionOffsets { get; } = ImmutableArray.Create<Position>(
+        new(-1, 0), // 上
+        new(-1, 1), // 右上
+        new(0, 1),  // 右
+        new(1, 1),  // 右下
+        new(1, 0),  // 下
+        new(1, -1), // 左下
+        new(0, -1), // 左
+        new(-1, -1) // 左上
     );
 
     /// <summary>
@@ -79,7 +79,7 @@ public readonly record struct Position(int Row, int Col)
         {
             for (var col = 0; col < colCount; col++)
             {
-                yield return new Position(row, col);
+                yield return new(row, col);
             }
         }
     }
