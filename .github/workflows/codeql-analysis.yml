@@ -41,7 +41,7 @@ jobs:
 
       # 安装 .NET 10 SDK, CodeQL autobuild 需要它
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
           cache: true
