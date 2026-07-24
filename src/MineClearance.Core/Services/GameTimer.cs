@@ -1,3 +1,4 @@
+using MineClearance.Core.Interfaces;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -7,7 +8,7 @@ namespace MineClearance.Core.Services;
 /// <summary>
 /// 游戏计时器实现类, 负责计时和触发滴答事件
 /// </summary>
-internal sealed class GameTimer : Interfaces.IGameTimer
+internal sealed class GameTimer : IGameTimer
 {
     /// <summary>
     /// 高精度计时器字段, 用于计算已运行的时间

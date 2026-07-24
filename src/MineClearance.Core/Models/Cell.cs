@@ -1,3 +1,4 @@
+using MineClearance.Core.Enums;
 using System.ComponentModel;
 
 namespace MineClearance.Core.Models;
@@ -10,7 +11,7 @@ public sealed class Cell : INotifyPropertyChanged
     /// <summary>
     /// 格子类型, 赋值时触发 <see cref="PropertyChanged"/> 事件
     /// </summary>
-    public Enums.CellType Type
+    public CellType Type
     {
         get;
         internal set
@@ -21,7 +22,7 @@ public sealed class Cell : INotifyPropertyChanged
                 PropertyChanged?.Invoke(this, new(nameof(Type)));
             }
         }
-    } = Enums.CellType.Unopened;
+    } = CellType.Unopened;
 
     /// <summary>
     /// 周围地雷数量, 只会在生成棋盘时被赋值, 之后不会再改变

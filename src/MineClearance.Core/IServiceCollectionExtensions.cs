@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using MineClearance.Core.Interfaces;
+using MineClearance.Core.Services;
 
 namespace MineClearance.Core;
 
@@ -15,11 +17,12 @@ public static class IServiceCollectionExtensions
     public static IServiceCollection AddCore(this IServiceCollection services)
     {
         return services
-            .AddSingleton<Interfaces.IGameBoardDictionaryFactory, Services.GameBoardDictionaryFactory>()
-            .AddSingleton<Interfaces.IGameFactory, Services.GameFactory>()
-            .AddSingleton<Interfaces.IGameManager, Services.GameManager>()
-            .AddScoped<Interfaces.IMineField, Services.MineField>()
-            .AddScoped<Interfaces.IGameTimer, Services.GameTimer>()
-            .AddTransient<Interfaces.IMineGenerator, Services.MineGenerator>();
+            .AddSingleton<IGameBoardDictionaryFactory, GameBoardDictionaryFactory>()
+            .AddSingleton<IGameFactory, GameFactory>()
+            .AddSingleton<IGameManager, GameManager>()
+            .AddScoped<IMineField, MineField>()
+            .AddScoped<IGameTimer, GameTimer>()
+            .AddTransient<IMineGenerator, MineGenerator>()
+            .AddTransient<ISolvabilityChecker, SolvabilityChecker>();
     }
 }

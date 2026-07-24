@@ -1,3 +1,7 @@
+using MineClearance.Core.Enums;
+using MineClearance.Core.Interfaces;
+using MineClearance.Core.Models;
+using MineClearance.Core.Models.Records;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,12 +16,12 @@ namespace MineClearance.Core.Services;
 /// 游戏棋盘字典实现类, 以字典形式存储格子集合, 支持通过位置快速访问
 /// </summary>
 
-internal sealed class GameBoardDictionary : Interfaces.IGameBoardDictionary
+internal sealed class GameBoardDictionary : IGameBoardDictionary
 {
     /// <summary>
     /// 内部字典, 用于存储位置和格子对象的映射关系
     /// </summary>
-    private readonly Dictionary<Models.Records.Position, Models.Cell> _cells = [];
+    private readonly Dictionary<Position, Cell> _cells = [];
 
     /// <inheritdoc/>
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -65,13 +69,13 @@ internal sealed class GameBoardDictionary : Interfaces.IGameBoardDictionary
     }
 
     /// <inheritdoc/>
-    public Models.Cell this[Models.Records.Position key] => _cells[key];
+    public Cell this[Position key] => _cells[key];
 
     /// <inheritdoc/>
-    public IEnumerable<Models.Records.Position> Keys => _cells.Keys;
+    public IEnumerable<Position> Keys => _cells.Keys;
 
     /// <inheritdoc/>
-    public IEnumerable<Models.Cell> Values => _cells.Values;
+    public IEnumerable<Cell> Values => _cells.Values;
 
     /// <inheritdoc/>
     public int Count => _cells.Count;
@@ -85,7 +89,7 @@ internal sealed class GameBoardDictionary : Interfaces.IGameBoardDictionary
     public GameBoardDictionary(int rows, int columns, int[] adjacentMineCounts)
     {
         Debug.Assert(adjacentMineCounts.Length == rows * columns, $"The length of {nameof(adjacentMineCounts)} must be equal to {nameof(rows)} * {nameof(columns)}.");
-        foreach (var position in Models.Records.Position.GetAllPositions(rows, columns))
+        foreach (var position in Position.GetAllPositions(rows, columns))
         {
             _cells[position] = new()
             {
@@ -96,26 +100,26 @@ internal sealed class GameBoardDictionary : Interfaces.IGameBoardDictionary
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<Models.Records.Position, Enums.CellType> GetCellStates()
+    public IReadOnlyDictionary<Position, CellType> GetCellStates()
     {
-        return _cells.Where(kvp => kvp.Value.Type is not Enums.CellType.Unopened)
+        return _cells.Where(kvp => kvp.Value.Type is not CellType.Unopened)
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Type);
     }
 
     /// <inheritdoc/>
-    public bool ContainsKey(Models.Records.Position key)
+    public bool ContainsKey(Position key)
     {
         return _cells.ContainsKey(key);
     }
 
     /// <inheritdoc/>
-    public IEnumerator<KeyValuePair<Models.Records.Position, Models.Cell>> GetEnumerator()
+    public IEnumerator<KeyValuePair<Position, Cell>> GetEnumerator()
     {
         return _cells.GetEnumerator();
     }
 
     /// <inheritdoc/>
-    public bool TryGetValue(Models.Records.Position key, [MaybeNullWhen(false)] out Models.Cell value)
+    public bool TryGetValue(Position key, [MaybeNullWhen(false)] out Cell value)
     {
         return _cells.TryGetValue(key, out value);
     }
@@ -133,11 +137,11 @@ internal sealed class GameBoardDictionary : Interfaces.IGameBoardDictionary
     /// <param name="e">属性变化事件参数</param>
     private void OnCellPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(Models.Cell.Type))
+        if (e.PropertyName is nameof(Cell.Type))
         {
-            OpenedCount = _cells.Values.Count(cell => cell.Type is Enums.CellType.Empty or Enums.CellType.Number or Enums.CellType.WarningNumber);
-            FlagCount = _cells.Values.Count(cell => cell.Type is Enums.CellType.Flagged);
-            QuestionCount = _cells.Values.Count(cell => cell.Type is Enums.CellType.Question);
+            OpenedCount = _cells.Values.Count(cell => cell.Type is CellType.Empty or CellType.Number or CellType.WarningNumber);
+            FlagCount = _cells.Values.Count(cell => cell.Type is CellType.Flagged);
+            QuestionCount = _cells.Values.Count(cell => cell.Type is CellType.Question);
         }
     }
 }

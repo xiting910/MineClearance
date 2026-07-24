@@ -1,4 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using MineClearance.Core.Enums;
+using MineClearance.Core.Interfaces;
+using MineClearance.Core.Models.Records;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,7 +13,7 @@ namespace MineClearance.Core.Services;
 /// <summary>
 /// 游戏核心实现类, 负责管理游戏状态、处理玩家操作
 /// </summary>
-internal sealed class Game : Interfaces.IGame
+internal sealed class Game : IGame
 {
     /// <summary>
     /// 当前实例是否已被释放
@@ -25,18 +28,18 @@ internal sealed class Game : Interfaces.IGame
     /// <summary>
     /// 游戏棋盘字典工厂
     /// </summary>
-    private readonly Interfaces.IGameBoardDictionaryFactory _boardFactory;
+    private readonly IGameBoardDictionaryFactory _boardFactory;
 
     /// <summary>
     /// 内部地雷场
     /// </summary>
-    private readonly Interfaces.IMineField _mineField;
+    private readonly IMineField _mineField;
 
     /// <inheritdoc/>
     public event PropertyChangedEventHandler? PropertyChanged;
 
     /// <inheritdoc/>
-    public Interfaces.IGameBoardDictionary? Board
+    public IGameBoardDictionary? Board
     {
         get
         {
@@ -54,7 +57,7 @@ internal sealed class Game : Interfaces.IGame
     }
 
     /// <inheritdoc/>
-    public Interfaces.IGameTimer Timer
+    public IGameTimer Timer
     {
         get
         {
@@ -64,7 +67,7 @@ internal sealed class Game : Interfaces.IGame
     }
 
     /// <inheritdoc/>
-    public Enums.GameStatus Status
+    public GameStatus Status
     {
         get
         {
@@ -82,7 +85,7 @@ internal sealed class Game : Interfaces.IGame
     }
 
     /// <inheritdoc/>
-    public Enums.GameDifficulty Difficulty
+    public GameDifficulty Difficulty
     {
         get
         {
@@ -92,7 +95,7 @@ internal sealed class Game : Interfaces.IGame
     }
 
     /// <inheritdoc/>
-    public Models.Records.GameConfig Config
+    public GameConfig Config
     {
         get
         {
@@ -130,7 +133,7 @@ internal sealed class Game : Interfaces.IGame
     }
 
     /// <inheritdoc/>
-    public Models.Records.GameResult? Result
+    public GameResult? Result
     {
         get
         {
@@ -159,14 +162,14 @@ internal sealed class Game : Interfaces.IGame
     /// <param name="seed">随机种子</param>
     public Game(
         IServiceScope serviceScope,
-        Interfaces.IGameBoardDictionaryFactory boardFactory,
-        Interfaces.IMineField mineField,
-        Interfaces.IGameTimer timer,
-        Enums.GameDifficulty difficulty,
-        Models.Records.GameConfig config,
+        IGameBoardDictionaryFactory boardFactory,
+        IMineField mineField,
+        IGameTimer timer,
+        GameDifficulty difficulty,
+        GameConfig config,
         int seed)
     {
-        Debug.Assert(difficulty is Enums.GameDifficulty.Custom || Models.Records.GameConfig.FromDifficulty(difficulty) == config, $"{nameof(config)} must match the specified difficulty.");
+        Debug.Assert(difficulty is GameDifficulty.Custom || GameConfig.FromDifficulty(difficulty) == config, $"{nameof(config)} must match the specified difficulty.");
         _serviceScope = serviceScope;
         _boardFactory = boardFactory;
         _mineField = mineField;
@@ -186,17 +189,17 @@ internal sealed class Game : Interfaces.IGame
     /// <param name="saveData">游戏存档数据</param>
     public Game(
         IServiceScope serviceScope,
-        Interfaces.IGameBoardDictionaryFactory boardFactory,
-        Interfaces.IMineField mineField,
-        Interfaces.IGameTimer timer,
-        Models.Records.GameSaveData saveData)
+        IGameBoardDictionaryFactory boardFactory,
+        IMineField mineField,
+        IGameTimer timer,
+        GameSaveData saveData)
     {
         _serviceScope = serviceScope;
         _boardFactory = boardFactory;
         _mineField = mineField;
         Timer = timer;
         Difficulty = saveData.Difficulty;
-        Config = Models.Records.GameConfig.FromGameSaveData(saveData);
+        Config = GameConfig.FromGameSaveData(saveData);
         Seed = saveData.Seed;
 
         // 立刻生成地雷场
@@ -206,7 +209,7 @@ internal sealed class Game : Interfaces.IGame
         Board = _boardFactory.CreateGameBoardDictionary(Config.BoardHeight, Config.BoardWidth, adjacentMineCounts);
 
         // 将游戏状态设置为暂停, 等待玩家取消暂停后继续游戏
-        Status = Enums.GameStatus.Paused;
+        Status = GameStatus.Paused;
 
         // 遍历存档中的格子状态, 并将其应用到游戏棋盘字典中
         foreach (var (position, cellType) in saveData.CellStates)
@@ -231,27 +234,27 @@ internal sealed class Game : Interfaces.IGame
         ObjectDisposedException.ThrowIf(_disposed, this);
         AssertGamePerformable();
         Timer.Pause();
-        Status = Enums.GameStatus.Paused;
+        Status = GameStatus.Paused;
     }
 
     /// <inheritdoc/>
     public void CancelPause()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        Debug.Assert(Status is Enums.GameStatus.Paused, "Game must be paused to cancel pause.");
+        Debug.Assert(Status is GameStatus.Paused, "Game must be paused to cancel pause.");
         if (Board is null)
         {
-            Status = Enums.GameStatus.WaitingStarted;
+            Status = GameStatus.WaitingStarted;
         }
         else
         {
-            Status = Enums.GameStatus.InProgress;
+            Status = GameStatus.InProgress;
             Timer.Start();
         }
     }
 
     /// <inheritdoc/>
-    public void OpenCell(Models.Records.Position position)
+    public void OpenCell(Position position)
     {
         // 如果当前实例已被释放, 则抛出异常
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -269,7 +272,7 @@ internal sealed class Game : Interfaces.IGame
             Board = _boardFactory.CreateGameBoardDictionary(Config.BoardHeight, Config.BoardWidth, adjacentMineCounts);
 
             // 将游戏状态设置为进行中
-            Status = Enums.GameStatus.InProgress;
+            Status = GameStatus.InProgress;
 
             // 启动计时器
             Timer.Start();
@@ -283,7 +286,7 @@ internal sealed class Game : Interfaces.IGame
     }
 
     /// <inheritdoc/>
-    public void FlagCell(Models.Records.Position position)
+    public void FlagCell(Position position)
     {
         // 如果当前实例已被释放, 则抛出异常
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -295,14 +298,14 @@ internal sealed class Game : Interfaces.IGame
         if (Board is null) { return; }
 
         // 将指定位置的格子插旗
-        Board[position].Type = Enums.CellType.Flagged;
+        Board[position].Type = CellType.Flagged;
 
         // 检查所有数字格子的警告状态是否需要更新
         CheckAndUpdateWarningStates();
     }
 
     /// <inheritdoc/>
-    public void QuestionCell(Models.Records.Position position)
+    public void QuestionCell(Position position)
     {
         // 如果当前实例已被释放, 则抛出异常
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -317,10 +320,10 @@ internal sealed class Game : Interfaces.IGame
         var cell = Board[position];
 
         // 记录是否需要更新所有数字格子的警告状态
-        var needUpdateWarningStates = cell.Type is Enums.CellType.Flagged;
+        var needUpdateWarningStates = cell.Type is CellType.Flagged;
 
         // 将当前位置的格子标记为问号
-        cell.Type = Enums.CellType.Question;
+        cell.Type = CellType.Question;
 
         // 如果之前该格子是旗子, 则需要检查所有数字格子的警告状态是否需要更新
         if (needUpdateWarningStates)
@@ -330,7 +333,7 @@ internal sealed class Game : Interfaces.IGame
     }
 
     /// <inheritdoc/>
-    public void UnmarkCell(Models.Records.Position position)
+    public void UnmarkCell(Position position)
     {
         // 如果当前实例已被释放, 则抛出异常
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -345,10 +348,10 @@ internal sealed class Game : Interfaces.IGame
         var cell = Board[position];
 
         // 记录是否需要更新所有数字格子的警告状态
-        var needUpdateWarningStates = cell.Type is Enums.CellType.Flagged;
+        var needUpdateWarningStates = cell.Type is CellType.Flagged;
 
         // 将当前位置的格子取消标记
-        cell.Type = Enums.CellType.Unopened;
+        cell.Type = CellType.Unopened;
 
         // 如果之前该格子是旗子, 则需要检查所有数字格子的警告状态是否需要更新
         if (needUpdateWarningStates)
@@ -358,7 +361,7 @@ internal sealed class Game : Interfaces.IGame
     }
 
     /// <inheritdoc/>
-    public void OpenAdjacentCells(Models.Records.Position position)
+    public void OpenAdjacentCells(Position position)
     {
         // 如果当前实例已被释放, 则抛出异常
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -373,25 +376,27 @@ internal sealed class Game : Interfaces.IGame
         var cell = Board[position];
 
         // 如果指定位置的格子不是数字格子, 则无法打开相邻格子
-        if (cell.Type is not Enums.CellType.Number) { return; }
+        if (cell.Type is not CellType.Number) { return; }
 
         // 获取该位置周围的位置集合
         var adjacentPositions = position.GetAdjacentPositions(Config.BoardHeight, Config.BoardWidth);
 
         // 如果指定位置周围的旗子数量等于该数字格子的数字
-        if (cell.AdjacentMineCount == adjacentPositions.Count(adjacentPosition => Board[adjacentPosition].Type is Enums.CellType.Flagged))
+        if (cell.AdjacentMineCount == adjacentPositions.Count(adjacentPosition => Board[adjacentPosition].Type is CellType.Flagged))
         {
             // 遍历该位置周围的所有相邻位置, 并尝试打开相邻格子
             foreach (var adjacentPosition in adjacentPositions)
             {
                 FloodOpen(adjacentPosition);
-                CheckGameCompletion();
             }
+
+            // 检查游戏是否已完成, 如果已完成则更新游戏状态为胜利
+            CheckGameCompletion();
         }
     }
 
     /// <inheritdoc/>
-    public void FlagAdjacentCells(Models.Records.Position position)
+    public void FlagAdjacentCells(Position position)
     {
         // 如果当前实例已被释放, 则抛出异常
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -406,28 +411,28 @@ internal sealed class Game : Interfaces.IGame
         var cell = Board[position];
 
         // 如果指定位置的格子不是数字格子, 则无法标记相邻格子
-        if (cell.Type is not Enums.CellType.Number) { return; }
+        if (cell.Type is not CellType.Number) { return; }
 
-        // 保存该位置周围的所有未打开的格子位置
-        List<Models.Records.Position> unopenedAdjacentPositions = [];
+        // 保存该位置周围所有未打开的相邻格子位置, 用于后续标记为旗子
+        List<Position> nonRevealedAdjacentPositions = [];
 
         // 遍历该位置周围的所有相邻位置
         foreach (var adjacentPosition in position.GetAdjacentPositions(Config.BoardHeight, Config.BoardWidth))
         {
             // 如果该相邻位置的格子是未打开的格子、问号格子或旗子格子, 则将其加入未打开的相邻格子列表
-            if (Board[adjacentPosition].Type is Enums.CellType.Unopened or Enums.CellType.Question or Enums.CellType.Flagged)
+            if (Board[adjacentPosition].Type is CellType.Unopened or CellType.Question or CellType.Flagged)
             {
-                unopenedAdjacentPositions.Add(adjacentPosition);
+                nonRevealedAdjacentPositions.Add(adjacentPosition);
             }
         }
 
         // 如果指定位置周围的旗子数量等于该数字格子的数字, 则将所有未打开的相邻格子标记为旗子
-        if (cell.AdjacentMineCount == unopenedAdjacentPositions.Count)
+        if (cell.AdjacentMineCount == nonRevealedAdjacentPositions.Count)
         {
             // 遍历所有未打开的相邻格子位置, 并将其标记为旗子
-            foreach (var adjacentPosition in unopenedAdjacentPositions)
+            foreach (var adjacentPosition in nonRevealedAdjacentPositions)
             {
-                Board[adjacentPosition].Type = Enums.CellType.Flagged;
+                Board[adjacentPosition].Type = CellType.Flagged;
             }
 
             // 检查所有数字格子的警告状态是否需要更新
@@ -436,7 +441,7 @@ internal sealed class Game : Interfaces.IGame
     }
 
     /// <inheritdoc/>
-    public Models.Records.GameSaveData? GetSaveData()
+    public GameSaveData? GetSaveData()
     {
         // 如果当前实例已被释放, 则抛出异常
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -445,7 +450,7 @@ internal sealed class Game : Interfaces.IGame
         if (Board is null) { return null; }
 
         // 如果当前游戏已结束, 则不用获取存档数据, 因为游戏已结束, 无法继续进行
-        if (Status is Enums.GameStatus.Won or Enums.GameStatus.Lost) { return null; }
+        if (Status is GameStatus.Won or GameStatus.Lost) { return null; }
 
         // 此时计时器的 FirstStartTime 属性不应为 null, 因为游戏已经开始过
         Debug.Assert(Timer.FirstStartTime is not null, $"{nameof(Timer.FirstStartTime)} should not be null when getting save data for an ongoing game.");
@@ -459,9 +464,9 @@ internal sealed class Game : Interfaces.IGame
         var cellStates = Board.GetCellStates();
 
         // 返回游戏存档数据
-        return Difficulty is Enums.GameDifficulty.Custom
-            ? Models.Records.GameSaveData.CreateCustom(Seed, startTime, Timer.Elapsed, mineField, cellStates, Config.BoardHeight, Config.BoardWidth, Config.MineCount)
-            : Models.Records.GameSaveData.Create(Seed, Difficulty, startTime, Timer.Elapsed, mineField, cellStates);
+        return Difficulty is GameDifficulty.Custom
+            ? GameSaveData.CreateCustom(Seed, startTime, Timer.Elapsed, mineField, cellStates, Config.BoardHeight, Config.BoardWidth, Config.MineCount)
+            : GameSaveData.Create(Seed, Difficulty, startTime, Timer.Elapsed, mineField, cellStates);
     }
 
     /// <inheritdoc/>
@@ -483,7 +488,7 @@ internal sealed class Game : Interfaces.IGame
     private void AssertGamePerformable()
     {
         const string errorMessage = "Game must be in progress or waiting to start to perform this operation.";
-        Debug.Assert(Status is Enums.GameStatus.WaitingStarted or Enums.GameStatus.InProgress, errorMessage);
+        Debug.Assert(Status is GameStatus.WaitingStarted or GameStatus.InProgress, errorMessage);
     }
 
     /// <summary>
@@ -503,7 +508,7 @@ internal sealed class Game : Interfaces.IGame
         var openedCount = Board.OpenedCount;
 
         // 获取要打开的格子总数
-        var totalCellsToOpen = Config.GetTotalCellsToOpen();
+        var totalCellsToOpen = Config.TotalCellsToOpen;
 
         // 计算完成度百分比
         Completion = Constants.MaxCompletion * openedCount / totalCellsToOpen;
@@ -516,33 +521,33 @@ internal sealed class Game : Interfaces.IGame
     /// 泛洪打开指定位置的格子, 如果该位置周围没有地雷, 则递归打开所有相邻的格子
     /// </summary>
     /// <param name="position">要打开的格子位置</param>
-    private void FloodOpen(Models.Records.Position position)
+    private void FloodOpen(Position position)
     {
         // 调用该方法时, 游戏棋盘字典不应为 null, 因为该方法只在游戏进行中调用
         Debug.Assert(Board is not null, $"{nameof(Board)} should not be null when calling FloodOpen.");
 
         // 如果游戏已经结束, 则不需要继续处理
-        if (Status is Enums.GameStatus.Won or Enums.GameStatus.Lost) { return; }
+        if (Status is GameStatus.Won or GameStatus.Lost) { return; }
 
         // 获取当前位置的格子
         var cell = Board[position];
 
         // 如果该位置不是未打开的格子, 则不需要继续处理
-        if (cell.Type is not Enums.CellType.Unopened) { return; }
+        if (cell.Type is not CellType.Unopened) { return; }
 
         // 判断打开的格子是否是地雷
         if (_mineField.IsMine(position))
         {
             // 如果是地雷, 则游戏失败
             Timer.Pause();
-            cell.Type = Enums.CellType.Mine;
-            Status = Enums.GameStatus.Lost;
+            cell.Type = CellType.Mine;
+            Status = GameStatus.Lost;
             UpdateGameResult();
             return;
         }
 
         // 更新当前位置的格子类型
-        cell.Type = cell.AdjacentMineCount == 0 ? Enums.CellType.Empty : Enums.CellType.Number;
+        cell.Type = cell.AdjacentMineCount == 0 ? CellType.Empty : CellType.Number;
 
         // 如果该位置周围有地雷, 则不需要继续递归打开相邻格子
         if (cell.AdjacentMineCount > 0) { return; }
@@ -560,14 +565,14 @@ internal sealed class Game : Interfaces.IGame
     private void CheckGameCompletion()
     {
         // 如果游戏已失败, 则不需要检查游戏是否已完成
-        if (Status is Enums.GameStatus.Lost) { return; }
+        if (Status is GameStatus.Lost) { return; }
 
         // 更新游戏完成度
         if (UpdateCompletion())
         {
             // 如果游戏已完成, 则游戏胜利
             Timer.Pause();
-            Status = Enums.GameStatus.Won;
+            Status = GameStatus.Won;
             UpdateGameResult();
         }
         else
@@ -584,17 +589,17 @@ internal sealed class Game : Interfaces.IGame
     {
         Debug.Assert(Timer.FirstStartTime is not null, $"{nameof(Timer.FirstStartTime)} should not be null when updating game result.");
 
-        if (Status is Enums.GameStatus.Won)
+        if (Status is GameStatus.Won)
         {
-            Result = Difficulty is Enums.GameDifficulty.Custom
-                ? Models.Records.GameResult.CreateCustomWin(Seed, Timer.FirstStartTime.Value, Timer.Elapsed, Config.BoardHeight, Config.BoardWidth, Config.MineCount)
-                : Models.Records.GameResult.CreateWin(Seed, Difficulty, Timer.FirstStartTime.Value, Timer.Elapsed);
+            Result = Difficulty is GameDifficulty.Custom
+                ? GameResult.CreateCustomWin(Seed, Timer.FirstStartTime.Value, Timer.Elapsed, Config.BoardHeight, Config.BoardWidth, Config.MineCount)
+                : GameResult.CreateWin(Seed, Difficulty, Timer.FirstStartTime.Value, Timer.Elapsed);
         }
-        else if (Status is Enums.GameStatus.Lost)
+        else if (Status is GameStatus.Lost)
         {
-            Result = Difficulty is Enums.GameDifficulty.Custom
-                ? Models.Records.GameResult.CreateCustomLoss(Seed, Timer.FirstStartTime.Value, Timer.Elapsed, Completion, Config.BoardHeight, Config.BoardWidth, Config.MineCount)
-                : Models.Records.GameResult.CreateLoss(Seed, Difficulty, Timer.FirstStartTime.Value, Timer.Elapsed, Completion);
+            Result = Difficulty is GameDifficulty.Custom
+                ? GameResult.CreateCustomLoss(Seed, Timer.FirstStartTime.Value, Timer.Elapsed, Completion, Config.BoardHeight, Config.BoardWidth, Config.MineCount)
+                : GameResult.CreateLoss(Seed, Difficulty, Timer.FirstStartTime.Value, Timer.Elapsed, Completion);
         }
     }
 
@@ -610,14 +615,14 @@ internal sealed class Game : Interfaces.IGame
         foreach (var (position, cell) in Board)
         {
             // 如果该格子是数字格子
-            if (cell.Type is Enums.CellType.Number or Enums.CellType.WarningNumber)
+            if (cell.Type is CellType.Number or CellType.WarningNumber)
             {
                 // 计算该格子周围标记为旗子的格子数量
                 var adjacentFlaggedCount = position.GetAdjacentPositions(Config.BoardHeight, Config.BoardWidth)
-                    .Count(adjacentPosition => Board[adjacentPosition].Type is Enums.CellType.Flagged);
+                    .Count(adjacentPosition => Board[adjacentPosition].Type is CellType.Flagged);
 
                 // 如果周围标记为旗子的格子数量大于实际地雷数量, 则将该格子类型设置为警告数字格子, 否则设置为普通数字格子
-                cell.Type = adjacentFlaggedCount > cell.AdjacentMineCount ? Enums.CellType.WarningNumber : Enums.CellType.Number;
+                cell.Type = adjacentFlaggedCount > cell.AdjacentMineCount ? CellType.WarningNumber : CellType.Number;
             }
         }
     }

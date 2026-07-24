@@ -11,6 +11,10 @@
 
 ### Added
 
+- **可解性检查器**: `ISolvabilityChecker` 接口和 `SolvabilityChecker` 实现, 仅限 Core 层内部使用, 用于检查地雷布局是否可解
+- **地雷生成器完善**: `MineGenerator` 从桩实现完善为完整实现 — 通过 `ShuffleEngine<T>` 洗牌引擎随机生成地雷位置, 确保首次点击位置及其相邻位置不为地雷, 并调用可解性检查器保证布局可解 (最多重试 1000 次)
+- **Position.FromIndex()**: 新增静态方法, 支持从一维索引转换为二维位置 (按行优先)
+- **DI 注册**: `ISolvabilityChecker` → `SolvabilityChecker` 注册为瞬态服务
 - **相邻格子操作**: `IGame.OpenAdjacentCells(Position)` (双击数字格自动翻开周围) 和 `IGame.FlagAdjacentCells(Position)` (右键数字格自动标旗周围) 方法
 - **游戏结果属性**: `IGame.Result` 属性 (nullable), 游戏结束后可获取 `GameResult` 结果
 - **游戏管理方法**: `IGameManager.RestartCurrentGame()` 和 `IGameManager.ExitWithoutSaving()` 方法
@@ -41,6 +45,11 @@
 
 ### Changed
 
+- **代码现代化**: Core 层所有文件使用 `using` 导入替代完全限定类型名 (如 `IGame` 替代 `Interfaces.IGame`, `GameConfig` 替代 `Models.Records.GameConfig`, `GameDifficulty` 替代 `Enums.GameDifficulty` 等)
+- **IMineGenerator 返回类型**: `GenerateMines()` 返回类型从 `IReadOnlyCollection<Position>` 改为 `IEnumerable<Position>`
+- **GameConfig 属性化**: `GetTotalCellsToOpen()` 方法改为 `TotalCellsToOpen` 只读属性
+- **GameManager 重命名**: `OnGameChanged` 方法重命名为 `OnGamePropertyChanged`, 更准确地描述其功能
+- **.editorconfig 增强**: 新增 `trim_trailing_whitespace = true`, 为 `*.{csproj,json,slnx}` 文件配置 `indent_size = 2` 和 `end_of_line = crlf`
 - `Game.FloodOpen` 重构: 添加游戏结束防护, 使用 `cell.AdjacentMineCount` 替代 `_mineField.GetAdjacentMineCount`; 地雷命中逻辑从 `OpenCell` 移至此处
 - `Game.IsGameCompleted()` 重构为 `CheckGameCompletion()` + `UpdateCompletion()` (返回 bool), 完成判定使用 `Constants.MaxCompletion` 倍率
 - `Game` 重复状态断言提取为 `AssertGamePerformable()` 方法, `CancelPause` 断言收紧为仅允许 `Paused` 状态
@@ -58,6 +67,7 @@
 
 ### Fixed
 
+- `Game.OpenAdjacentCells()`: `CheckGameCompletion()` 从循环内移至循环外 — 修复每次打开相邻格子都重复检查游戏完成状态的问题, 现在只在所有相邻格子打开后检查一次
 - `GameBoardDictionary.OpenedCount` 不再将 `Mine` 类型格子计入已打开数量
 
 ### Removed

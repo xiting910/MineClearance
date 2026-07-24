@@ -1,3 +1,5 @@
+using MineClearance.Core.Interfaces;
+using MineClearance.Core.Models.Records;
 using System;
 using System.Collections;
 
@@ -7,7 +9,7 @@ namespace MineClearance.Core.Services;
 /// 地雷场实现类, 负责地雷的放置、查询和相邻雷数计算
 /// </summary>
 /// <param name="mineGenerator">地雷生成器</param>
-internal sealed class MineField(Interfaces.IMineGenerator mineGenerator) : Interfaces.IMineField
+internal sealed class MineField(IMineGenerator mineGenerator) : IMineField
 {
     /// <summary>
     /// 地雷场尚未生成的异常信息
@@ -32,10 +34,10 @@ internal sealed class MineField(Interfaces.IMineGenerator mineGenerator) : Inter
     /// <summary>
     /// 地雷生成器字段
     /// </summary>
-    private readonly Interfaces.IMineGenerator _mineGenerator = mineGenerator;
+    private readonly IMineGenerator _mineGenerator = mineGenerator;
 
     /// <inheritdoc/>
-    public int[] Generate(Models.Records.GameConfig config, Models.Records.Position firstClick, int seed)
+    public int[] Generate(GameConfig config, Position firstClick, int seed)
     {
         // 更新行数和列数
         _rows = config.BoardHeight;
@@ -67,7 +69,7 @@ internal sealed class MineField(Interfaces.IMineGenerator mineGenerator) : Inter
     }
 
     /// <inheritdoc/>
-    public int[] Generate(Models.Records.GameConfig config, BitArray mineMap)
+    public int[] Generate(GameConfig config, BitArray mineMap)
     {
         // 更新行数和列数
         _rows = config.BoardHeight;
@@ -75,7 +77,7 @@ internal sealed class MineField(Interfaces.IMineGenerator mineGenerator) : Inter
         _adjacentMineCounts = new int[_rows * _columns];
 
         // 遍历所有位置, 根据位图表示设置地雷和相邻地雷计数
-        foreach (var position in Models.Records.Position.GetAllPositions(_rows, _columns))
+        foreach (var position in Position.GetAllPositions(_rows, _columns))
         {
             // 获取该位置的一维索引
             var index = position.ToIndex(_columns);
@@ -128,7 +130,7 @@ internal sealed class MineField(Interfaces.IMineGenerator mineGenerator) : Inter
     }
 
     /// <inheritdoc/>
-    public bool IsMine(Models.Records.Position position)
+    public bool IsMine(Position position)
     {
         // 如果地雷场尚未生成, 则抛出异常
         if (_adjacentMineCounts is null)
@@ -141,7 +143,7 @@ internal sealed class MineField(Interfaces.IMineGenerator mineGenerator) : Inter
     }
 
     /// <inheritdoc/>
-    public int GetAdjacentMineCount(Models.Records.Position position)
+    public int GetAdjacentMineCount(Position position)
     {
         // 如果地雷场尚未生成, 则抛出异常
         if (_adjacentMineCounts is null)

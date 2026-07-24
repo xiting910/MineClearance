@@ -41,7 +41,8 @@ MineClearance/
 │   │   │   ├── IGameManager.cs                     #     游戏管理器接口
 │   │   │   ├── IGameTimer.cs                       #     游戏计时器接口 (INotifyPropertyChanged)
 │   │   │   ├── IMineField.cs                       #     地雷场接口 (internal)
-│   │   │   └── IMineGenerator.cs                   #     地雷生成器接口 (internal)
+│   │   │   ├── IMineGenerator.cs                   #     地雷生成器接口 (internal)
+│   │   │   └── ISolvabilityChecker.cs              #     可解性检查器接口 (internal)
 │   │   ├── Models/                                 #   领域模型
 │   │   │   ├── Cell.cs                             #     游戏格子 (INotifyPropertyChanged)
 │   │   │   ├── GameChangedEventArgs.cs             #     游戏变更事件参数
@@ -58,7 +59,8 @@ MineClearance/
 │   │   │   ├── GameManager.cs                      #     游戏管理器实现
 │   │   │   ├── GameTimer.cs                        #     游戏计时器实现
 │   │   │   ├── MineField.cs                        #     地雷场实现
-│   │   │   └── MineGenerator.cs                    #     地雷生成器实现
+│   │   │   ├── MineGenerator.cs                    #     地雷生成器实现 (含可解性检查)
+│   │   │   └── SolvabilityChecker.cs               #     可解性检查器实现
 │   │   └── IServiceCollectionExtensions.cs         # DI 注册扩展
 │   ├── MineClearance.Infrastructure/               # 基础设施层 — 数据访问、外部服务实现
 │   └── MineClearance.UI/                           # 表示层 — Avalonia 桌面应用

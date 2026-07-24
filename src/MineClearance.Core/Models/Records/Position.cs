@@ -85,6 +85,17 @@ public readonly record struct Position(int Row, int Col)
     }
 
     /// <summary>
+    /// 从一维索引转换为二维位置, 按行优先顺序排列
+    /// </summary>
+    /// <param name="index">一维索引</param>
+    /// <param name="colCount">列数</param>
+    /// <returns>二维位置</returns>
+    public static Position FromIndex(int index, int colCount)
+    {
+        return new(index / colCount, index % colCount);
+    }
+
+    /// <summary>
     /// 重写 <see cref="operator +"/> 运算符
     /// </summary>
     /// <param name="left">左操作数</param>

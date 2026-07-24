@@ -1,3 +1,6 @@
+using MineClearance.Core.Enums;
+using MineClearance.Core.Models.Records;
+
 namespace MineClearance.Core.Interfaces;
 
 /// <summary>
@@ -10,7 +13,7 @@ internal interface IGameFactory
     /// </summary>
     /// <param name="difficulty">游戏难度</param>
     /// <returns>游戏实例</returns>
-    IGame CreateGame(Enums.GameDifficulty difficulty);
+    IGame CreateGame(GameDifficulty difficulty);
 
     /// <summary>
     /// 创建自定义难度的游戏实例
@@ -18,12 +21,12 @@ internal interface IGameFactory
     /// <param name="config">自定义游戏配置</param>
     /// <param name="seed">随机种子, 可选参数, 用于生成固定的地雷布局</param>
     /// <returns>游戏实例</returns>
-    IGame CreateGame(Models.Records.GameConfig config, int? seed = null);
+    IGame CreateGame(GameConfig config, int? seed = null);
 
     /// <summary>
     /// 从游戏存档数据创建游戏实例
     /// </summary>
     /// <param name="saveData">游戏存档数据</param>
     /// <returns>游戏实例</returns>
-    IGame CreateGame(Models.Records.GameSaveData saveData);
+    IGame CreateGame(GameSaveData saveData);
 }

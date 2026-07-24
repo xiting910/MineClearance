@@ -1,3 +1,4 @@
+using MineClearance.Core.Enums;
 using System;
 
 namespace MineClearance.Core.Models.Records;
@@ -16,13 +17,13 @@ namespace MineClearance.Core.Models.Records;
 /// 完成度, 只在 <paramref name="IsWin"/> 为 <see langword="false"/> 时有效, 范围为 0.0 到 1.0
 /// </param>
 /// <param name="BoardHeight">
-/// 棋盘高度, 只在 <paramref name="Difficulty"/> 为 <see cref="Enums.GameDifficulty.Custom"/> 时有效
+/// 棋盘高度, 只在 <paramref name="Difficulty"/> 为 <see cref="GameDifficulty.Custom"/> 时有效
 /// </param>
 /// <param name="BoardWidth">
-/// 棋盘宽度, 只在 <paramref name="Difficulty"/> 为 <see cref="Enums.GameDifficulty.Custom"/> 时有效
+/// 棋盘宽度, 只在 <paramref name="Difficulty"/> 为 <see cref="GameDifficulty.Custom"/> 时有效
 /// </param>
 /// <param name="MineCount">
-/// 地雷数量, 只在 <paramref name="Difficulty"/> 为 <see cref="Enums.GameDifficulty.Custom"/> 时有效
+/// 地雷数量, 只在 <paramref name="Difficulty"/> 为 <see cref="GameDifficulty.Custom"/> 时有效
 /// </param>
 /// <remarks>
 /// 主构造函数并没有对参数进行验证, 为了避免无效的对象影响业务逻辑,
@@ -30,7 +31,7 @@ namespace MineClearance.Core.Models.Records;
 /// </remarks>
 public sealed record GameResult(
     int Seed,
-    Enums.GameDifficulty Difficulty,
+    GameDifficulty Difficulty,
     DateTime StartTime,
     TimeSpan Duration,
     bool IsWin,
@@ -48,11 +49,11 @@ public sealed record GameResult(
     /// <param name="duration">游戏持续时间</param>
     /// <returns>获胜游戏结果</returns>
     /// <exception cref="ArgumentException">
-    /// 当 <paramref name="difficulty"/> 为 <see cref="Enums.GameDifficulty.Custom"/> 时抛出
+    /// 当 <paramref name="difficulty"/> 为 <see cref="GameDifficulty.Custom"/> 时抛出
     /// </exception>
-    public static GameResult CreateWin(int seed, Enums.GameDifficulty difficulty, DateTime startTime, TimeSpan duration)
+    public static GameResult CreateWin(int seed, GameDifficulty difficulty, DateTime startTime, TimeSpan duration)
     {
-        return difficulty is Enums.GameDifficulty.Custom
+        return difficulty is GameDifficulty.Custom
             ? throw new ArgumentException(Constants.CustomDifficultyMissingInfoMessage, nameof(difficulty))
             : new(seed, difficulty, startTime, duration, true, null, null, null, null);
     }
@@ -67,14 +68,14 @@ public sealed record GameResult(
     /// <param name="completion">完成度, 范围为 0.0 到 1.0</param>
     /// <returns>失败游戏结果</returns>
     /// <exception cref="ArgumentException">
-    /// 当 <paramref name="difficulty"/> 为 <see cref="Enums.GameDifficulty.Custom"/> 时抛出
+    /// 当 <paramref name="difficulty"/> 为 <see cref="GameDifficulty.Custom"/> 时抛出
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     /// 当 <paramref name="completion"/> 为负数或大于 <see cref="Constants.MaxCompletion"/> 时抛出
     /// </exception>
-    public static GameResult CreateLoss(int seed, Enums.GameDifficulty difficulty, DateTime startTime, TimeSpan duration, double completion)
+    public static GameResult CreateLoss(int seed, GameDifficulty difficulty, DateTime startTime, TimeSpan duration, double completion)
     {
-        if (difficulty is Enums.GameDifficulty.Custom)
+        if (difficulty is GameDifficulty.Custom)
         {
             throw new ArgumentException(Constants.CustomDifficultyMissingInfoMessage, nameof(difficulty));
         }
@@ -108,7 +109,7 @@ public sealed record GameResult(
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(mineCount, nameof(mineCount));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(mineCount, boardHeight * boardWidth, nameof(mineCount));
 
-        return new(seed, Enums.GameDifficulty.Custom, startTime, duration, true, null, boardHeight, boardWidth, mineCount);
+        return new(seed, GameDifficulty.Custom, startTime, duration, true, null, boardHeight, boardWidth, mineCount);
     }
 
     /// <summary>
@@ -138,7 +139,7 @@ public sealed record GameResult(
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(mineCount, nameof(mineCount));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(mineCount, boardHeight * boardWidth, nameof(mineCount));
 
-        return new(seed, Enums.GameDifficulty.Custom, startTime, duration, false, completion, boardHeight, boardWidth, mineCount);
+        return new(seed, GameDifficulty.Custom, startTime, duration, false, completion, boardHeight, boardWidth, mineCount);
     }
 
     /// <summary>
@@ -148,7 +149,7 @@ public sealed record GameResult(
     public bool IsValid()
     {
         // 判断难度是否为自定义难度
-        if (Difficulty is Enums.GameDifficulty.Custom)
+        if (Difficulty is GameDifficulty.Custom)
         {
             // 自定义难度下, 棋盘高度、宽度和地雷数量必须都不为 null
             if (BoardHeight is null || BoardWidth is null || MineCount is null)
@@ -209,7 +210,7 @@ public sealed record GameResult(
         var result = IsWin ? "胜利" : $"失败, 完成度: {Completion * 100:0.##}%";
 
         // 自定义难度信息
-        var custom = Difficulty is Enums.GameDifficulty.Custom ? $", 大小: {BoardHeight}x{BoardWidth}, 地雷数: {MineCount}" : "";
+        var custom = Difficulty is GameDifficulty.Custom ? $", 大小: {BoardHeight}x{BoardWidth}, 地雷数: {MineCount}" : "";
 
         // 拼接所有信息并返回
         return $"[{StartTime}] 难度: {Difficulty}, 种子: {Seed}, 用时: {Duration}, 结果: {result}{custom}";
