@@ -35,7 +35,7 @@ MineClearance/
 ├── MineClearance.slnx                              #   解决方案文件 (.NET XML 格式)
 ├── README.md                                       #   本文档
 ├── ReBuild.bat                                     #   Windows 清理构建脚本
-├── src/
+├── srcs/
 │   ├── MineClearance.Core/                         # 核心层 — 领域模型、接口、枚举、领域服务
 │   │   ├── Constants.cs                            #   游戏常量
 │   │   ├── Enums/                                  #   枚举定义
@@ -95,7 +95,7 @@ MineClearance/
 ```bash
 git clone https://github.com/xiting910/MineClearance.git
 cd MineClearance
-dotnet run --project src/MineClearance.UI
+dotnet run --project srcs/MineClearance.UI
 ```
 
 ### 构建
@@ -118,13 +118,13 @@ dotnet test
 
 ```bash
 # 发布为单文件自包含应用（Windows）
-dotnet publish src/MineClearance.UI -c Release -r win-x64
+dotnet publish srcs/MineClearance.UI -c Release -r win-x64
 
 # Linux
-dotnet publish src/MineClearance.UI -c Release -r linux-x64
+dotnet publish srcs/MineClearance.UI -c Release -r linux-x64
 
 # macOS
-dotnet publish src/MineClearance.UI -c Release -r osx-x64
+dotnet publish srcs/MineClearance.UI -c Release -r osx-x64
 ```
 
 ---

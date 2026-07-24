@@ -32,7 +32,7 @@
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
-  <!-- 仅测试项目: 引用 xUnit -->
+  <!-- 仅测试项目: 引用 Xunit -->
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <Using Include="Xunit" />
   </ItemGroup>

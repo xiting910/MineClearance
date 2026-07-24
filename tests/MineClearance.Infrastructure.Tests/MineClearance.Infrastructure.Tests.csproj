@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\MineClearance.Infrastructure\MineClearance.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\srcs\MineClearance.Infrastructure\MineClearance.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

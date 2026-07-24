@@ -47,6 +47,7 @@
 - **NuGet CPM 迁移**: 所有 csproj 移除重复的 PropertyGroup 和 PackageReference `Version` 属性 — 测试项目精简为仅保留 `ProjectReference`; 包版本号全部集中到 `Directory.Packages.props`
 - **`.slnx` 更新**: 新增 `.gitattributes`、`CHANGELOG.md`、`Directory.Build.props`、`Directory.Packages.props`、`README.md` 到解决方案文件, 方便在 IDE 中直接编辑
 - **CI 工作流更新**: `ci` / `codeql-analysis` / `dependency-submission` / `release-publish` 四个工作流的 `cache-dependency-path` 新增 `**/*.props`, 确保 props 文件变更时正确失效 NuGet 缓存
+- **源代码目录重命名**: `src/` → `srcs/` — 避免与 MSBuild 的 `src` 保留文件夹名冲突, 同步更新解决方案文件 (`.slnx`)、测试项目引用 (`ProjectReference`) 和 README 文档中的路径
 - **`.editorconfig` 重构**: 全局默认设置提前到根级别, 新增 `*.axaml` (Avalonia UI 标记) 和 `*.bat` (Windows 批处理) 文件规则, 将各文件类型分离为独立配置节, 移除重复设置
 - **`.gitignore` 重构**: 按类别组织忽略规则 (构建产物 / IDE & 编辑器 / .NET / 操作系统), 新增 `**/.idea/`、`*.swp`/`*.swo`/`*~`、`*.nupkg`、`TestResults/`、`.DS_Store`、`Thumbs.db` 等, 移除 `*.bat` 忽略规则
 - **代码现代化**: Core 层所有文件使用 `using` 导入替代完全限定类型名; XML 文档增强; `using` 指令排序; `Position` 使用简化语法 (`new(...)`)
