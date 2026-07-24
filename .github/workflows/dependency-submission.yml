@@ -30,11 +30,6 @@ jobs:
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
-          cache: true
-          cache-dependency-path: |
-            **/*.csproj
-            **/*.props
-            **/*.slnx
 
       # 3. 扫描 NuGet 依赖并提交快照到 GitHub 依赖图
       - name: Submit dependency snapshot

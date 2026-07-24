@@ -67,6 +67,7 @@
 
 - `Game.OpenAdjacentCells()`: `CheckGameCompletion()` 从循环内移至循环外 — 修复每次打开相邻格子都重复检查游戏完成状态的问题, 现仅在全部打开后检查一次
 - `GameBoardDictionary.OpenedCount` 不再将 `Mine` 类型格子计入已打开数量
+- **`dependency-submission` 工作流**: 移除 `actions/setup-dotnet` 的 `cache: true` — 修复 post-job cleanup 阶段因 `/home/runner/.nuget/packages/` 目录不存在导致的间歇性失败; 该工作流仅扫描依赖文件无需缓存 NuGet 包
 
 ### Removed
 
