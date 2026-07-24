@@ -49,6 +49,7 @@ jobs:
           cache: true
           cache-dependency-path: |
             **/*.csproj
+            **/*.props
             **/*.slnx
 
       # 4. 运行全部单元测试

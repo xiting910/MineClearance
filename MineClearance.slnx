@@ -1,7 +1,12 @@
 <Solution>
   <Folder Name="/other/">
     <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
     <File Path=".gitignore" />
+    <File Path="CHANGELOG.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/MineClearance.Core/MineClearance.Core.csproj" Id="9fc2dfa9-73e0-495a-9329-c8ea0465591f" />

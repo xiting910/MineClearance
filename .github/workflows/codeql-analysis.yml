@@ -47,6 +47,7 @@ jobs:
           cache: true
           cache-dependency-path: |
             **/*.csproj
+            **/*.props
             **/*.slnx
 
       # CodeQL 自动检测构建系统并编译

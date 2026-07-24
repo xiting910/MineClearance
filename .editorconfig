@@ -6,8 +6,15 @@ root = true
 # 使用空格缩进
 indent_style = space
 
+# 缩进大小为 4 个空格
+tab_width = 4
+indent_size = 4
+
 # 使用 UTF-8 编码
 charset = utf-8
+
+# 以 LF 作为换行符
+end_of_line = lf
 
 # 在文件末尾插入一个换行符
 insert_final_newline = true
@@ -15,14 +22,29 @@ insert_final_newline = true
 # 去除行尾空格
 trim_trailing_whitespace = true
 
-# 对于 C# 项目文件、JSON 文件和解决方案文件
-[*.{csproj,json,slnx}]
+# Avalonia UI 标记文件
+[*.axaml]
 
 # 缩进大小为 2 个空格
 indent_size = 2
 
-# 以 CRLF 作为换行符
+# Windows 批处理文件
+[*.bat]
+
+# 使用 CRLF 作为换行符
 end_of_line = crlf
+
+# C# 项目文件
+[*.{csproj,props,slnx}]
+
+# 缩进大小为 2 个空格
+indent_size = 2
+
+# Json 文件
+[*.json]
+
+# 缩进大小为 2 个空格
+indent_size = 2
 
 # GitHub Actions workflows
 [*.{yml,yaml}]
@@ -30,21 +52,8 @@ end_of_line = crlf
 # 缩进大小为 2 个空格
 indent_size = 2
 
-# 以 LF 作为换行符
-end_of_line = lf
-
 # C# 和 VB.NET 文件
 [*.{cs,vb}]
-
-# 缩进大小为 4 个空格
-tab_width = 4
-indent_size = 4
-
-# 以 CRLF 作为换行符
-end_of_line = crlf
-
-# 在文件末尾插入一个换行符
-insert_final_newline = true
 
 dotnet_style_qualification_for_field = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion

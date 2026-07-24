@@ -1,0 +1,40 @@
+<Project>
+
+  <!-- 所有项目共用的属性 -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <!-- 根据项目名判断是否为测试项目 -->
+  <PropertyGroup>
+    <IsTestProject Condition="$(MSBuildProjectName.Contains('.Tests'))">true</IsTestProject>
+  </PropertyGroup>
+
+  <!-- 非测试项目生成 XML 文档 -->
+  <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- 仅测试项目: 启用隐式 using + 不可打包 -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- 仅测试项目: 引用测试相关的 NuGet 包 -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <!-- 仅测试项目: 引用 xUnit -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

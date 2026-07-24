@@ -25,6 +25,16 @@
 
 ```
 MineClearance/
+├── .editorconfig                                   #   代码风格统一配置
+├── .gitattributes                                  #   Git 行尾归一化 (默认 LF), diff 策略与二进制标记
+├── .gitignore                                      #   忽略规则 (构建产物 / IDE / .NET / OS)
+├── Directory.Build.props                           #   全局构建属性 (TargetFramework / Nullable / CPM)
+├── Directory.Packages.props                        #   集中包版本管理 (NuGet CPM)
+├── CHANGELOG.md                                    #   变更日志
+├── LICENSE                                         #   MIT 许可证
+├── MineClearance.slnx                              #   解决方案文件 (.NET XML 格式)
+├── README.md                                       #   本文档
+├── ReBuild.bat                                     #   Windows 清理构建脚本
 ├── src/
 │   ├── MineClearance.Core/                         # 核心层 — 领域模型、接口、枚举、领域服务
 │   │   ├── Constants.cs                            #   游戏常量
