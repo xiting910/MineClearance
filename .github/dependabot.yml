@@ -1,0 +1,73 @@
+# =============================================================================
+# Dependabot 自动依赖更新配置, 每周自动检查 NuGet 包和 GitHub Actions 是否有新版本
+# =============================================================================
+version: 2
+updates:
+  # ── NuGet 依赖更新 ───────────────────────────────────────────────────────
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 5
+    rebase-strategy: auto
+    labels:
+      - "dependencies"
+      - "nuget"
+    groups:
+      # Avalonia 系列包合并更新
+      avalonia:
+        patterns:
+          - "Avalonia*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Microsoft.Extensions.* 系列包合并更新
+      microsoft-extensions:
+        patterns:
+          - "Microsoft.Extensions.*"
+        update-types:
+          - "minor"
+          - "patch"
+      # xUnit 系列包合并更新
+      xunit:
+        patterns:
+          - "xunit*"
+        update-types:
+          - "minor"
+          - "patch"
+      # 覆盖率工具、Mock 框架合并更新
+      test-sdk:
+        patterns:
+          - "coverlet.collector"
+          - "Moq"
+        update-types:
+          - "minor"
+          - "patch"
+      # 其余包合并为一组
+      nuget-catchall:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # ── GitHub Actions 工作流依赖更新 ─────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 5
+    rebase-strategy: auto
+    labels:
+      - "dependencies"
+      - "github-actions"
+    groups:
+      all-actions:
+        patterns:
+          - "*"

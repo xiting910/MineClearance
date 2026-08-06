@@ -1,0 +1,63 @@
+# =============================================================================
+# CodeQL 代码安全分析工作流: 分析 C# 代码, 触发时机为 push、PR 和每周定时
+# =============================================================================
+name: CodeQL Analysis
+
+# 触发时机：push 到 main、PR 到 main、每周一 0:00 UTC (即北京时间周一 8:00)
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 0 * * 1"
+
+# 需要 security-events:write 才能把扫描结果写入 GitHub Security 面板
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+# 定义分析任务
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["csharp"]
+
+    steps:
+      # 1. 检出代码库内容
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # 2. 初始化 CodeQL 引擎, 指定分析 C# 语言, 并排除测试项目的扫描
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          config: |
+            paths-ignore:
+              - "**/tests/**"
+
+      # 3. 安装 .NET 10 SDK, CodeQL autobuild 需要它
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: |
+            **/*.csproj
+            **/*.props
+            **/*.slnx
+
+      # 4. CodeQL 自动检测构建系统并编译
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v4
+
+      # 5. 执行分析并将结果上传到 GitHub Security 面板
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{matrix.language}}"
