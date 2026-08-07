@@ -16,6 +16,8 @@
 - 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
 - 🎮 **经典扫雷玩法** — 左键翻开、右键标旗/问号、双击数字格自动翻开周围、右键数字格自动标旗周围、警告数字检测
 - 🧩 **MVVM 模式** — 基于 CommunityToolkit.Mvvm 源代码生成器
+- 🎨 **主题切换** — 跟随系统 / 浅色 / 深色, 即时生效并自动保存
+- ⚙️ **设置中心** — 主题 / Toast 时长 / 日志级别即时配置, 关于信息
 - 📝 **结构化日志** — ILogger + LoggerMessage 源代码生成器，记录游戏关键事件
 - 🧪 **完善的测试** — xUnit + Moq 单元测试，coverlet 代码覆盖率
 - 🔁 **CI/CD 自动化** — GitHub Actions 自动构建、测试、CodeQL 安全分析、Release 发布
@@ -90,11 +92,32 @@ MineClearance/
 │   │       ├── GameDataRepository.Converter.cs     #     游戏数据仓储 Json 转换器
 │   │       └── GameDataRepository.Logging.cs       #     游戏数据仓储日志 (LoggerMessage)
 │   └── MineClearance.UI/                           # 表示层 — Avalonia 桌面应用
-│       ├── App.axaml                               #   应用定义 (主题/DataTemplate)
-│       ├── App.axaml.cs                            #   应用类 (服务容器)
+│       ├── App.axaml                               #   应用定义 (主题/DataTemplate/颜色资源)
+│       ├── App.axaml.cs                            #   应用类 (服务容器/主题应用/主窗口)
 │       ├── Constants.cs                            #   UI 常量
+│       ├── EnumDescriptionConverter.cs             #   枚举描述转换器 ([Description] → 文本)
+│       ├── Models/                                 #   UI 模型
+│       │   ├── NavigationTarget.cs                 #     导航目标枚举
+│       │   ├── ThemeMode.cs                        #     主题模式枚举 (跟随系统/浅色/深色)
+│       │   └── UIOptions.cs                        #     UI 配置 (setter 变化自动保存)
 │       ├── Program.cs                              #   应用入口 (DI + Avalonia 启动)
-│       └── ViewLocator.cs                          #   ViewModel → View 定位器
+│       ├── ViewLocator.cs                          #   ViewModel → View 定位器
+│       ├── ViewModels/                             #   视图模型
+│       │   ├── GameViewModel.cs                    #     游戏视图模型
+│       │   ├── HistoryViewModel.cs                 #     历史记录视图模型
+│       │   ├── MainViewModel.cs                    #     主视图模型 (难度选择/参数输入/导航)
+│       │   ├── SettingsViewModel.cs                #     设置视图模型
+│       │   ├── ShellViewModel.cs                   #     壳视图模型 (视图切换/导航)
+│       │   └── ToastViewModel.cs                   #     Toast 提示视图模型
+│       └── Views/                                  #   视图
+│           ├── GameView.axaml                      #     游戏视图
+│           ├── HistoryView.axaml                   #     历史记录视图
+│           ├── MainView.axaml                      #     主视图
+│           ├── SettingsView.axaml                  #     设置视图
+│           ├── SettingsWindow.axaml                #     设置窗口
+│           ├── ShellView.axaml                     #     壳视图 (视图切换 + Toast 覆盖层)
+│           ├── ShellWindow.axaml                   #     主窗口
+│           └── ToastView.axaml                     #     Toast 视图
 └── tests/
     ├── MineClearance.Core.Tests/                   # Core 层单元测试
     ├── MineClearance.Infrastructure.Tests/         # Infrastructure 层单元测试

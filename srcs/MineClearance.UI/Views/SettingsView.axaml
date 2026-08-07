@@ -1,0 +1,71 @@
+<UserControl x:Class="MineClearance.UI.Views.SettingsView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MineClearance.UI.ViewModels"
+             xmlns:models="using:MineClearance.UI.Models"
+             x:DataType="vm:SettingsViewModel"
+             Background="{DynamicResource WindowBackgroundBrush}">
+
+  <ScrollViewer>
+    <StackPanel Margin="16" Spacing="16">
+
+      <!-- UI 配置 (主题与 Toast 时长) -->
+      <TextBlock Text="UI 配置" FontWeight="Bold"
+                 Foreground="{DynamicResource TitleForegroundBrush}"/>
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto" RowSpacing="8">
+        <TextBlock Text="主题:" VerticalAlignment="Center"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+        <ComboBox Grid.Column="1" ItemsSource="{Binding Themes}" SelectedItem="{Binding Theme}"
+                  ToolTip.Tip="切换界面配色模式, 修改后立即生效并自动保存">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="models:ThemeMode">
+              <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <TextBlock Grid.Row="1" Text="Toast 显示时间 (秒):" VerticalAlignment="Center"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+        <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding ToastDurationSeconds}"
+                       Minimum="0" Maximum="10" Increment="0.5" FormatString="0.0"
+                       ToolTip.Tip="右下角提示的显示时间 (秒), 修改后立即生效并自动保存"/>
+      </Grid>
+
+      <Separator/>
+
+      <!-- 日志 -->
+      <TextBlock Text="日志" FontWeight="Bold"
+                 Foreground="{DynamicResource VioletLabelBrush}"/>
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto" RowSpacing="8">
+        <TextBlock Text="日志级别:" VerticalAlignment="Center"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+        <ComboBox Grid.Column="1" ItemsSource="{Binding Levels}" SelectedItem="{Binding Level}"
+                  ToolTip.Tip="写入日志文件的最低级别, 修改后立即生效并自动保存"/>
+        <Button Grid.Row="1" Content="打开日志文件夹" Command="{Binding OpenLogsFolderCommand}"
+                HorizontalAlignment="Left" Padding="12,6"
+                Background="{DynamicResource PrimaryButtonBackgroundBrush}" Foreground="{DynamicResource PrimaryButtonForegroundBrush}"/>
+      </Grid>
+
+      <Separator/>
+
+      <!-- 关于 -->
+      <TextBlock Text="关于" FontWeight="Bold"
+                 Foreground="{DynamicResource RedLabelBrush}"/>
+      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4">
+        <TextBlock Text="产品:" Foreground="{DynamicResource SecondaryTextBrush}"/>
+        <TextBlock Grid.Column="1" Text="{Binding Product}"/>
+        <TextBlock Grid.Row="1" Text="版本:" Foreground="{DynamicResource SecondaryTextBrush}"/>
+        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Version}"/>
+        <TextBlock Grid.Row="2" Text="作者:" Foreground="{DynamicResource SecondaryTextBrush}"/>
+        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Authors}"/>
+        <TextBlock Grid.Row="3" Text="许可证:" Foreground="{DynamicResource SecondaryTextBrush}"/>
+        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding License}"/>
+        <TextBlock Grid.Row="4" Text="GitHub:" Foreground="{DynamicResource SecondaryTextBrush}"/>
+        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding GitHubUrl}"
+                   Foreground="{DynamicResource TitleForegroundBrush}" TextDecorations="Underline"
+                   Cursor="Hand" VerticalAlignment="Center" PointerPressed="OnGitHubLinkPressed"/>
+      </Grid>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

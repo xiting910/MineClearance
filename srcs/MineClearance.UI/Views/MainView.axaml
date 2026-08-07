@@ -1,0 +1,86 @@
+<UserControl x:Class="MineClearance.UI.Views.MainView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MineClearance.UI.ViewModels"
+             xmlns:enums="using:MineClearance.Core.Enums"
+             x:DataType="vm:MainViewModel"
+             Background="{DynamicResource WindowBackgroundBrush}">
+
+  <Grid RowDefinitions="Auto,*,Auto">
+
+    <!-- 标题 -->
+    <TextBlock Text="扫雷游戏" FontSize="28" FontWeight="Bold"
+               Foreground="{DynamicResource TitleForegroundBrush}"
+               HorizontalAlignment="Center" Margin="0,32,0,0"/>
+
+    <!-- 操作区: 左侧参数输入框 + 右侧按钮列 -->
+    <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="32"
+          HorizontalAlignment="Center" VerticalAlignment="Center">
+
+      <!-- 左侧参数输入框, 非自定义难度时悬浮提示不允许输入 -->
+      <Border BorderBrush="{DynamicResource SeparatorBrush}" BorderThickness="1"
+              Background="{DynamicResource CardBackgroundBrush}"
+              CornerRadius="8" Padding="28,20" MinWidth="320"
+              ToolTip.Tip="{Binding ParameterInputTip}">
+        <StackPanel Spacing="12">
+
+          <!-- 框顶部提示信息 (强调色) -->
+          <TextBlock Text="选择难度, 自定义难度可编辑棋盘参数" FontSize="13"
+                     Foreground="{DynamicResource EmphasisBrush}"
+                     HorizontalAlignment="Center"/>
+
+          <!-- 棋盘参数: 难度与宽高雷数种子, 预设难度只读显示, 自定义难度可编辑, 标签配色区分 -->
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+            <TextBlock Text="难度:" VerticalAlignment="Center"
+                       Foreground="{DynamicResource DifficultyLabelBrush}" FontWeight="Bold"/>
+            <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding Difficulties}" SelectedItem="{Binding SelectedDifficulty}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="enums:GameDifficulty">
+                  <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Grid.Row="1" Text="高度:" VerticalAlignment="Center"
+                       Foreground="{DynamicResource VioletLabelBrush}"/>
+            <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding Height}" Minimum="1" Maximum="30"
+                           IsEnabled="{Binding IsCustomDifficulty}" FormatString="0"/>
+            <TextBlock Grid.Row="2" Text="宽度:" VerticalAlignment="Center"
+                       Foreground="{DynamicResource VioletLabelBrush}"/>
+            <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding Width}" Minimum="1" Maximum="50"
+                           IsEnabled="{Binding IsCustomDifficulty}" FormatString="0"/>
+            <TextBlock Grid.Row="3" Text="雷数:" VerticalAlignment="Center"
+                       Foreground="{DynamicResource RedLabelBrush}"/>
+            <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding MineCount}" Minimum="1"
+                           Maximum="{Binding MaxMineCount}" IsEnabled="{Binding IsCustomDifficulty}"
+                           FormatString="0"/>
+            <TextBlock Grid.Row="4" Text="随机种子:" VerticalAlignment="Center"
+                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding SeedText}" IsEnabled="{Binding IsCustomDifficulty}"
+                     PlaceholderText="留空随机生成"/>
+          </Grid>
+
+        </StackPanel>
+      </Border>
+
+      <!-- 右侧按钮列, 等宽按钮, 文本居中 -->
+      <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="12">
+        <Button Content="开始新游戏" Command="{Binding StartNewGameCommand}" Width="150" Padding="16,8"
+                HorizontalContentAlignment="Center"
+                Background="{DynamicResource PrimaryButtonBackgroundBrush}" Foreground="{DynamicResource PrimaryButtonForegroundBrush}"/>
+        <Button Content="继续游戏" Command="{Binding ContinueGameCommand}" IsVisible="{Binding HasSaveData}" Width="150" Padding="16,8"
+                HorizontalContentAlignment="Center"
+                Background="{DynamicResource SuccessButtonBackgroundBrush}" Foreground="{DynamicResource SuccessButtonForegroundBrush}"/>
+        <Button Content="历史记录" Command="{Binding ShowHistoryCommand}" Width="150" Padding="16,8"
+                HorizontalContentAlignment="Center"
+                Background="{DynamicResource NeutralButtonBackgroundBrush}" Foreground="{DynamicResource NeutralButtonForegroundBrush}"/>
+        <Button Content="设置" Command="{Binding ShowSettingsCommand}" Width="150" Padding="16,8"
+                HorizontalContentAlignment="Center"
+                Background="{DynamicResource AccentButtonBackgroundBrush}" Foreground="{DynamicResource AccentButtonForegroundBrush}"/>
+      </StackPanel>
+
+    </Grid>
+
+  </Grid>
+
+</UserControl>

@@ -9,6 +9,63 @@
 
   <Application.Styles>
     <FluentTheme/>
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
   </Application.Styles>
+
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+
+        <!-- 浅色主题 -->
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#F2F5FA"/>
+          <SolidColorBrush x:Key="TitleForegroundBrush" Color="#1E5FCC"/>
+          <SolidColorBrush x:Key="SeparatorBrush" Color="#33000000"/>
+          <SolidColorBrush x:Key="PrimaryButtonBackgroundBrush" Color="#2E6FDB"/>
+          <SolidColorBrush x:Key="PrimaryButtonForegroundBrush" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="SuccessButtonBackgroundBrush" Color="#2E7D32"/>
+          <SolidColorBrush x:Key="SuccessButtonForegroundBrush" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="AccentButtonBackgroundBrush" Color="#E65100"/>
+          <SolidColorBrush x:Key="AccentButtonForegroundBrush" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="NeutralButtonBackgroundBrush" Color="#5E35B1"/>
+          <SolidColorBrush x:Key="NeutralButtonForegroundBrush" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="DangerButtonBackgroundBrush" Color="#FCE8E6"/>
+          <SolidColorBrush x:Key="DangerButtonForegroundBrush" Color="#B3261E"/>
+          <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="VioletLabelBrush" Color="#7B1FA2"/>
+          <SolidColorBrush x:Key="RedLabelBrush" Color="#C62828"/>
+          <SolidColorBrush x:Key="SecondaryTextBrush" Color="#6B7280"/>
+          <SolidColorBrush x:Key="DifficultyLabelBrush" Color="#F9A825"/>
+          <SolidColorBrush x:Key="EmphasisBrush" Color="#00838F"/>
+        </ResourceDictionary>
+
+        <!-- 深色主题 -->
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#1A1D24"/>
+          <SolidColorBrush x:Key="TitleForegroundBrush" Color="#7FB0FF"/>
+          <SolidColorBrush x:Key="SeparatorBrush" Color="#40FFFFFF"/>
+          <SolidColorBrush x:Key="PrimaryButtonBackgroundBrush" Color="#4C8DF6"/>
+          <SolidColorBrush x:Key="PrimaryButtonForegroundBrush" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="SuccessButtonBackgroundBrush" Color="#4CAF50"/>
+          <SolidColorBrush x:Key="SuccessButtonForegroundBrush" Color="#1A1D24"/>
+          <SolidColorBrush x:Key="AccentButtonBackgroundBrush" Color="#F57C00"/>
+          <SolidColorBrush x:Key="AccentButtonForegroundBrush" Color="#1A1D24"/>
+          <SolidColorBrush x:Key="NeutralButtonBackgroundBrush" Color="#7E57C2"/>
+          <SolidColorBrush x:Key="NeutralButtonForegroundBrush" Color="#1A1D24"/>
+          <SolidColorBrush x:Key="DangerButtonBackgroundBrush" Color="#4A2222"/>
+          <SolidColorBrush x:Key="DangerButtonForegroundBrush" Color="#FF8A80"/>
+          <SolidColorBrush x:Key="CardBackgroundBrush" Color="#232733"/>
+          <SolidColorBrush x:Key="VioletLabelBrush" Color="#CE93D8"/>
+          <SolidColorBrush x:Key="RedLabelBrush" Color="#EF9A9A"/>
+          <SolidColorBrush x:Key="SecondaryTextBrush" Color="#9AA3B2"/>
+          <SolidColorBrush x:Key="DifficultyLabelBrush" Color="#FFD54F"/>
+          <SolidColorBrush x:Key="EmphasisBrush" Color="#80DEEA"/>
+        </ResourceDictionary>
+
+      </ResourceDictionary.ThemeDictionaries>
+
+      <shared:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+    </ResourceDictionary>
+  </Application.Resources>
 
 </Application>

@@ -27,9 +27,20 @@
 - Infrastructure 层: 文件日志记录器 (FileLoggerProvider, 日志级别可配置并持久化, 日志文件轮转)
 - UI 层: 接入 Infrastructure 服务与配置加载, 应用数据目录初始化与日志轮转
 - 工程化: CPM 补充 Configuration.Json 包
+- UI 层: UI 模型 (ThemeMode / NavigationTarget / UIOptions), UIOptions 从 IConfiguration 读取初始值且 setter 变化自动保存 UISettings.json
+- UI 层: 视图模型体系 (Shell 视图切换 / Main 主视图 / Settings 设置 / Toast 通知), Game / History 视图模型占位
+- UI 层: 视图体系 (ShellWindow / ShellView 主窗口与根视图, MainView 主视图, SettingsWindow / SettingsView 设置窗口, ToastView 全局通知), GameView / HistoryView 占位
+- UI 层: 主视图 (难度下拉框, 预设难度只读/自定义可编辑, 雷数上限随宽高联动, 开始新游戏 / 继续游戏 / 历史记录 / 设置导航)
+- UI 层: 设置窗口 (主题即时切换并自动保存, Toast 显示时长, 日志级别, 打开日志文件夹, 关于信息与 GitHub 链接, 窗口单例)
+- UI 层: 全局右下角 Toast 通知 (显示时长可配置, 新提示取代旧提示)
+- UI 层: 浅色/深色主题资源 (ThemeDictionaries 颜色资源) 与枚举描述转换器, 启动时按配置应用主题
+- UI 层: Program.cs 注册 UI 服务与全部 ViewModel (Shell / Main / Game / History / Toast 为单例, Settings 为 Transient)
+- 工程化: CPM 补充 Avalonia.Controls.DataGrid 包
+- 文档: TODO.MD UI 层开发计划 (分阶段任务清单)
 
 ### Changed
 
+- UI 层: 日志轮转改为仅最新日志文件存在且非空时执行
 - Core 层: IGameDataRepository 异步方法改为同步属性 (SaveData, GameResults), 移除 HasGameSaveData 与 GetGameSaveDataAsync / GetGameResultsAsync
 - Core 层: IGameManager.RestoreFromSaveDataAsync 改为同步方法 RestoreFromSaveData
 

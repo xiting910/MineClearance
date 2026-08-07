@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MineClearance.Core;
 using MineClearance.Infrastructure;
+using MineClearance.UI.Models;
+using MineClearance.UI.ViewModels;
 using System;
 using System.IO;
 using System.Linq;
@@ -21,10 +23,17 @@ file static class Program
     private static int Main(string[] args)
     {
         App.Services = new ServiceCollection()
-            .AddCore()
-            .AddInfrastructure()
             .AddSingleton<IConfiguration>(Initialize())
             .AddLogging(builder => builder.AddFileLogger())
+            .AddCore()
+            .AddInfrastructure()
+            .AddSingleton<UIOptions>()
+            .AddSingleton<ToastViewModel>()
+            .AddSingleton<MainViewModel>()
+            .AddSingleton<ShellViewModel>()
+            .AddSingleton<GameViewModel>()
+            .AddSingleton<HistoryViewModel>()
+            .AddTransient<SettingsViewModel>()
             .BuildServiceProvider();
 
         return AppBuilder.Configure<App>()
@@ -66,9 +75,10 @@ file static class Program
             // 获取最新日志文件的 FileInfo 对象
             var latestLogFileInfo = new FileInfo(Infrastructure.Constants.LatestLogFilePath);
 
-            // 轮转日志文件: 将最新日志文件重命名为带有时间戳的文件名
-            if (latestLogFileInfo.Exists)
+            // 判断最新日志是否存在并且不为空
+            if (latestLogFileInfo.Exists && latestLogFileInfo.Length > 0)
             {
+                // 轮转日志文件: 将最新日志文件移动到以当前时间命名的文件中
                 latestLogFileInfo.MoveTo(Path.Combine(
                     latestLogFileInfo.DirectoryName!,
                     $"{DateTime.Now:yyyy-MM-dd_HHmmss}{Infrastructure.Constants.LogFileSuffix}"

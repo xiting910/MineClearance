@@ -1,0 +1,13 @@
+<UserControl x:Class="MineClearance.UI.Views.ToastView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MineClearance.UI.ViewModels"
+             x:DataType="vm:ToastViewModel"
+             IsVisible="{Binding FeedbackVisible}"
+             HorizontalAlignment="Right" VerticalAlignment="Bottom"
+             Margin="0,0,16,16">
+  <Border Padding="12,8" CornerRadius="6"
+          Background="#E6202020" BoxShadow="0 4 12 0 #33000000">
+    <TextBlock Text="{Binding Feedback}" Foreground="White" FontSize="13" TextWrapping="Wrap" MaxWidth="400"/>
+  </Border>
+</UserControl>

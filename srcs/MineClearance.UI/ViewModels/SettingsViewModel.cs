@@ -1,0 +1,180 @@
+using Avalonia;
+using Avalonia.Styling;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
+using MineClearance.Infrastructure.Interfaces;
+using MineClearance.UI.Models;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+
+namespace MineClearance.UI.ViewModels;
+
+/// <summary>
+/// 设置视图模型, 负责主题/Toast 时长/日志级别配置与关于信息, 所有配置即时生效并自动保存
+/// </summary>
+public sealed partial class SettingsViewModel : ObservableObject
+{
+    /// <summary>
+    /// UI 配置
+    /// </summary>
+    private readonly UIOptions _uiOptions;
+
+    /// <summary>
+    /// 文件日志记录器选项
+    /// </summary>
+    private readonly IFileLoggerOptions _loggerOptions;
+
+    /// <summary>
+    /// 可选择的主题模式列表
+    /// </summary>
+    public IReadOnlyList<ThemeMode> Themes { get; } = Enum.GetValues<ThemeMode>();
+
+    /// <summary>
+    /// 可选择的日志级别列表
+    /// </summary>
+    public IReadOnlyList<LogLevel> Levels { get; } = Enum.GetValues<LogLevel>();
+
+    /// <summary>
+    /// 主题模式
+    /// </summary>
+    [ObservableProperty]
+    public partial ThemeMode Theme { get; set; }
+
+    /// <summary>
+    /// Toast 提示显示时间秒数
+    /// </summary>
+    [ObservableProperty]
+    public partial double ToastDurationSeconds { get; set; }
+
+    /// <summary>
+    /// 日志级别
+    /// </summary>
+    [ObservableProperty]
+    public partial LogLevel Level { get; set; }
+
+    /// <summary>
+    /// 产品
+    /// </summary>
+    public string Product { get; }
+
+    /// <summary>
+    /// 版本号
+    /// </summary>
+    public string Version { get; }
+
+    /// <summary>
+    /// 作者
+    /// </summary>
+    public string Authors { get; }
+
+    /// <summary>
+    /// 许可证
+    /// </summary>
+    public string License { get; }
+
+    /// <summary>
+    /// GitHub 仓库地址
+    /// </summary>
+    public string GitHubUrl { get; }
+
+    /// <summary>
+    /// 创建设置视图模型
+    /// </summary>
+    /// <param name="uiOptions">UI 配置</param>
+    /// <param name="loggerOptions">文件日志记录器选项</param>
+    public SettingsViewModel(UIOptions uiOptions, IFileLoggerOptions loggerOptions)
+    {
+        _uiOptions = uiOptions;
+        _loggerOptions = loggerOptions;
+        Theme = uiOptions.Theme;
+        ToastDurationSeconds = uiOptions.ToastDurationSeconds;
+        Level = loggerOptions.Level;
+
+        var metadata = typeof(App).Assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .ToDictionary(attribute => attribute.Key, attribute => attribute.Value!);
+
+        Product = metadata[nameof(Product)];
+        Version = metadata[nameof(Version)];
+        Authors = metadata[nameof(Authors)];
+        License = metadata[nameof(License)];
+        GitHubUrl = metadata[nameof(GitHubUrl)];
+    }
+
+    /// <summary>
+    /// 主题变化时同步配置并即时切换应用主题
+    /// </summary>
+    /// <param name="value">新主题模式</param>
+    partial void OnThemeChanged(ThemeMode value)
+    {
+        // 同步到 UI 配置并自动保存
+        _uiOptions.Theme = value;
+
+        // 即时切换主题
+        Application.Current?.RequestedThemeVariant = value switch
+        {
+            ThemeMode.Light => ThemeVariant.Light,
+            ThemeMode.Dark => ThemeVariant.Dark,
+            _ => ThemeVariant.Default
+        };
+    }
+
+    /// <summary>
+    /// Toast 显示时间变化时同步配置
+    /// </summary>
+    /// <param name="value">新显示时间</param>
+    partial void OnToastDurationSecondsChanged(double value)
+    {
+        _uiOptions.ToastDurationSeconds = value;
+    }
+
+    /// <summary>
+    /// 日志级别变化时同步配置
+    /// </summary>
+    /// <param name="value">新日志级别</param>
+    partial void OnLevelChanged(LogLevel value)
+    {
+        _loggerOptions.Level = value;
+    }
+
+    /// <summary>
+    /// 打开日志文件夹, 不存在时先创建
+    /// </summary>
+    [RelayCommand]
+    private static void OpenLogsFolder()
+    {
+        try
+        {
+            _ = Process.Start(new ProcessStartInfo
+            {
+                FileName = Path.Combine(
+                    Infrastructure.Constants.AppDataRootDirectory,
+                    Infrastructure.Constants.LogDirectory
+                ),
+                UseShellExecute = true
+            });
+        }
+        catch { /* 忽略打开文件夹失败时的异常 */ }
+    }
+
+    /// <summary>
+    /// 打开 GitHub 仓库地址, 由视图在点击链接时调用
+    /// </summary>
+    public void OpenGitHub()
+    {
+        try
+        {
+            _ = Process.Start(new ProcessStartInfo
+            {
+                FileName = GitHubUrl,
+                UseShellExecute = true
+            });
+        }
+        catch { /* 忽略打开链接失败时的异常 */ }
+    }
+}

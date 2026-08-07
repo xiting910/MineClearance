@@ -1,0 +1,18 @@
+<UserControl x:Class="MineClearance.UI.Views.ShellView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MineClearance.UI.ViewModels"
+             xmlns:views="using:MineClearance.UI.Views"
+             x:DataType="vm:ShellViewModel">
+
+  <Panel>
+
+    <!-- 当前视图 -->
+    <ContentControl Content="{Binding CurrentView}"/>
+
+    <!-- 全局 Toast 通知 -->
+    <views:ToastView DataContext="{Binding Toast}"/>
+
+  </Panel>
+
+</UserControl>

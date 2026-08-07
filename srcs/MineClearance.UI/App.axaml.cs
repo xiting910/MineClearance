@@ -1,5 +1,10 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Styling;
+using Microsoft.Extensions.DependencyInjection;
+using MineClearance.UI.Models;
+using MineClearance.UI.ViewModels;
+using MineClearance.UI.Views;
 using System;
 
 namespace MineClearance.UI;
@@ -24,10 +29,21 @@ public sealed partial class App : Application
     {
         base.OnFrameworkInitializationCompleted();
 
+        // 按配置的主题模式应用主题
+        Current?.RequestedThemeVariant = Services.GetRequiredService<UIOptions>().Theme switch
+        {
+            ThemeMode.Light => ThemeVariant.Light,
+            ThemeMode.Dark => ThemeVariant.Dark,
+            _ => ThemeVariant.Default
+        };
+
         // 如果应用程序生命周期是经典桌面样式, 则设置主窗口
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            // desktop.MainWindow = Services.GetRequiredService<MainWindow>();
+            desktop.MainWindow = new ShellWindow
+            {
+                DataContext = Services.GetRequiredService<ShellViewModel>()
+            };
         }
         else
         {
