@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MineClearance.Core.Enums;
 using MineClearance.Core.Interfaces;
 using MineClearance.Core.Models.Records;
@@ -13,28 +14,8 @@ namespace MineClearance.Core.Services;
 /// <summary>
 /// 游戏核心实现类, 负责管理游戏状态、处理玩家操作
 /// </summary>
-internal sealed class Game : IGame
+internal sealed partial class Game : IGame
 {
-    /// <summary>
-    /// 当前实例是否已被释放
-    /// </summary>
-    private bool _disposed;
-
-    /// <summary>
-    /// 服务作用域, 用于管理依赖注入的生命周期
-    /// </summary>
-    private readonly IServiceScope _serviceScope;
-
-    /// <summary>
-    /// 游戏棋盘字典工厂
-    /// </summary>
-    private readonly IGameBoardDictionaryFactory _boardFactory;
-
-    /// <summary>
-    /// 内部地雷场
-    /// </summary>
-    private readonly IMineField _mineField;
-
     /// <inheritdoc/>
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -80,6 +61,7 @@ internal sealed class Game : IGame
             {
                 field = value;
                 PropertyChanged?.Invoke(this, new(nameof(Status)));
+                LogGameStatusChanged(value);
             }
         }
     }
@@ -154,6 +136,7 @@ internal sealed class Game : IGame
     /// 以开始新游戏的方式初始化游戏实例
     /// </summary>
     /// <param name="serviceScope">服务作用域</param>
+    /// <param name="logger">日志记录器</param>
     /// <param name="boardFactory">游戏棋盘字典工厂</param>
     /// <param name="mineField">内部地雷场</param>
     /// <param name="timer">游戏计时器</param>
@@ -162,6 +145,7 @@ internal sealed class Game : IGame
     /// <param name="seed">随机种子</param>
     public Game(
         IServiceScope serviceScope,
+        ILogger<Game> logger,
         IGameBoardDictionaryFactory boardFactory,
         IMineField mineField,
         IGameTimer timer,
@@ -169,32 +153,41 @@ internal sealed class Game : IGame
         GameConfig config,
         int seed)
     {
-        Debug.Assert(difficulty is GameDifficulty.Custom || GameConfig.FromDifficulty(difficulty) == config, $"{nameof(config)} must match the specified difficulty.");
+        Debug.Assert(difficulty is GameDifficulty.Custom || GameConfig.FromDifficulty(difficulty) == config,
+            $"{nameof(config)} must match the specified difficulty."
+        );
+
         _serviceScope = serviceScope;
+        _logger = logger;
         _boardFactory = boardFactory;
         _mineField = mineField;
         Timer = timer;
         Difficulty = difficulty;
         Config = config;
         Seed = seed;
+
+        LogGameCreated(difficulty, config, seed);
     }
 
     /// <summary>
     /// 以从保存的游戏状态恢复的方式初始化游戏实例
     /// </summary>
     /// <param name="serviceScope">服务作用域</param>
+    /// <param name="logger">日志记录器</param>
     /// <param name="boardFactory">游戏棋盘字典工厂</param>
     /// <param name="mineField">内部地雷场</param>
     /// <param name="timer">游戏计时器</param>
     /// <param name="saveData">游戏存档数据</param>
     public Game(
         IServiceScope serviceScope,
+        ILogger<Game> logger,
         IGameBoardDictionaryFactory boardFactory,
         IMineField mineField,
         IGameTimer timer,
         GameSaveData saveData)
     {
         _serviceScope = serviceScope;
+        _logger = logger;
         _boardFactory = boardFactory;
         _mineField = mineField;
         Timer = timer;
@@ -219,13 +212,14 @@ internal sealed class Game : IGame
         }
 
         // 更新游戏完成度
-        if (UpdateCompletion())
-        {
-            Debug.WriteLine("Game is already completed when loading from save data.");
-        }
+        var isCompleted = UpdateCompletion();
+        Debug.Assert(!isCompleted, "Game should not be completed when loading from save data.");
 
         // 设置计时器的初始时间为存档中的已运行时间
         Timer.SetInitialTime(saveData.Duration);
+
+        // 记录游戏被创建的日志信息
+        LogGameCreated(Difficulty, Config, Seed);
     }
 
     /// <inheritdoc/>
@@ -480,150 +474,8 @@ internal sealed class Game : IGame
 
         // 标记当前实例已被释放
         _disposed = true;
-    }
 
-    /// <summary>
-    /// 断言当前游戏处于可以进行操作的状态
-    /// </summary>
-    private void AssertGamePerformable()
-    {
-        const string errorMessage = "Game must be in progress or waiting to start to perform this operation.";
-        Debug.Assert(Status is GameStatus.WaitingStarted or GameStatus.InProgress, errorMessage);
-    }
-
-    /// <summary>
-    /// 更新当前游戏的完成度, 并返回是否已完成
-    /// </summary>
-    /// <returns><see langword="true"/> 如果游戏已完成, 否则为 <see langword="false"/></returns>
-    private bool UpdateCompletion()
-    {
-        // 如果游戏棋盘字典为空, 则完成度为 0.0
-        if (Board is null)
-        {
-            Completion = 0.0;
-            return false;
-        }
-
-        // 获取已经打开的格子数量
-        var openedCount = Board.OpenedCount;
-
-        // 获取要打开的格子总数
-        var totalCellsToOpen = Config.TotalCellsToOpen;
-
-        // 计算完成度百分比
-        Completion = Constants.MaxCompletion * openedCount / totalCellsToOpen;
-
-        // 返回游戏是否已完成
-        return openedCount == totalCellsToOpen;
-    }
-
-    /// <summary>
-    /// 泛洪打开指定位置的格子, 如果该位置周围没有地雷, 则递归打开所有相邻的格子
-    /// </summary>
-    /// <param name="position">要打开的格子位置</param>
-    private void FloodOpen(Position position)
-    {
-        // 调用该方法时, 游戏棋盘字典不应为 null, 因为该方法只在游戏进行中调用
-        Debug.Assert(Board is not null, $"{nameof(Board)} should not be null when calling FloodOpen.");
-
-        // 如果游戏已经结束, 则不需要继续处理
-        if (Status is GameStatus.Won or GameStatus.Lost) { return; }
-
-        // 获取当前位置的格子
-        var cell = Board[position];
-
-        // 如果该位置不是未打开的格子, 则不需要继续处理
-        if (cell.Type is not CellType.Unopened) { return; }
-
-        // 判断打开的格子是否是地雷
-        if (_mineField.IsMine(position))
-        {
-            // 如果是地雷, 则游戏失败
-            Timer.Pause();
-            cell.Type = CellType.Mine;
-            Status = GameStatus.Lost;
-            UpdateGameResult();
-            return;
-        }
-
-        // 更新当前位置的格子类型
-        cell.Type = cell.AdjacentMineCount == 0 ? CellType.Empty : CellType.Number;
-
-        // 如果该位置周围有地雷, 则不需要继续递归打开相邻格子
-        if (cell.AdjacentMineCount > 0) { return; }
-
-        // 遍历该位置的所有相邻位置, 递归打开相邻格子
-        foreach (var adjacentPosition in position.GetAdjacentPositions(Config.BoardHeight, Config.BoardWidth))
-        {
-            FloodOpen(adjacentPosition);
-        }
-    }
-
-    /// <summary>
-    /// 在泛洪打开格子后检查游戏是否已完成, 如果已完成则更新游戏状态为胜利
-    /// </summary>
-    private void CheckGameCompletion()
-    {
-        // 如果游戏已失败, 则不需要检查游戏是否已完成
-        if (Status is GameStatus.Lost) { return; }
-
-        // 更新游戏完成度
-        if (UpdateCompletion())
-        {
-            // 如果游戏已完成, 则游戏胜利
-            Timer.Pause();
-            Status = GameStatus.Won;
-            UpdateGameResult();
-        }
-        else
-        {
-            // 如果游戏未完成, 则检查所有数字格子的警告状态是否需要更新
-            CheckAndUpdateWarningStates();
-        }
-    }
-
-    /// <summary>
-    /// 在游戏结束时创建并更新游戏结果
-    /// </summary>
-    private void UpdateGameResult()
-    {
-        Debug.Assert(Timer.FirstStartTime is not null, $"{nameof(Timer.FirstStartTime)} should not be null when updating game result.");
-
-        if (Status is GameStatus.Won)
-        {
-            Result = Difficulty is GameDifficulty.Custom
-                ? GameResult.CreateCustomWin(Seed, Timer.FirstStartTime.Value, Timer.Elapsed, Config.BoardHeight, Config.BoardWidth, Config.MineCount)
-                : GameResult.CreateWin(Seed, Difficulty, Timer.FirstStartTime.Value, Timer.Elapsed);
-        }
-        else if (Status is GameStatus.Lost)
-        {
-            Result = Difficulty is GameDifficulty.Custom
-                ? GameResult.CreateCustomLoss(Seed, Timer.FirstStartTime.Value, Timer.Elapsed, Completion, Config.BoardHeight, Config.BoardWidth, Config.MineCount)
-                : GameResult.CreateLoss(Seed, Difficulty, Timer.FirstStartTime.Value, Timer.Elapsed, Completion);
-        }
-    }
-
-    /// <summary>
-    /// 检测所有数字格子的警告状态是否需要更新
-    /// </summary>
-    private void CheckAndUpdateWarningStates()
-    {
-        // 如果游戏棋盘字典为空, 则不需要更新警告状态
-        if (Board is null) { return; }
-
-        // 遍历所有位置和格子, 检测数字格子的警告状态是否需要更新
-        foreach (var (position, cell) in Board)
-        {
-            // 如果该格子是数字格子
-            if (cell.Type is CellType.Number or CellType.WarningNumber)
-            {
-                // 计算该格子周围标记为旗子的格子数量
-                var adjacentFlaggedCount = position.GetAdjacentPositions(Config.BoardHeight, Config.BoardWidth)
-                    .Count(adjacentPosition => Board[adjacentPosition].Type is CellType.Flagged);
-
-                // 如果周围标记为旗子的格子数量大于实际地雷数量, 则将该格子类型设置为警告数字格子, 否则设置为普通数字格子
-                cell.Type = adjacentFlaggedCount > cell.AdjacentMineCount ? CellType.WarningNumber : CellType.Number;
-            }
-        }
+        // 通知 GC 不再调用终结器, 因为已经手动释放了资源
+        GC.SuppressFinalize(this);
     }
 }

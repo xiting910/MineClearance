@@ -19,6 +19,46 @@ public readonly record struct GameConfig(int BoardHeight, int BoardWidth, int Mi
     public int TotalCellsToOpen => (BoardHeight * BoardWidth) - MineCount;
 
     /// <summary>
+    /// 判断当前配置是否有效
+    /// </summary>
+    /// <returns><see langword="true"/> 表示有效, <see langword="false"/> 表示无效</returns>
+    public bool IsValid()
+    {
+        return IsValid(BoardHeight, BoardWidth, MineCount);
+    }
+
+    /// <summary>
+    /// 判断给定的棋盘高度、棋盘宽度和地雷数量是否构成有效的游戏配置
+    /// </summary>
+    /// <param name="boardHeight">棋盘高度</param>
+    /// <param name="boardWidth">棋盘宽度</param>
+    /// <param name="mineCount">地雷数量</param>
+    /// <returns><see langword="true"/> 表示有效, <see langword="false"/> 表示无效</returns>
+    internal static bool IsValid(int boardHeight, int boardWidth, int mineCount)
+    {
+        // 棋盘高度必须在允许范围内
+        if (boardHeight is <= 0 or > Constants.MaxBoardHeight)
+        {
+            return false;
+        }
+
+        // 棋盘宽度必须在允许范围内
+        if (boardWidth is <= 0 or > Constants.MaxBoardWidth)
+        {
+            return false;
+        }
+
+        // 地雷数量必须小于棋盘总格子数
+        if (mineCount <= 0 || mineCount >= boardHeight * boardWidth)
+        {
+            return false;
+        }
+
+        // 全部验证通过, 当前配置有效
+        return true;
+    }
+
+    /// <summary>
     /// 通过 <see cref="GameDifficulty"/> 获取内置的 <see cref="GameConfig"/> 实例
     /// </summary>
     /// <param name="difficulty">游戏难度</param>

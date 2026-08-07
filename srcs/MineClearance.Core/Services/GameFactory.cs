@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MineClearance.Core.Enums;
 using MineClearance.Core.Interfaces;
 using MineClearance.Core.Models.Records;
@@ -10,22 +11,12 @@ namespace MineClearance.Core.Services;
 /// <summary>
 /// 游戏工厂实现类, 负责组装游戏对象图
 /// </summary>
-/// <param name="serviceScopeFactory">服务作用域工厂</param>
-/// <param name="boardFactory">游戏棋盘字典工厂</param>
+/// <param name="_serviceScopeFactory">服务作用域工厂</param>
+/// <param name="_boardFactory">游戏棋盘字典工厂</param>
 internal sealed class GameFactory(
-    IServiceScopeFactory serviceScopeFactory,
-    IGameBoardDictionaryFactory boardFactory) : IGameFactory
+    IServiceScopeFactory _serviceScopeFactory,
+    IGameBoardDictionaryFactory _boardFactory) : IGameFactory
 {
-    /// <summary>
-    /// 服务作用域工厂
-    /// </summary>
-    private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
-
-    /// <summary>
-    /// 游戏棋盘字典工厂
-    /// </summary>
-    private readonly IGameBoardDictionaryFactory _boardFactory = boardFactory;
-
     /// <inheritdoc/>
     public IGame CreateGame(GameDifficulty difficulty)
     {
@@ -34,6 +25,9 @@ internal sealed class GameFactory(
 
         // 创建一个新的服务作用域, 用于管理依赖注入的生命周期
         var serviceScope = _serviceScopeFactory.CreateScope();
+
+        // 从服务作用域中获取日志记录器实例
+        var logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<Game>>();
 
         // 从服务作用域中获取内部地雷场实例
         var mineField = serviceScope.ServiceProvider.GetRequiredService<IMineField>();
@@ -48,7 +42,7 @@ internal sealed class GameFactory(
         var seed = Random.Shared.Next();
 
         // 创建并返回一个新的游戏实例
-        return new Game(serviceScope, _boardFactory, mineField, timer, difficulty, config, seed);
+        return new Game(serviceScope, logger, _boardFactory, mineField, timer, difficulty, config, seed);
     }
 
     /// <inheritdoc/>
@@ -56,6 +50,9 @@ internal sealed class GameFactory(
     {
         // 创建一个新的服务作用域, 用于管理依赖注入的生命周期
         var serviceScope = _serviceScopeFactory.CreateScope();
+
+        // 从服务作用域中获取日志记录器实例
+        var logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<Game>>();
 
         // 从服务作用域中获取内部地雷场实例
         var mineField = serviceScope.ServiceProvider.GetRequiredService<IMineField>();
@@ -67,7 +64,7 @@ internal sealed class GameFactory(
         seed ??= Random.Shared.Next();
 
         // 创建并返回一个新的游戏实例
-        return new Game(serviceScope, _boardFactory, mineField, timer, GameDifficulty.Custom, config, seed.Value);
+        return new Game(serviceScope, logger, _boardFactory, mineField, timer, GameDifficulty.Custom, config, seed.Value);
     }
 
     /// <inheritdoc/>
@@ -76,6 +73,9 @@ internal sealed class GameFactory(
         // 创建一个新的服务作用域, 用于管理依赖注入的生命周期
         var serviceScope = _serviceScopeFactory.CreateScope();
 
+        // 从服务作用域中获取日志记录器实例
+        var logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<Game>>();
+
         // 从服务作用域中获取内部地雷场实例
         var mineField = serviceScope.ServiceProvider.GetRequiredService<IMineField>();
 
@@ -83,6 +83,6 @@ internal sealed class GameFactory(
         var timer = serviceScope.ServiceProvider.GetRequiredService<IGameTimer>();
 
         // 创建并返回一个新的游戏实例, 使用存档数据中的配置和种子
-        return new Game(serviceScope, _boardFactory, mineField, timer, saveData);
+        return new Game(serviceScope, logger, _boardFactory, mineField, timer, saveData);
     }
 }

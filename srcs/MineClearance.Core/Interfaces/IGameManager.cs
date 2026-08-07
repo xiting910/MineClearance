@@ -38,6 +38,7 @@ public interface IGameManager
     /// </summary>
     /// <param name="config">游戏配置</param>
     /// <param name="seed">随机种子</param>
+    /// <exception cref="ArgumentException">当配置无效时抛出异常</exception>
     void StartNewGame(GameConfig config, int? seed = null);
 
     /// <summary>

@@ -18,6 +18,22 @@ public static class Constants
     public const int MineValue = -1;
 
     /// <summary>
+    /// 允许的最大棋盘高度
+    /// </summary>
+    public const int MaxBoardHeight = 30;
+
+    /// <summary>
+    /// 允许的最大棋盘宽度
+    /// </summary>
+    public const int MaxBoardWidth = 50;
+
+    /// <summary>
+    /// 自定义难度未提供高度、宽度和地雷数量时的异常信息
+    /// </summary>
+    public const string CustomDifficultyMissingInfoMessage =
+        "Custom difficulty requires board dimensions and mine count.";
+
+    /// <summary>
     /// <see cref="Enums.GameDifficulty.Beginner"/> 对应的 <see cref="GameConfig"/> 实例
     /// </summary>
     public static GameConfig BeginnerConfig { get; } = new(9, 9, 10);
@@ -36,10 +52,4 @@ public static class Constants
     /// <see cref="Enums.GameDifficulty.Master"/> 对应的 <see cref="GameConfig"/> 实例
     /// </summary>
     public static GameConfig MasterConfig { get; } = new(30, 50, 309);
-
-    /// <summary>
-    /// 自定义难度未提供高度、宽度和地雷数量时的异常信息
-    /// </summary>
-    public const string CustomDifficultyMissingInfoMessage =
-        "Custom difficulty requires board dimensions and mine count.";
 }

@@ -139,7 +139,9 @@ internal sealed class GameBoardDictionary : IGameBoardDictionary
     {
         if (e.PropertyName is nameof(Cell.Type))
         {
-            OpenedCount = _cells.Values.Count(cell => cell.Type is CellType.Empty or CellType.Number or CellType.WarningNumber);
+            OpenedCount = _cells.Values.Count(cell =>
+                cell.Type is CellType.Empty or CellType.Number or CellType.WarningNumber
+            );
             FlagCount = _cells.Values.Count(cell => cell.Type is CellType.Flagged);
             QuestionCount = _cells.Values.Count(cell => cell.Type is CellType.Question);
         }

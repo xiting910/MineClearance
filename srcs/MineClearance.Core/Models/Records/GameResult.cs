@@ -51,7 +51,11 @@ public sealed record GameResult(
     /// <exception cref="ArgumentException">
     /// 当 <paramref name="difficulty"/> 为 <see cref="GameDifficulty.Custom"/> 时抛出
     /// </exception>
-    public static GameResult CreateWin(int seed, GameDifficulty difficulty, DateTime startTime, TimeSpan duration)
+    public static GameResult CreateWin(
+        int seed,
+        GameDifficulty difficulty,
+        DateTime startTime,
+        TimeSpan duration)
     {
         return difficulty is GameDifficulty.Custom
             ? throw new ArgumentException(Constants.CustomDifficultyMissingInfoMessage, nameof(difficulty))
@@ -73,7 +77,12 @@ public sealed record GameResult(
     /// <exception cref="ArgumentOutOfRangeException">
     /// 当 <paramref name="completion"/> 为负数或大于 <see cref="Constants.MaxCompletion"/> 时抛出
     /// </exception>
-    public static GameResult CreateLoss(int seed, GameDifficulty difficulty, DateTime startTime, TimeSpan duration, double completion)
+    public static GameResult CreateLoss(
+        int seed,
+        GameDifficulty difficulty,
+        DateTime startTime,
+        TimeSpan duration,
+        double completion)
     {
         if (difficulty is GameDifficulty.Custom)
         {
@@ -97,15 +106,23 @@ public sealed record GameResult(
     /// <param name="mineCount">地雷数量</param>
     /// <returns>自定义难度获胜游戏结果</returns>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// 当 <paramref name="boardHeight"/> 或 <paramref name="boardWidth"/> 为负数或零,
+    /// 当 <paramref name="boardHeight"/> 或 <paramref name="boardWidth"/> 超出允许范围,
     /// 或 <paramref name="mineCount"/> 为负数或零,
     /// 或 <paramref name="mineCount"/> 大于等于
     /// <paramref name="boardHeight"/> * <paramref name="boardWidth"/> 时抛出
     /// </exception>
-    public static GameResult CreateCustomWin(int seed, DateTime startTime, TimeSpan duration, int boardHeight, int boardWidth, int mineCount)
+    public static GameResult CreateCustomWin(
+        int seed,
+        DateTime startTime,
+        TimeSpan duration,
+        int boardHeight,
+        int boardWidth,
+        int mineCount)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(boardHeight, nameof(boardHeight));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(boardHeight, Constants.MaxBoardHeight, nameof(boardHeight));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(boardWidth, nameof(boardWidth));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(boardWidth, Constants.MaxBoardWidth, nameof(boardWidth));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(mineCount, nameof(mineCount));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(mineCount, boardHeight * boardWidth, nameof(mineCount));
 
@@ -125,17 +142,26 @@ public sealed record GameResult(
     /// <returns>自定义难度失败游戏结果</returns>
     /// <exception cref="ArgumentOutOfRangeException">
     /// 当 <paramref name="completion"/> 为负数或大于 <see cref="Constants.MaxCompletion"/> 时抛出,
-    /// 或 <paramref name="boardHeight"/> 或 <paramref name="boardWidth"/> 为负数或零,
+    /// 或 <paramref name="boardHeight"/> 或 <paramref name="boardWidth"/> 超出允许范围,
     /// 或 <paramref name="mineCount"/> 为负数或零,
     /// 或 <paramref name="mineCount"/> 大于等于
     /// <paramref name="boardHeight"/> * <paramref name="boardWidth"/> 时抛出
     /// </exception>
-    public static GameResult CreateCustomLoss(int seed, DateTime startTime, TimeSpan duration, double completion, int boardHeight, int boardWidth, int mineCount)
+    public static GameResult CreateCustomLoss(
+        int seed,
+        DateTime startTime,
+        TimeSpan duration,
+        double completion,
+        int boardHeight,
+        int boardWidth,
+        int mineCount)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(completion, nameof(completion));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(completion, Constants.MaxCompletion, nameof(completion));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(boardHeight, nameof(boardHeight));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(boardHeight, Constants.MaxBoardHeight, nameof(boardHeight));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(boardWidth, nameof(boardWidth));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(boardWidth, Constants.MaxBoardWidth, nameof(boardWidth));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(mineCount, nameof(mineCount));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(mineCount, boardHeight * boardWidth, nameof(mineCount));
 
@@ -157,14 +183,8 @@ public sealed record GameResult(
                 return false;
             }
 
-            // 棋盘高度、宽度和地雷数量都必须是正数
-            if (BoardHeight <= 0 || BoardWidth <= 0 || MineCount <= 0)
-            {
-                return false;
-            }
-
-            // 地雷数量必须小于棋盘总格子数
-            if (MineCount >= BoardHeight * BoardWidth)
+            // 验证自定义难度下的棋盘高度、宽度和地雷数量是否有效
+            if (!GameConfig.IsValid(BoardHeight.Value, BoardWidth.Value, MineCount.Value))
             {
                 return false;
             }

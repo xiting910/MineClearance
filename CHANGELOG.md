@@ -18,5 +18,10 @@
 - 测试: Core / Infrastructure / UI 三层冒烟测试 (xUnit v3 + Moq)
 - CI/CD: GitHub Actions 工作流 (CI, CodeQL, Dependency Review, Dependabot, Release 发布)
 - 工程化: CPM 集中包管理, Directory.Build.props 全局构建属性, .editorconfig, 清理构建脚本
+- Core 层: 棋盘尺寸上限校验 (高 30 × 宽 50), GameConfig 集中校验, 游戏结果/存档校验复用
+- Core 层: 枚举 [Description] 特性与 GetDescription() 扩展 (C# 14 extension 块)
+- Core 层: ILogger 结构化日志 (LoggerMessage 源代码生成), Game / GameManager 注入日志记录器
+- UI 层: Avalonia 应用骨架 (App.axaml, ViewLocator, DI 容器初始化, InterFont)
+- 工程化: 全局 AssemblyMetadata, CPM 补充 Configuration / Logging Abstractions 包
 
 [Unreleased]: https://github.com/xiting910/MineClearance/commits/main

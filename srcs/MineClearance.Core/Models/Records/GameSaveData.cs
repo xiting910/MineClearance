@@ -52,7 +52,13 @@ public sealed record GameSaveData(
     /// <exception cref="ArgumentException">
     /// 当 <paramref name="difficulty"/> 为 <see cref="GameDifficulty.Custom"/> 时抛出
     /// </exception>
-    public static GameSaveData Create(int seed, GameDifficulty difficulty, DateTime startTime, TimeSpan duration, BitArray mineField, IReadOnlyDictionary<Position, CellType> cellStates)
+    public static GameSaveData Create(
+        int seed,
+        GameDifficulty difficulty,
+        DateTime startTime,
+        TimeSpan duration,
+        BitArray mineField,
+        IReadOnlyDictionary<Position, CellType> cellStates)
     {
         return difficulty is GameDifficulty.Custom
             ? throw new ArgumentException(Constants.CustomDifficultyMissingInfoMessage, nameof(difficulty))
@@ -72,15 +78,25 @@ public sealed record GameSaveData(
     /// <param name="mineCount">地雷数量</param>
     /// <returns>自定义难度游戏存档数据</returns>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// 当 <paramref name="boardHeight"/> 或 <paramref name="boardWidth"/> 为负数或零,
+    /// 当 <paramref name="boardHeight"/> 或 <paramref name="boardWidth"/> 超出允许范围,
     /// 或 <paramref name="mineCount"/> 为负数或零,
     /// 或 <paramref name="mineCount"/> 大于等于
     /// <paramref name="boardHeight"/> * <paramref name="boardWidth"/> 时抛出
     /// </exception>
-    public static GameSaveData CreateCustom(int seed, DateTime startTime, TimeSpan duration, BitArray mineField, IReadOnlyDictionary<Position, CellType> cellStates, int boardHeight, int boardWidth, int mineCount)
+    public static GameSaveData CreateCustom(
+        int seed,
+        DateTime startTime,
+        TimeSpan duration,
+        BitArray mineField,
+        IReadOnlyDictionary<Position, CellType> cellStates,
+        int boardHeight,
+        int boardWidth,
+        int mineCount)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(boardHeight, nameof(boardHeight));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(boardHeight, Constants.MaxBoardHeight, nameof(boardHeight));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(boardWidth, nameof(boardWidth));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(boardWidth, Constants.MaxBoardWidth, nameof(boardWidth));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(mineCount, nameof(mineCount));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(mineCount, boardHeight * boardWidth, nameof(mineCount));
 
@@ -99,8 +115,8 @@ public sealed record GameSaveData(
         // 判断游戏难度是否为自定义难度
         if (Difficulty is GameDifficulty.Custom)
         {
-            // 自定义难度时, 棋盘高度、宽度和地雷数量必须不为 null且大于零
-            if (BoardHeight is null or <= 0 || BoardWidth is null or <= 0 || MineCount is null or <= 0)
+            // 自定义难度时, 棋盘高度、宽度和地雷数量必须不为 null
+            if (BoardHeight is null || BoardWidth is null || MineCount is null)
             {
                 return false;
             }
@@ -109,8 +125,8 @@ public sealed record GameSaveData(
             boardHeight = BoardHeight.Value;
             boardWidth = BoardWidth.Value;
 
-            // 地雷数量必须小于棋盘总格子数
-            if (MineCount.Value >= boardHeight * boardWidth)
+            // 验证自定义难度下的棋盘高度、宽度和地雷数量是否有效
+            if (!GameConfig.IsValid(boardHeight, boardWidth, MineCount.Value))
             {
                 return false;
             }

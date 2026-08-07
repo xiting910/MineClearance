@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using MineClearance.Core.Enums;
 using MineClearance.Core.Interfaces;
 using MineClearance.Core.Models;
@@ -12,22 +13,14 @@ namespace MineClearance.Core.Services;
 /// <summary>
 /// 游戏管理器实现类, 负责游戏实例的创建、销毁和存档管理
 /// </summary>
-/// <param name="gameFactory">游戏工厂</param>
-/// <param name="dataRepository">游戏数据存储库</param>
-internal sealed class GameManager(
-    IGameFactory gameFactory,
-    IGameDataRepository dataRepository) : IGameManager
+/// <param name="_gameFactory">游戏工厂</param>
+/// <param name="_dataRepository">游戏数据存储库</param>
+/// <param name="_logger">日志记录器</param>
+internal sealed partial class GameManager(
+    IGameFactory _gameFactory,
+    IGameDataRepository _dataRepository,
+    ILogger<GameManager> _logger) : IGameManager
 {
-    /// <summary>
-    /// 游戏工厂字段
-    /// </summary>
-    private readonly IGameFactory _gameFactory = gameFactory;
-
-    /// <summary>
-    /// 游戏数据存储库字段
-    /// </summary>
-    private readonly IGameDataRepository _dataRepository = dataRepository;
-
     /// <inheritdoc/>
     public event EventHandler<GameChangedEventArgs>? GameChanged;
 
@@ -43,6 +36,7 @@ internal sealed class GameManager(
                 field = value;
                 field?.PropertyChanged += OnGamePropertyChanged;
                 GameChanged?.Invoke(this, new(field));
+                LogGameChanged();
             }
         }
     }
@@ -83,16 +77,28 @@ internal sealed class GameManager(
 
         // 使用游戏工厂创建一个新的游戏实例
         Game = _gameFactory.CreateGame(difficulty);
+
+        // 记录游戏开始日志
+        LogGameStarted(difficulty);
     }
 
     /// <inheritdoc/>
     public void StartNewGame(GameConfig config, int? seed = null)
     {
+        // 如果配置无效, 则不允许创建游戏
+        if (!config.IsValid())
+        {
+            throw new ArgumentException("Invalid game configuration.", nameof(config));
+        }
+
         // 释放当前游戏实例
         Game?.Dispose();
 
         // 使用游戏工厂创建一个新的游戏实例
         Game = _gameFactory.CreateGame(config, seed);
+
+        // 记录游戏开始日志
+        LogGameStartedWithConfig(config);
     }
 
     /// <inheritdoc/>
@@ -109,6 +115,9 @@ internal sealed class GameManager(
 
         // 使用游戏工厂创建一个新的游戏实例, 并传入存档数据
         Game = _gameFactory.CreateGame(saveData);
+
+        // 记录游戏从存档数据恢复的日志
+        LogGameRestoredFromSaveData();
     }
 
     /// <inheritdoc/>
@@ -162,9 +171,66 @@ internal sealed class GameManager(
             // 将游戏结果保存到游戏数据存储库
             if (!await _dataRepository.AddGameResultAsync(game.Result).ConfigureAwait(false))
             {
-                // 如果保存失败, 则记录错误日志
-                Debug.WriteLine("Failed to save game result to the data repository.");
+                // 如果保存失败, 则记录日志
+                LogGameResultSaveFailed(game.Result);
             }
         }
     }
+
+    /// <summary>
+    /// 记录游戏变更日志, 当游戏实例发生变更时触发
+    /// </summary>
+    [LoggerMessage(
+        EventId = 1,
+        EventName = "GameChanged",
+        Level = LogLevel.Debug,
+        Message = "Game changed"
+    )]
+    private partial void LogGameChanged();
+
+    /// <summary>
+    /// 记录指定难度的游戏开始日志, 当游戏实例开始时触发
+    /// </summary>
+    /// <param name="difficulty">游戏难度</param>
+    [LoggerMessage(
+        EventId = 2,
+        EventName = "GameStarted",
+        Level = LogLevel.Information,
+        Message = "Game started with difficulty: {Difficulty}"
+    )]
+    private partial void LogGameStarted(GameDifficulty difficulty);
+
+    /// <summary>
+    /// 记录指定配置的游戏开始日志, 当游戏实例开始时触发
+    /// </summary>
+    /// <param name="config">游戏配置</param>
+    [LoggerMessage(
+        EventId = 3,
+        EventName = "GameStartedWithConfig",
+        Level = LogLevel.Information,
+        Message = "Game started with config: {Config}"
+    )]
+    private partial void LogGameStartedWithConfig(GameConfig config);
+
+    /// <summary>
+    /// 记录成功从存档数据恢复游戏的日志, 当游戏实例从存档数据恢复时触发
+    /// </summary>
+    [LoggerMessage(
+        EventId = 4,
+        EventName = "GameRestoredFromSaveData",
+        Level = LogLevel.Information,
+        Message = "Game restored from save data"
+    )]
+    private partial void LogGameRestoredFromSaveData();
+
+    /// <summary>
+    /// 记录保存游戏结果失败的错误日志, 当游戏结果保存失败时触发
+    /// </summary>
+    [LoggerMessage(
+        EventId = 5,
+        EventName = "GameResultSaveFailed",
+        Level = LogLevel.Warning,
+        Message = "Failed to save game result: {Result}"
+    )]
+    private partial void LogGameResultSaveFailed(GameResult result);
 }

@@ -8,8 +8,8 @@ namespace MineClearance.Core.Services;
 /// <summary>
 /// 地雷场实现类, 负责地雷的放置、查询和相邻雷数计算
 /// </summary>
-/// <param name="mineGenerator">地雷生成器</param>
-internal sealed class MineField(IMineGenerator mineGenerator) : IMineField
+/// <param name="_mineGenerator">地雷生成器</param>
+internal sealed class MineField(IMineGenerator _mineGenerator) : IMineField
 {
     /// <summary>
     /// 地雷场尚未生成的异常信息
@@ -30,11 +30,6 @@ internal sealed class MineField(IMineGenerator mineGenerator) : IMineField
     /// 表示每个位置周围地雷数量的数组, <see cref="Constants.MineValue"/> 表示该位置是地雷, 按行优先顺序排列
     /// </summary>
     private int[]? _adjacentMineCounts;
-
-    /// <summary>
-    /// 地雷生成器字段
-    /// </summary>
-    private readonly IMineGenerator _mineGenerator = mineGenerator;
 
     /// <inheritdoc/>
     public int[] Generate(GameConfig config, Position firstClick, int seed)

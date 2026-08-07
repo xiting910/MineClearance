@@ -9,18 +9,13 @@ namespace MineClearance.Core.Services;
 /// <summary>
 /// 地雷生成器实现类, 负责生成地雷位置集合, 确保首次点击位置不是地雷
 /// </summary>
-/// <param name="solvabilityChecker">可解性检查器实例</param>
-internal sealed class MineGenerator(ISolvabilityChecker solvabilityChecker) : IMineGenerator
+/// <param name="_solvabilityChecker">可解性检查器实例</param>
+internal sealed class MineGenerator(ISolvabilityChecker _solvabilityChecker) : IMineGenerator
 {
     /// <summary>
     /// 最大重试次数, 超过后放弃可解性保证
     /// </summary>
     private const int MaxRetries = 1000;
-
-    /// <summary>
-    /// 可解性检查器实例
-    /// </summary>
-    private readonly ISolvabilityChecker _solvabilityChecker = solvabilityChecker;
 
     /// <inheritdoc/>
     public IEnumerable<Position> GenerateMines(GameConfig config, Position firstClick, int seed)

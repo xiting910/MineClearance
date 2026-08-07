@@ -16,6 +16,7 @@
 - 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
 - 🎮 **经典扫雷玩法** — 左键翻开、右键标旗/问号、双击数字格自动翻开周围、右键数字格自动标旗周围、警告数字检测
 - 🧩 **MVVM 模式** — 基于 CommunityToolkit.Mvvm 源代码生成器
+- 📝 **结构化日志** — ILogger + LoggerMessage 源代码生成器，记录游戏关键事件
 - 🧪 **完善的测试** — xUnit + Moq 单元测试，coverlet 代码覆盖率
 - 🔁 **CI/CD 自动化** — GitHub Actions 自动构建、测试、CodeQL 安全分析、Release 发布
 - 📦 **依赖自动更新** — Dependabot 分组策略，保持依赖最新
@@ -39,6 +40,7 @@ MineClearance/
 ├── srcs/
 │   ├── MineClearance.Core/                         # 核心层 — 领域模型、接口、枚举、领域服务
 │   │   ├── Constants.cs                            #   游戏常量
+│   │   ├── EnumExtensions.cs                       #   枚举扩展 (Description 描述)
 │   │   ├── Enums/                                  #   枚举定义
 │   │   │   ├── CellType.cs                         #     格子类型
 │   │   │   ├── GameDifficulty.cs                   #     游戏难度
@@ -64,6 +66,8 @@ MineClearance/
 │   │   │       └── Position.cs                     #       位置
 │   │   ├── Services/                               #   领域服务实现 (internal)
 │   │   │   ├── Game.cs                             #     游戏核心实现
+│   │   │   ├── Game.Logging.cs                     #     游戏日志 (LoggerMessage)
+│   │   │   ├── Game.Private.cs                     #     游戏私有实现
 │   │   │   ├── GameBoardDictionary.cs              #     棋盘字典实现
 │   │   │   ├── GameBoardDictionaryFactory.cs       #     棋盘字典工厂实现
 │   │   │   ├── GameFactory.cs                      #     游戏工厂实现
@@ -75,7 +79,11 @@ MineClearance/
 │   │   └── IServiceCollectionExtensions.cs         # DI 注册扩展
 │   ├── MineClearance.Infrastructure/               # 基础设施层 — 数据访问、外部服务实现
 │   └── MineClearance.UI/                           # 表示层 — Avalonia 桌面应用
-│       └── Program.cs                              #   应用入口
+│       ├── App.axaml                               #   应用定义 (主题/DataTemplate)
+│       ├── App.axaml.cs                            #   应用类 (服务容器)
+│       ├── Constants.cs                            #   UI 常量
+│       ├── Program.cs                              #   应用入口 (DI + Avalonia 启动)
+│       └── ViewLocator.cs                          #   ViewModel → View 定位器
 └── tests/
     ├── MineClearance.Core.Tests/                   # Core 层单元测试
     ├── MineClearance.Infrastructure.Tests/         # Infrastructure 层单元测试

@@ -13,6 +13,15 @@
     <Product>MineClearance</Product>
   </PropertyGroup>
 
+  <!-- 所有项目共用的 AssemblyMetadata -->
+  <ItemGroup>
+    <AssemblyMetadata Include="Authors" Value="$(Authors)"/>
+    <AssemblyMetadata Include="GitHubUrl" Value="https://github.com/$(Authors)/$(Product)"/>
+    <AssemblyMetadata Include="License" Value="MIT"/>
+    <AssemblyMetadata Include="Product" Value="$(Product)"/>
+    <AssemblyMetadata Include="Version" Value="$(Version)"/>
+  </ItemGroup>
+
   <!-- 根据项目名是否以 .Tests 结尾判断是否为测试项目 -->
   <PropertyGroup>
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('.Tests'))">true</IsTestProject>
