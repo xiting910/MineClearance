@@ -19,7 +19,8 @@ namespace MineClearance.Core.Services;
 internal sealed partial class GameManager(
     IGameFactory _gameFactory,
     IGameDataRepository _dataRepository,
-    ILogger<GameManager> _logger) : IGameManager
+    ILogger<GameManager> _logger
+) : IGameManager
 {
     /// <inheritdoc/>
     public event EventHandler<GameChangedEventArgs>? GameChanged;
@@ -38,28 +39,6 @@ internal sealed partial class GameManager(
                 GameChanged?.Invoke(this, new(field));
                 LogGameChanged();
             }
-        }
-    }
-
-    /// <inheritdoc/>
-    public void RestartCurrentGame()
-    {
-        // 如果当前没有游戏正在进行, 则不需要重新开始
-        if (Game is null) { return; }
-
-        // 获取当前游戏的难度
-        var difficulty = Game.Difficulty;
-
-        // 根据当前游戏的难度重新开始游戏
-        if (difficulty is GameDifficulty.Custom)
-        {
-            // 如果当前游戏是自定义难度, 则使用当前游戏的配置和种子重新开始游戏
-            StartNewGame(Game.Config, Game.Seed);
-        }
-        else
-        {
-            // 如果当前游戏是非自定义难度, 则使用当前游戏的难度重新开始游戏
-            StartNewGame(difficulty);
         }
     }
 
@@ -102,13 +81,13 @@ internal sealed partial class GameManager(
     }
 
     /// <inheritdoc/>
-    public async Task RestoreFromSaveDataAsync()
+    public void RestoreFromSaveData()
     {
         // 释放当前游戏实例
         Game?.Dispose();
 
         // 从游戏数据存储库获取存档数据
-        var saveData = await _dataRepository.GetGameSaveDataAsync().ConfigureAwait(false);
+        var saveData = _dataRepository.SaveData;
 
         // 存档数据应该存在, 因为不存在存档数据的情况下, UI 不应该显示调用此方法的选项
         Debug.Assert(saveData is not null, "Save data should exist when restoring a game.");
@@ -118,6 +97,38 @@ internal sealed partial class GameManager(
 
         // 记录游戏从存档数据恢复的日志
         LogGameRestoredFromSaveData();
+    }
+
+    /// <inheritdoc/>
+    public void RestartCurrentGame()
+    {
+        // 如果当前没有游戏正在进行, 则不需要重新开始
+        if (Game is null) { return; }
+
+        // 获取当前游戏的难度
+        var difficulty = Game.Difficulty;
+
+        // 根据当前游戏的难度重新开始游戏
+        if (difficulty is GameDifficulty.Custom)
+        {
+            // 如果当前游戏是自定义难度, 则使用当前游戏的配置和种子重新开始游戏
+            StartNewGame(Game.Config, Game.Seed);
+        }
+        else
+        {
+            // 如果当前游戏是非自定义难度, 则使用当前游戏的难度重新开始游戏
+            StartNewGame(difficulty);
+        }
+    }
+
+    /// <inheritdoc/>
+    public void ExitWithoutSaving()
+    {
+        // 释放当前游戏实例
+        Game?.Dispose();
+
+        // 将当前游戏实例设置为 null, 表示没有游戏正在进行
+        Game = null;
     }
 
     /// <inheritdoc/>
@@ -140,16 +151,6 @@ internal sealed partial class GameManager(
 
         // 返回保存结果
         return saveResult;
-    }
-
-    /// <inheritdoc/>
-    public void ExitWithoutSaving()
-    {
-        // 释放当前游戏实例
-        Game?.Dispose();
-
-        // 将当前游戏实例设置为 null, 表示没有游戏正在进行
-        Game = null;
     }
 
     /// <summary>

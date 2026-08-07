@@ -22,11 +22,6 @@ public interface IGameManager
     IGame? Game { get; }
 
     /// <summary>
-    /// 重新开始当前游戏
-    /// </summary>
-    void RestartCurrentGame();
-
-    /// <summary>
     /// 开始非自定义难度的游戏, 如果当前有游戏正在进行, 则会结束当前游戏并开始新游戏
     /// </summary>
     /// <param name="difficulty">游戏难度</param>
@@ -44,16 +39,21 @@ public interface IGameManager
     /// <summary>
     /// 从存档数据恢复游戏
     /// </summary>
-    Task RestoreFromSaveDataAsync();
+    void RestoreFromSaveData();
+
+    /// <summary>
+    /// 重新开始当前游戏
+    /// </summary>
+    void RestartCurrentGame();
+
+    /// <summary>
+    /// 不保存当前游戏并退出
+    /// </summary>
+    void ExitWithoutSaving();
 
     /// <summary>
     /// 保存并退出当前游戏
     /// </summary>
     /// <returns><see langword="true"/> 如果保存成功, <see langword="false"/> 如果保存失败</returns>
     Task<bool> SaveAndExitAsync();
-
-    /// <summary>
-    /// 不保存当前游戏并退出
-    /// </summary>
-    void ExitWithoutSaving();
 }

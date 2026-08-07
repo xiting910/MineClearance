@@ -10,15 +10,16 @@ namespace MineClearance.Core.Interfaces;
 public interface IGameDataRepository
 {
     /// <summary>
-    /// 获取是否存在未完成的游戏存档
-    /// </summary>
-    bool HasGameSaveData { get; }
-
-    /// <summary>
-    /// 获取存档数据, 如果没有存档数据, 则返回 <see langword="null"/>
+    /// 获取存档数据
     /// </summary>
     /// <returns>存档数据, 如果没有存档数据, 则返回 <see langword="null"/></returns>
-    Task<GameSaveData?> GetGameSaveDataAsync();
+    GameSaveData? SaveData { get; }
+
+    /// <summary>
+    /// 获取游戏结果记录列表, 按照时间倒序排列
+    /// </summary>
+    /// <returns>游戏结果记录列表</returns>
+    IReadOnlyList<GameResult> GameResults { get; }
 
     /// <summary>
     /// 保存存档数据, 会覆盖之前的存档数据, 如果传入 <see langword="null"/> 则会删除存档数据
@@ -26,12 +27,6 @@ public interface IGameDataRepository
     /// <param name="data">存档数据</param>
     /// <returns><see langword="true"/> 表示保存成功, <see langword="false"/> 表示保存失败</returns>
     Task<bool> SaveGameSaveDataAsync(GameSaveData? data);
-
-    /// <summary>
-    /// 获取游戏结果记录列表, 按照时间倒序排列
-    /// </summary>
-    /// <returns>游戏结果记录列表</returns>
-    IAsyncEnumerable<GameResult> GetGameResultsAsync();
 
     /// <summary>
     /// 添加一条游戏结果记录

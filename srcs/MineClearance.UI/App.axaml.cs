@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using System;
 
 namespace MineClearance.UI;
@@ -22,5 +23,15 @@ public sealed partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         base.OnFrameworkInitializationCompleted();
+
+        // 如果应用程序生命周期是经典桌面样式, 则设置主窗口
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            // desktop.MainWindow = Services.GetRequiredService<MainWindow>();
+        }
+        else
+        {
+            throw new NotSupportedException("Not supported application lifetime.");
+        }
     }
 }

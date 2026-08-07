@@ -23,5 +23,14 @@
 - Core 层: ILogger 结构化日志 (LoggerMessage 源代码生成), Game / GameManager 注入日志记录器
 - UI 层: Avalonia 应用骨架 (App.axaml, ViewLocator, DI 容器初始化, InterFont)
 - 工程化: 全局 AssemblyMetadata, CPM 补充 Configuration / Logging Abstractions 包
+- Infrastructure 层: 游戏数据仓储实现 (GameDataRepository, 存档与历史记录 Json 持久化, BitArray / Position 自定义转换器, LoggerMessage 日志)
+- Infrastructure 层: 文件日志记录器 (FileLoggerProvider, 日志级别可配置并持久化, 日志文件轮转)
+- UI 层: 接入 Infrastructure 服务与配置加载, 应用数据目录初始化与日志轮转
+- 工程化: CPM 补充 Configuration.Json 包
+
+### Changed
+
+- Core 层: IGameDataRepository 异步方法改为同步属性 (SaveData, GameResults), 移除 HasGameSaveData 与 GetGameSaveDataAsync / GetGameResultsAsync
+- Core 层: IGameManager.RestoreFromSaveDataAsync 改为同步方法 RestoreFromSaveData
 
 [Unreleased]: https://github.com/xiting910/MineClearance/commits/main

@@ -15,7 +15,8 @@ namespace MineClearance.Core.Services;
 /// <param name="_boardFactory">游戏棋盘字典工厂</param>
 internal sealed class GameFactory(
     IServiceScopeFactory _serviceScopeFactory,
-    IGameBoardDictionaryFactory _boardFactory) : IGameFactory
+    IGameBoardDictionaryFactory _boardFactory
+) : IGameFactory
 {
     /// <inheritdoc/>
     public IGame CreateGame(GameDifficulty difficulty)
