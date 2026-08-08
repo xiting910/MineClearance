@@ -3,7 +3,7 @@ using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MineClearance.Infrastructure.Interfaces;
+using MineClearance.Infrastructure;
 using MineClearance.UI.Models;
 using System;
 using System.Collections.Generic;
@@ -27,7 +27,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>
     /// 文件日志记录器选项
     /// </summary>
-    private readonly IFileLoggerOptions _loggerOptions;
+    private readonly FileLoggerOptions _loggerOptions;
+
+    /// <summary>
+    /// 全局短暂提示视图模型, 用于操作失败时的反馈
+    /// </summary>
+    private readonly ToastViewModel _toast;
 
     /// <summary>
     /// 可选择的主题模式列表
@@ -87,10 +92,16 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// </summary>
     /// <param name="uiOptions">UI 配置</param>
     /// <param name="loggerOptions">文件日志记录器选项</param>
-    public SettingsViewModel(UIOptions uiOptions, IFileLoggerOptions loggerOptions)
+    /// <param name="toastViewModel">全局短暂提示视图模型</param>
+    public SettingsViewModel(
+        UIOptions uiOptions,
+        FileLoggerOptions loggerOptions,
+        ToastViewModel toastViewModel)
     {
         _uiOptions = uiOptions;
         _loggerOptions = loggerOptions;
+        _toast = toastViewModel;
+
         Theme = uiOptions.Theme;
         ToastDurationSeconds = uiOptions.ToastDurationSeconds;
         Level = loggerOptions.Level;
@@ -143,10 +154,10 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 打开日志文件夹, 不存在时先创建
+    /// 打开日志文件夹, 失败时通过 Toast 提示
     /// </summary>
     [RelayCommand]
-    private static void OpenLogsFolder()
+    private void OpenLogsFolder()
     {
         try
         {
@@ -159,11 +170,14 @@ public sealed partial class SettingsViewModel : ObservableObject
                 UseShellExecute = true
             });
         }
-        catch { /* 忽略打开文件夹失败时的异常 */ }
+        catch (Exception ex)
+        {
+            _toast.Show($"打开日志文件夹失败: {ex.Message}");
+        }
     }
 
     /// <summary>
-    /// 打开 GitHub 仓库地址, 由视图在点击链接时调用
+    /// 打开 GitHub 仓库地址, 由视图在点击链接时调用, 失败时通过 Toast 提示
     /// </summary>
     public void OpenGitHub()
     {
@@ -175,6 +189,9 @@ public sealed partial class SettingsViewModel : ObservableObject
                 UseShellExecute = true
             });
         }
-        catch { /* 忽略打开链接失败时的异常 */ }
+        catch (Exception ex)
+        {
+            _toast.Show($"打开链接失败: {ex.Message}");
+        }
     }
 }

@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using MineClearance.Infrastructure.Interfaces;
 using System;
 using System.IO;
 using System.Text;
@@ -10,7 +9,7 @@ namespace MineClearance.Infrastructure.Services;
 /// 文件日志记录器提供程序实现类
 /// </summary>
 /// <param name="_options">文件日志记录器选项</param>
-internal sealed class FileLoggerProvider(IFileLoggerOptions _options) : ILoggerProvider
+internal sealed class FileLoggerProvider(FileLoggerOptions _options) : ILoggerProvider
 {
     /// <summary>
     /// 文件日志记录器的写入器
@@ -41,7 +40,7 @@ internal sealed class FileLoggerProvider(IFileLoggerOptions _options) : ILoggerP
     /// <param name="_writer">文件日志记录器的写入器</param>
     /// <param name="_categoryName">日志类别名称</param>
     private sealed class FileLogger(
-        IFileLoggerOptions _options,
+        FileLoggerOptions _options,
         StreamWriter _writer,
         string _categoryName
     ) : ILogger

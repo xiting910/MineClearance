@@ -15,7 +15,8 @@
       <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto" RowSpacing="8">
         <TextBlock Text="主题:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
-        <ComboBox Grid.Column="1" ItemsSource="{Binding Themes}" SelectedItem="{Binding Theme}"
+        <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding Themes}" SelectedItem="{Binding Theme}"
                   ToolTip.Tip="切换界面配色模式, 修改后立即生效并自动保存">
           <ComboBox.ItemTemplate>
             <DataTemplate x:DataType="models:ThemeMode">
@@ -38,10 +39,14 @@
       <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto" RowSpacing="8">
         <TextBlock Text="日志级别:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
-        <ComboBox Grid.Column="1" ItemsSource="{Binding Levels}" SelectedItem="{Binding Level}"
+        <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding Levels}" SelectedItem="{Binding Level}"
                   ToolTip.Tip="写入日志文件的最低级别, 修改后立即生效并自动保存"/>
-        <Button Grid.Row="1" Content="打开日志文件夹" Command="{Binding OpenLogsFolderCommand}"
-                HorizontalAlignment="Left" Padding="12,6"
+        <TextBlock Grid.Row="1" Text="操作:" VerticalAlignment="Center"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+        <Button Grid.Row="1" Grid.Column="1" Content="打开日志文件夹" Command="{Binding OpenLogsFolderCommand}"
+                HorizontalAlignment="Stretch" Padding="12,6"
+                ToolTip.Tip="在文件资源管理器中打开日志文件夹"
                 Background="{DynamicResource PrimaryButtonBackgroundBrush}" Foreground="{DynamicResource PrimaryButtonForegroundBrush}"/>
       </Grid>
 

@@ -1,19 +1,22 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using MineClearance.Infrastructure.Interfaces;
 using System;
 using System.IO;
 using System.Text.Json.Nodes;
 
-namespace MineClearance.Infrastructure.Services;
+namespace MineClearance.Infrastructure;
 
 /// <summary>
 /// 文件日志记录器选项实现类
 /// </summary>
 /// <param name="_configuration">应用程序配置对象</param>
-internal sealed class FileLoggerOptions(IConfiguration _configuration) : IFileLoggerOptions
+#pragma warning disable CA1707
+public sealed class FileLoggerOptions(IConfiguration _configuration)
+#pragma warning restore CA1707
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// 日志级别
+    /// </summary>
     public LogLevel Level
     {
         get;

@@ -9,7 +9,9 @@ namespace MineClearance.UI.Models;
 /// UI 配置实现类, 属性变化时自动保存到文件
 /// </summary>
 /// <param name="_configuration">应用程序配置对象</param>
+#pragma warning disable CA1707
 public sealed class UIOptions(IConfiguration _configuration)
+#pragma warning restore CA1707
 {
     /// <inheritdoc/>
     public ThemeMode Theme

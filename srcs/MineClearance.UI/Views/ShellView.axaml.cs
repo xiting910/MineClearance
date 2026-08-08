@@ -64,7 +64,7 @@ public sealed partial class ShellView : UserControl
             return;
         }
 
-        _settingsWindow = new SettingsWindow
+        _settingsWindow = new()
         {
             DataContext = App.Services.GetRequiredService<SettingsViewModel>()
         };

@@ -81,12 +81,10 @@ MineClearance/
 │   │   └── IServiceCollectionExtensions.cs         # DI 注册扩展
 │   ├── MineClearance.Infrastructure/               # 基础设施层 — 数据访问、外部服务实现
 │   │   ├── Constants.cs                            #   常量 (数据目录, 文件路径, Json 选项)
+│   │   ├── FileLoggerOptions.cs                    #   文件日志选项
 │   │   ├── ILoggingBuilderExtensions.cs            #   日志构建器扩展 (AddFileLogger)
 │   │   ├── IServiceCollectionExtensions.cs         #   DI 注册扩展 (AddInfrastructure)
-│   │   ├── Interfaces/                             #   接口定义
-│   │   │   └── IFileLoggerOptions.cs               #     文件日志选项接口
 │   │   └── Services/                               #   服务实现
-│   │       ├── FileLoggerOptions.cs                #     文件日志选项实现
 │   │       ├── FileLoggerProvider.cs               #     文件日志提供程序实现
 │   │       ├── GameDataRepository.cs               #     游戏数据仓储实现
 │   │       ├── GameDataRepository.Converter.cs     #     游戏数据仓储 Json 转换器

@@ -40,6 +40,8 @@
 
 ### Changed
 
+- Infrastructure 层: 移除 IFileLoggerOptions 接口, FileLoggerOptions 改为 public 具体类并移至项目根目录, DI 注册直接使用具体类
+- UI 层: 设置窗口打开日志文件夹 / GitHub 链接失败时通过 Toast 提示错误信息, 设置项控件改为拉伸布局并补充操作标签行与按钮 ToolTip
 - UI 层: 日志轮转改为仅最新日志文件存在且非空时执行
 - Core 层: IGameDataRepository 异步方法改为同步属性 (SaveData, GameResults), 移除 HasGameSaveData 与 GetGameSaveDataAsync / GetGameResultsAsync
 - Core 层: IGameManager.RestoreFromSaveDataAsync 改为同步方法 RestoreFromSaveData
