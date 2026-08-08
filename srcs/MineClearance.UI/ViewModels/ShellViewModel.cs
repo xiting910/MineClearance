@@ -37,6 +37,24 @@ public sealed partial class ShellViewModel : ObservableObject
     public partial object CurrentView { get; set; }
 
     /// <summary>
+    /// 主视图是否可见
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsMainViewVisible { get; set; }
+
+    /// <summary>
+    /// 游戏视图是否可见
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsGameViewVisible { get; set; }
+
+    /// <summary>
+    /// 历史记录视图是否可见
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsHistoryViewVisible { get; set; }
+
+    /// <summary>
     /// 请求打开设置窗口的事件, 由视图层创建窗口
     /// </summary>
     public event Action? SettingsWindowRequested;
@@ -62,6 +80,20 @@ public sealed partial class ShellViewModel : ObservableObject
 
         // 订阅主视图的导航请求
         main.NavigationRequested += OnNavigationRequested;
+
+        // 订阅游戏视图返回主视图的请求
+        game.MainViewRequested += ShowMainView;
+    }
+
+    /// <summary>
+    /// 当前视图变化时同步各视图的可见性, 视图常驻可视树以便复用控件
+    /// </summary>
+    /// <param name="value">新的当前视图</param>
+    partial void OnCurrentViewChanged(object value)
+    {
+        IsMainViewVisible = value is MainViewModel;
+        IsGameViewVisible = value is GameViewModel;
+        IsHistoryViewVisible = value is HistoryViewModel;
     }
 
     /// <summary>

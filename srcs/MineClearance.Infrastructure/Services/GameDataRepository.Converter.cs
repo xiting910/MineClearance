@@ -68,7 +68,7 @@ internal partial class GameDataRepository
         {
             using var document = JsonDocument.ParseValue(ref reader);
             var root = document.RootElement;
-            return new Position(
+            return new(
                 root.GetProperty(nameof(Position.Row)).GetInt32(),
                 root.GetProperty(nameof(Position.Col)).GetInt32()
             );

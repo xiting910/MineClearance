@@ -86,9 +86,10 @@ internal sealed class GameTimer : IGameTimer
     }
 
     /// <inheritdoc/>
-    public void SetInitialTime(TimeSpan initialTime)
+    public void Initial(DateTime startTime, TimeSpan elapsed)
     {
-        Debug.Assert(!_stopwatch.IsRunning, "Cannot set initial time while the timer is running.");
-        Elapsed = initialTime;
+        Debug.Assert(!_stopwatch.IsRunning, "GameTimer should not be running when initializing.");
+        FirstStartTime = startTime;
+        Elapsed = elapsed;
     }
 }

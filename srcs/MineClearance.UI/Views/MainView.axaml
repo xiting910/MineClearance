@@ -32,7 +32,7 @@
           <!-- 棋盘参数: 难度与宽高雷数种子, 预设难度只读显示, 自定义难度可编辑, 标签配色区分 -->
           <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
             <TextBlock Text="难度:" VerticalAlignment="Center"
-                       Foreground="{DynamicResource DifficultyLabelBrush}" FontWeight="Bold"/>
+                       Foreground="{DynamicResource YellowLabelBrush}" FontWeight="Bold"/>
             <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
                       ItemsSource="{Binding Difficulties}" SelectedItem="{Binding SelectedDifficulty}">
               <ComboBox.ItemTemplate>

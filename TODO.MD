@@ -31,7 +31,7 @@ ShellWindow (主窗口)
 SettingsWindow (附加窗口, 独立打开, 非抽屉)
 ```
 
-- **视图切换**: ShellViewModel 常驻持有 `Main` / `Game` / `History` 三个子 ViewModel 实例 (均注册为单例), 通过 `[ObservableProperty] CurrentView` 切换, `ContentControl Content="{Binding CurrentView}"` 显示. 游戏视图模型常驻, 切换视图不丢游戏状态 (游戏实例本身存于 Core 的 IGameManager).
+- **视图切换**: ShellViewModel 常驻持有 `Main` / `Game` / `History` 三个子 ViewModel 实例 (均注册为单例), 通过 `[ObservableProperty] CurrentView` 切换并同步各视图可见性. 三视图常驻 ShellView 的 Panel (宿主层 IsVisible 切换而非 ContentControl 重建), 游戏视图与棋盘控件池常驻, 切换视图零重建 (游戏实例本身存于 Core 的 IGameManager).
 - **设置窗口**: 独立 Window, **窗口单例** (由 ShellView code-behind 创建, 已打开则 Activate), SettingsViewModel 每次打开新建 (Transient). VM 不持有 View, 弹窗职责在 View 层
 - **所有通知统一为右下角 Toast**: 游戏结果提示、删除/清空历史反馈、保存反馈、错误提示等一律走 ToastViewModel.Show(). 不使用系统 MessageBox.
 
@@ -53,8 +53,8 @@ SettingsWindow (附加窗口, 独立打开, 非抽屉)
 
 | 文件                    | 职责                                                                                        |
 | ----------------------- | ------------------------------------------------------------------------------------------- |
-| Views/ShellWindow.axaml | 桌面主窗口: Title "MineClearance", Icon logo.ico, 尺寸约 1000×700, 居中启动, 承载 ShellView |
-| Views/ShellView.axaml   | 根视图: 3 视图 ContentControl + 全局 ToastView 覆盖层                                       |
+| Views/ShellWindow.axaml | 桌面主窗口: Title "MineClearance", Icon logo.ico, 居中启动, 承载 ShellView |
+| Views/ShellView.axaml   | 根视图: 3 视图常驻 Panel (宿主层 IsVisible 切换) + 全局 ToastView 覆盖层                  |
 
 ShellWindow 挂接 `Closing` 事件: 若游戏进行中 (状态为 WaitingStarted / InProgress / Paused), 调用 `IGameManager.SaveAndExitAsync()` 自动保存进度 (无弹窗, 主视图显示"继续游戏").
 
@@ -63,13 +63,13 @@ ShellWindow 挂接 `Closing` 事件: 若游戏进行中 (状态为 WaitingStarte
 - 标题 "扫雷游戏" (TitleForegroundBrush), 青色提示文字 (EmphasisBrush) 位于参数框顶部
 - **左侧参数输入框** (卡片大框, CardBackgroundBrush):
   - 顶部提示: "选择难度, 自定义难度可编辑棋盘参数" (青色强调)
-  - 参数 Grid 五行, 标签彩色: 难度: (黄, DifficultyLabelBrush) / 高度·宽度: (紫, VioletLabelBrush) / 雷数: (红, RedLabelBrush) / 随机种子: (灰, SecondaryTextBrush)
+  - 参数 Grid 五行, 标签彩色: 难度: (黄, YellowLabelBrush) / 高度·宽度: (紫, VioletLabelBrush) / 雷数: (红, RedLabelBrush) / 随机种子: (灰, SecondaryTextBrush)
   - 难度下拉框 (初级 / 中级 / 高级 / 大师 / 自定义, 无 ToolTip, 与参数行等宽对齐)
   - 高度 (1-30) / 宽度 (1-50) / 雷数 (1-宽×高-1, 上限随宽高联动) / 随机种子 (留空随机生成)
   - 预设难度: 参数实时显示对应预设值且不可编辑, 种子清空; 自定义难度: 允许编辑
   - 非自定义难度时卡片悬浮提示 "非自定义难度不允许输入" (ParameterInputTip)
 - **右侧按钮列**: 等宽按钮 (150px, 文本居中, 四色): 开始新游戏 (蓝 Primary) / 继续游戏 (绿 Success, 仅当 `SaveData` 存在时可见) / 历史记录 (紫 Neutral) / 设置 (橙 Accent)
-- **"开始新游戏"**: 先清空存档 (`SaveGameSaveDataAsync(null)`), 预设难度走 `StartNewGame(difficulty)`, 自定义难度以输入框参数构建 `GameConfig` + 种子走 `StartNewGame(config, seed)`, 切换至游戏视图
+- **"开始新游戏"**: 预设难度走 `StartNewGame(difficulty)`, 自定义难度以输入框参数构建 `GameConfig` + 种子走 `StartNewGame(config, seed)`, 切换至游戏视图; 清空旧存档由 GameManager.StartNewGame 内部调用 `DeleteGameSaveDataAsync()` 完成
 - 无自定义难度弹窗
 
 ### 2.3 游戏视图 GameView (核心)
@@ -78,23 +78,25 @@ ShellWindow 挂接 `Closing` 事件: 若游戏进行中 (状态为 WaitingStarte
 
 | 元素         | 绑定/说明                                                                          |
 | ------------ | ---------------------------------------------------------------------------------- |
-| 难度         | `IGame.Difficulty` 描述文本 + 地雷率                                               |
+| 状态         | `IGame.Status` 描述文本 (等待开始/进行中/已暂停/胜利/失败, 黄色)                   |
+| 难度         | `IGame.Difficulty` 描述文本 + 棋盘尺寸与雷数                                       |
 | 剩余地雷数   | 总雷数 - `Board.FlagCount`                                                         |
 | 已打开格子数 | `Board.OpenedCount`                                                                |
 | 完成度       | `IGame.Completion` 内部 0-1, 显示为百分比                                          |
 | 游戏时间     | MM:SS, DispatcherTimer (250ms, 计入常量) 调 `IGame.Timer.Refresh()` 后读 `Elapsed` |
-| 种子         | `IGame.Seed` (自定义难度可复现)                                                    |
-| 按钮         | 重新开始 / 暂停·继续 / 保存并返回主视图 / 不保存并返回主视图                       |
+| 种子         | `IGame.Seed` (灰色, 自定义难度可复现)                                              |
+| 按钮         | 重新开始 / 暂停·继续 / 保存并返回主视图 / 不保存并返回主视图 (均带 ToolTip, 右侧常驻, 宽度不足时信息区裁剪) |
 
 - 暂停: `IGame.Pause()/CancelPause()`, 暂停时棋盘上方显示"已暂停"覆盖层 (非弹窗)
 - 保存并返回主视图: `IGameManager.SaveAndExitAsync()` 保存进度 + Toast "游戏进度已保存, 下次可继续游戏"; 不保存并返回主视图: `IGameManager.ExitWithoutSaving()` 丢弃进度
 
-#### 2.3.2 棋盘渲染
+#### 2.3.2 棋盘渲染 (固定格子池 + Canvas 绝对定位)
 
-- 方案: `ItemsControl` + `ItemsPanel` = `UniformGrid` (Rows/Columns 绑定棋盘尺寸), 每格 `CellViewModel` 包装 `(Position, Cell)`
-- **数据源**: 格子集合直接由 `IGame.Board` (IGameBoardDictionary) 构建, 遍历字典为每个 (Position, Cell) 创建 CellViewModel, 渲染直接使用 Cell 实例 (AdjacentMineCount + Type), `GetCellStates()` 仅供存档序列化使用, UI 不调用
-- **首击前 Board 为 null**: 新游戏开始时格子集合为空, GameViewModel 订阅 `IGame.PropertyChanged` 监听 `Board` 属性, 首次点击地雷生成后 Board 出现, 此时才构建格子集合 (与 WaitingStarted 提示联动)
-- 格子模板: Border + TextBlock, 按 `Cell.Type` 数据触发器显示:
+- **格子池**: GameViewModel 构造时按最大棋盘 30×50 = 1500 格一次性构建固定 CellViewModel 池, 每格 X/Y 像素坐标按最大棋盘位置 × CellSize 计算且固定不变, 启动构建毫秒级无感
+- **渲染**: `ItemsControl` + `ItemsPanel` = `Canvas`; 每个格子容器通过 ItemContainerTheme 绑定 `Canvas.Left/Top` (X/Y) 与 `IsVisible` (Canvas 只读取直接子元素的布局参数, 故不能写在 DataTemplate 上); ItemsControl 宽高绑定当前棋盘像素尺寸 (`Columns×CellSize` / `Rows×CellSize`), 低难度时超出棋盘的行列格子 `IsVisible=false` 隐藏, 棋盘整体顶部居中显示 (与旧项目一致)
+- **数据更新**: UpdateBoard 全量遍历格子池只做两件事——按 `row < Rows && col < Columns` 切换 IsVisible, `UpdateCell(cell)` 替换内部 Cell 引用 (首击前 Board 为 null 或超出范围时引用共享占位 Cell); 不重建任何控件
+- **控件实例化只发生一次** (首次进入游戏视图), 此后开始/重开/切换难度/首击/视图往返全部零控件创建, 仅更新数据与可见性
+- 格子模板: 3 层 (背景 Border + 悬停高亮 Border + TextBlock), 按 `Cell.Type` 显示:
   | CellType      | 显示                                                          |
   | ------------- | ------------------------------------------------------------- |
   | Unopened      | 灰色块                                                        |
@@ -103,22 +105,20 @@ ShellWindow 挂接 `Closing` 事件: 若游戏进行中 (状态为 WaitingStarte
   | WarningNumber | 黄色块 (周围旗数超过实际雷数)                                 |
   | Flagged       | 绿色块 + 旗符号 ⚑                                             |
   | Question      | 灰块 + 问号 ?                                                 |
-  | Mine          | 红色块 + 地雷符号 ● (游戏结束后揭示全部地雷真相)              |
-- 全部格子有悬停效果
-- 格子大小: 约 24-26px, 随窗口缩放可调 (游戏视图居中)
-- 性能: 大师 30×50 = 1500 格, ItemsControl 现代硬件无压力; CellViewModel 订阅 Cell.PropertyChanged (Type 变化) 局部更新自身, Board 的 INotifyPropertyChanged (计数变化) 驱动信息栏刷新
+  | Mine          | 红色块 + 地雷符号 💣 (失败后揭示全部地雷, 踩中的格子深红色突出) |
+- 全部格子有悬停效果 (pointerover 半透明橙色高亮层)
+- 格子大小: 固定 `Constants.CellSize` = 25px 正方形
+- 性能: 数据直接由 `IGame.Board` (IGameBoardDictionary) 读取, `GetCellStates()` 仅供存档序列化使用 UI 不调用; CellViewModel 订阅 Cell.PropertyChanged (Type 变化) 局部更新自身, Board 的 INotifyPropertyChanged (计数变化) 驱动信息栏刷新
 
 #### 2.3.3 交互 (GameView code-behind 处理指针事件)
 
 | 操作           | 行为                                                                                |
 | -------------- | ----------------------------------------------------------------------------------- |
-| 左键点击       | `IGame.OpenCell(pos)` (首次点击由 Core 生成地雷, 首击保护)                          |
-| 右键点击       | 三态循环: Flagged → Question → Unopened (调用 FlagCell / QuestionCell / UnmarkCell) |
-| 左键双击数字格 | `IGame.OpenAdjacentCells(pos)` (chord 展开)                                         |
-| 右键点击数字格 | `IGame.FlagAdjacentCells(pos)` (周围未开格全插旗)                                   |
-| 按住左键滑动   | 持续 OpenCell (扫一片)                                                              |
+| 左键点击       | 统一分发 `GameViewModel.LeftClickAt(pos)`: 未打开格 `OpenCell` (首次点击由 Core 生成地雷, 踩雷记录位置突出显示), 数字格 `OpenAdjacentCells` (chord 展开) |
+| 右键点击       | 数字格 `FlagAdjacentCells` (周围未开格全插旗) + 其他格三态循环: Flagged → Question → Unopened (FlagCell / QuestionCell / UnmarkCell) |
+| 按住左键滑动   | 持续 LeftClickAt 分发 (扫一片)                                                      |
 | 按住右键滑动   | 持续三态标记                                                                        |
-| 状态提示       | WaitingStarted 时提示 "点击任意格子开始游戏"                                        |
+| 状态提示       | 等待开始/已结束状态禁止交互 (Core AssertGamePerformable), 结束由右下角 Toast 通知结果 |
 
 ### 2.4 历史记录视图 HistoryView
 
@@ -142,7 +142,7 @@ ShellWindow 挂接 `Closing` 事件: 若游戏进行中 (状态为 WaitingStarte
 
 | 区域        | 标题色                           | 内容                                                                 |
 | ----------- | -------------------------------- | -------------------------------------------------------------------- |
-| UI 配置     | 蓝 (TitleForegroundBrush)        | 主题 ComboBox (跟随系统/浅色/深色, 即时切换) + Toast 显示时长 (0-10 秒) |
+| UI 配置     | 蓝 (TitleForegroundBrush)        | 主题 ComboBox (跟随系统/浅色/深色, 即时切换) + Toast 显示时长 (0-20 秒, 默认 5) |
 | 日志        | 紫 (VioletLabelBrush)            | 日志级别 ComboBox + 打开日志文件夹按钮 (最左, 蓝 Primary)            |
 | 关于        | 红 (RedLabelBrush)               | 产品/版本/作者/许可证/GitHub 链接 (AssemblyMetadata, 点击打开仓库)   |
 
@@ -223,13 +223,14 @@ srcs/MineClearance.UI/
 
 ### 阶段 2: 游戏视图 (核心)
 
-- [ ] ViewModels/GameViewModel.cs: 订阅 IGameManager.GameChanged 与 IGame.PropertyChanged (监听 Board 出现后构建格子集合), 绑定 IGame / Board / Timer; DispatcherTimer 刷新计时
-- [ ] ViewModels/CellViewModel.cs: 格子包装 + 数字颜色/符号
-- [ ] Views/GameView.axaml: 信息栏 + 棋盘 ItemsControl (UniformGrid) + 暂停/结束覆盖层
-- [ ] Views/GameView.axaml.cs: 指针交互 (左右键/三态循环/双击 chord/滑动)
-- [ ] 结束覆盖层: 胜利/失败揭示地雷真相 + "再来一局" / "保存并返回" / "不保存并返回" + 用时/完成度 (显示为百分比)
-- [ ] 暂停覆盖层 + 保存并返回 (SaveAndExitAsync) / 不保存并返回 (ExitWithoutSaving) + Toast
-- [ ] 验证: 完整玩一局 (胜负都验证), 首击保护, chord, 警告数字, 暂停, 重开, 返回自动保存
+- [x] ViewModels/GameViewModel.cs: 订阅 IGameManager 的 INotifyPropertyChanging/Changed (Game 切换) 与 IGame.PropertyChanged (Board 出现/状态/结果/完成度), 绑定 IGame / Board / Timer; DispatcherTimer 刷新计时; 固定 1500 格 CellViewModel 池 (启动构建, UpdateBoard 全量更新引用与可见性)
+- [x] ViewModels/CellViewModel.cs: 格子包装 (Position + Cell, UpdateCell 替换引用) + X/Y 像素坐标 + IsVisible + 数字颜色/符号
+- [x] Views/GameView.axaml: 信息栏 (按钮右侧常驻/信息区裁剪) + 棋盘 ItemsControl (Canvas + ItemContainerTheme 定位) + 暂停覆盖层 (只覆盖棋盘)
+- [x] Views/GameView.axaml.cs: 指针交互 (左键统一分发/右键三态循环+数字格插旗/滑动持续操作/位置换算用 Position.IsInBounds)
+- [x] 游戏结束: 不弹窗, 右下角 Toast 提示胜负/用时/完成度 (百分比), 失败揭示全部地雷并深红标出踩中的格子
+- [x] 暂停覆盖层 + 保存并返回 (SaveAndExitAsync, 等待开始/已结束不保存不提示) / 强制返回 (ExitWithoutSaving) + Toast
+- [x] 性能: 控件池复用, 首次进入游戏视图一次性实例化, 大师难度开始/重开/切换零卡顿
+- [x] 验证: 完整玩一局 (胜负都验证), 首击保护, chord, 警告数字, 暂停, 重开, 返回自动保存
 
 ### 阶段 3: 历史记录视图
 

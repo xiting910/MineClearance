@@ -45,8 +45,9 @@ public interface IGameTimer : INotifyPropertyChanged
     void ReStart();
 
     /// <summary>
-    /// 设置计时器初始时间
+    /// 初始化计时器, 设置计时器的开始时间和已运行时间, 该方法会在游戏从存档中恢复时调用
     /// </summary>
-    /// <param name="initialTime">初始时间</param>
-    void SetInitialTime(TimeSpan initialTime);
+    /// <param name="startTime">开始时间</param>
+    /// <param name="elapsed">已用时间</param>
+    void Initial(DateTime startTime, TimeSpan elapsed);
 }

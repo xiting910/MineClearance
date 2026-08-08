@@ -22,11 +22,17 @@ public interface IGameDataRepository
     IReadOnlyList<GameResult> GameResults { get; }
 
     /// <summary>
-    /// 保存存档数据, 会覆盖之前的存档数据, 如果传入 <see langword="null"/> 则会删除存档数据
+    /// 保存存档数据, 会覆盖之前的存档数据
     /// </summary>
     /// <param name="data">存档数据</param>
     /// <returns><see langword="true"/> 表示保存成功, <see langword="false"/> 表示保存失败</returns>
-    Task<bool> SaveGameSaveDataAsync(GameSaveData? data);
+    Task<bool> SaveGameSaveDataAsync(GameSaveData data);
+
+    /// <summary>
+    /// 删除存档数据, 会清空之前的存档数据
+    /// </summary>
+    /// <returns><see langword="true"/> 表示删除成功, <see langword="false"/> 表示删除失败</returns>
+    Task<bool> DeleteGameSaveDataAsync();
 
     /// <summary>
     /// 添加一条游戏结果记录

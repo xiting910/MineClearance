@@ -14,7 +14,7 @@
 
 - 🖥️ **跨平台支持** — Windows / Linux / macOS
 - 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
-- 🎮 **经典扫雷玩法** — 左键翻开、右键标旗/问号、双击数字格自动翻开周围、右键数字格自动标旗周围、警告数字检测
+- 🎮 **经典扫雷玩法** — 左键翻开, 点击数字格自动展开周围, 右键标旗/问号 (数字格一键插旗周围), 按住滑动连续操作, 警告数字检测
 - 🧩 **MVVM 模式** — 基于 CommunityToolkit.Mvvm 源代码生成器
 - 🎨 **主题切换** — 跟随系统 / 浅色 / 深色, 即时生效并自动保存
 - ⚙️ **设置中心** — 主题 / Toast 时长 / 日志级别即时配置, 关于信息
@@ -60,7 +60,6 @@ MineClearance/
 │   │   │   └── ISolvabilityChecker.cs              #     可解性检查器接口 (internal)
 │   │   ├── Models/                                 #   领域模型
 │   │   │   ├── Cell.cs                             #     游戏格子 (INotifyPropertyChanged)
-│   │   │   ├── GameChangedEventArgs.cs             #     游戏变更事件参数
 │   │   │   └── Records/                            #     记录类型
 │   │   │       ├── GameConfig.cs                   #       游戏配置
 │   │   │       ├── GameResult.cs                   #       游戏结果
@@ -101,7 +100,8 @@ MineClearance/
 │       ├── Program.cs                              #   应用入口 (DI + Avalonia 启动)
 │       ├── ViewLocator.cs                          #   ViewModel → View 定位器
 │       ├── ViewModels/                             #   视图模型
-│       │   ├── GameViewModel.cs                    #     游戏视图模型
+│       │   ├── CellViewModel.cs                    #     格子视图模型 (固定格子池)
+│       │   ├── GameViewModel.cs                    #     游戏视图模型 (固定格子池/交互分发)
 │       │   ├── HistoryViewModel.cs                 #     历史记录视图模型
 │       │   ├── MainViewModel.cs                    #     主视图模型 (难度选择/参数输入/导航)
 │       │   ├── SettingsViewModel.cs                #     设置视图模型

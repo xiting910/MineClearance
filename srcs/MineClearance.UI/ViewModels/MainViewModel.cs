@@ -201,17 +201,11 @@ public sealed partial class MainViewModel : ObservableObject
             // 验证配置有效性, 无效则不开始游戏
             if (!config.IsValid()) { return; }
 
-            // 开始新游戏会放弃之前的游戏进度, 清空存档
-            _ = await _dataRepository.SaveGameSaveDataAsync(null);
-
             // 自定义难度允许玩家指定随机种子, 若输入框为空则随机生成
             _gameManager.StartNewGame(config, int.TryParse(SeedText.Trim(), out var parsed) ? parsed : null);
         }
         else
         {
-            // 开始新游戏会放弃之前的游戏进度, 清空存档
-            _ = await _dataRepository.SaveGameSaveDataAsync(null);
-
             // 预设难度: 直接以指定难度开始游戏
             _gameManager.StartNewGame(difficulty.Value);
         }

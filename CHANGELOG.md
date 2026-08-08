@@ -37,6 +37,11 @@
 - UI 层: Program.cs 注册 UI 服务与全部 ViewModel (Shell / Main / Game / History / Toast 为单例, Settings 为 Transient)
 - 工程化: CPM 补充 Avalonia.Controls.DataGrid 包
 - 文档: TODO.MD UI 层开发计划 (分阶段任务清单)
+- UI 层: 游戏视图完整实现 (固定 1500 格 CellViewModel 池 + Canvas 绝对定位渲染, 首击前使用占位格子, 重开/切换视图零控件重建)
+- UI 层: CellViewModel (格子显示文本与经典数字配色, 踩中地雷深红突出)
+- UI 层: 游戏指针交互 (左键开格/点击数字格展开周围, 右键三态循环/数字格一键插旗, 按住滑动连续操作)
+- UI 层: 游戏信息栏 (状态/难度/剩余地雷/已打开/完成度/时间/种子) 与暂停覆盖层, 游戏结束通过 Toast 提示结果
+- Core 层: 游戏失败时揭示全部地雷, 胜利时自动将未开地雷格标记为旗
 
 ### Changed
 
@@ -45,5 +50,14 @@
 - UI 层: 日志轮转改为仅最新日志文件存在且非空时执行
 - Core 层: IGameDataRepository 异步方法改为同步属性 (SaveData, GameResults), 移除 HasGameSaveData 与 GetGameSaveDataAsync / GetGameResultsAsync
 - Core 层: IGameManager.RestoreFromSaveDataAsync 改为同步方法 RestoreFromSaveData
+- Core 层: IGameManager 移除 GameChanged 事件, 改为实现 INotifyPropertyChanging/INotifyPropertyChanged
+- Core 层: IGameDataRepository 新增 DeleteGameSaveDataAsync, SaveGameSaveDataAsync 不再接受 null 存档; 开始新游戏与游戏结束时自动清空存档
+- Core 层: IGameTimer.SetInitialTime 改为 Initial (记录开始时间与已用时间), 支持存档恢复后继续计时
+- UI 层: 视图切换由 ContentControl 重建改为三视图常驻 Panel 宿主层 IsVisible 切换
+- UI 层: 主视图清空存档逻辑移入 GameManager.StartNewGame; Toast 默认时长 3→5 秒且上限 10→20 秒, 新增 GreenLabelBrush 并重命名 DifficultyLabelBrush 为 YellowLabelBrush
+
+### Fixed
+
+- Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 
 [Unreleased]: https://github.com/xiting910/MineClearance/commits/main

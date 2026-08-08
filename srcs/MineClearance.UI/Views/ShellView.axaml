@@ -7,8 +7,16 @@
 
   <Panel>
 
-    <!-- 当前视图 -->
-    <ContentControl Content="{Binding CurrentView}"/>
+    <!-- 三个视图常驻可视树, 通过宿主层切换可见性, 避免每次切换重建视图与棋盘控件 -->
+    <Panel IsVisible="{Binding IsMainViewVisible}">
+      <views:MainView DataContext="{Binding Main}"/>
+    </Panel>
+    <Panel IsVisible="{Binding IsGameViewVisible}">
+      <views:GameView DataContext="{Binding Game}"/>
+    </Panel>
+    <Panel IsVisible="{Binding IsHistoryViewVisible}">
+      <views:HistoryView DataContext="{Binding History}"/>
+    </Panel>
 
     <!-- 全局 Toast 通知 -->
     <views:ToastView DataContext="{Binding Toast}"/>

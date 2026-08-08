@@ -27,7 +27,7 @@
         <TextBlock Grid.Row="1" Text="Toast 显示时间 (秒):" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
         <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding ToastDurationSeconds}"
-                       Minimum="0" Maximum="10" Increment="0.5" FormatString="0.0"
+                       Minimum="0" Maximum="20" Increment="0.5" FormatString="0.0"
                        ToolTip.Tip="右下角提示的显示时间 (秒), 修改后立即生效并自动保存"/>
       </Grid>
 

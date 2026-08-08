@@ -2,8 +2,158 @@
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:MineClearance.UI.ViewModels"
-             x:DataType="vm:GameViewModel">
+             xmlns:shared="using:MineClearance.UI"
+             x:DataType="vm:GameViewModel"
+             Background="{DynamicResource WindowBackgroundBrush}">
 
-  <TextBlock Text="游戏视图" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24"/>
+  <Panel>
+
+    <!-- 未开始游戏时的占位提示 -->
+    <TextBlock Text="尚未开始游戏, 请返回主视图选择难度" FontSize="20"
+               Foreground="{DynamicResource SecondaryTextBrush}"
+               HorizontalAlignment="Center" VerticalAlignment="Center"
+               IsVisible="{Binding !HasGame}"/>
+
+    <!-- 游戏区 -->
+    <DockPanel IsVisible="{Binding HasGame}">
+
+      <!-- 顶部信息栏: 按钮右侧常驻, 信息区空间不足时自动裁剪 -->
+      <Border DockPanel.Dock="Top" Padding="12,8" ClipToBounds="True"
+              Background="{DynamicResource CardBackgroundBrush}"
+              BorderBrush="{DynamicResource SeparatorBrush}" BorderThickness="0,0,0,1">
+        <DockPanel>
+
+          <!-- 操作按钮, 右侧常驻 -->
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <Button Content="重新开始" Command="{Binding RestartCommand}" Padding="10,4"
+                    ToolTip.Tip="以当前参数重新开始游戏"
+                    Background="{DynamicResource YellowLabelBrush}" Foreground="#1A1D24"/>
+            <Button Content="{Binding PauseButtonText}" Command="{Binding PauseResumeCommand}" Padding="10,4"
+                    ToolTip.Tip="暂停或继续当前游戏"
+                    Background="{DynamicResource AccentButtonBackgroundBrush}" Foreground="{DynamicResource AccentButtonForegroundBrush}"/>
+            <Button Content="返回" Command="{Binding SaveAndBackCommand}" Padding="10,4"
+                    ToolTip.Tip="返回主视图, 进行中的游戏自动保存进度"
+                    Background="{DynamicResource SuccessButtonBackgroundBrush}" Foreground="{DynamicResource SuccessButtonForegroundBrush}"/>
+            <Button Content="强制返回" Command="{Binding ExitWithoutSaveCommand}" Padding="10,4"
+                    ToolTip.Tip="不保存进度, 强制返回主视图"
+                    Background="{DynamicResource DangerButtonBackgroundBrush}" Foreground="{DynamicResource DangerButtonForegroundBrush}"/>
+          </StackPanel>
+
+          <!-- 信息区, 填满剩余空间, 超出部分裁剪不覆盖按钮, 状态在最左侧优先可见 -->
+          <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" ClipToBounds="True">
+
+            <!-- 状态 (黄) -->
+            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+              <TextBlock Text="状态:" Foreground="{DynamicResource YellowLabelBrush}" FontWeight="Bold"/>
+              <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- 难度 (蓝) -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+              <TextBlock Text="难度:" Foreground="{DynamicResource TitleForegroundBrush}" FontWeight="Bold"/>
+              <TextBlock Text="{Binding DifficultyText}" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- 剩余地雷 (红) -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+              <TextBlock Text="剩余地雷:" Foreground="{DynamicResource RedLabelBrush}" FontWeight="Bold"/>
+              <TextBlock Text="{Binding RemainingMines}" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- 已打开 (紫) -->
+            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+              <TextBlock Text="已打开:" Foreground="{DynamicResource VioletLabelBrush}" FontWeight="Bold"/>
+              <TextBlock Text="{Binding OpenedCount}" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- 完成度 (绿) -->
+            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+              <TextBlock Text="完成度:" Foreground="{DynamicResource GreenLabelBrush}" FontWeight="Bold"/>
+              <TextBlock Text="{Binding CompletionText}" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- 时间 (青) -->
+            <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+              <TextBlock Text="时间:" Foreground="{DynamicResource EmphasisBrush}" FontWeight="Bold"/>
+              <TextBlock Text="{Binding TimeText}" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- 种子 (灰) -->
+            <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+              <TextBlock Text="种子:" Foreground="{DynamicResource SecondaryTextBrush}" FontWeight="Bold"/>
+              <TextBlock Text="{Binding Seed}" VerticalAlignment="Center"/>
+            </StackPanel>
+
+          </Grid>
+
+        </DockPanel>
+      </Border>
+
+      <!-- 棋盘区与暂停覆盖层, 靠近信息栏下方居中 -->
+      <Panel>
+
+        <Border Margin="16" Padding="8" CornerRadius="8"
+                Background="{DynamicResource CardBackgroundBrush}"
+                BorderBrush="{DynamicResource SeparatorBrush}" BorderThickness="1"
+                HorizontalAlignment="Center" VerticalAlignment="Top"
+                MaxWidth="1500">
+          <ItemsControl x:Name="BoardItemsControl" ItemsSource="{Binding Cells}"
+                        Width="{Binding BoardPixelWidth}" Height="{Binding BoardPixelHeight}"
+                        PointerPressed="OnBoardPointerPressed"
+                        PointerMoved="OnBoardPointerMoved"
+                        PointerReleased="OnBoardPointerReleased">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <Canvas/>
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <!-- 容器定位: Canvas 只读取直接子元素 (容器) 的布局参数, 故 Canvas.Left/Top 与可见性绑定在容器主题上 -->
+            <ItemsControl.ItemContainerTheme>
+              <ControlTheme TargetType="ContentPresenter">
+                <Setter Property="Canvas.Left" Value="{Binding X, x:DataType=vm:CellViewModel}"/>
+                <Setter Property="Canvas.Top" Value="{Binding Y, x:DataType=vm:CellViewModel}"/>
+                <Setter Property="IsVisible" Value="{Binding IsVisible, x:DataType=vm:CellViewModel}"/>
+              </ControlTheme>
+            </ItemsControl.ItemContainerTheme>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:CellViewModel">
+                <Grid Width="{x:Static shared:Constants.CellSize}" Height="{x:Static shared:Constants.CellSize}">
+                  <Border Background="{Binding Background}" BorderBrush="#00000022" BorderThickness="1"/>
+                  <!-- 悬停高亮层, 指针悬停时叠加半透明橙色 -->
+                  <Border>
+                    <Border.Styles>
+                      <Style Selector="Border">
+                        <Setter Property="Background" Value="Transparent"/>
+                      </Style>
+                      <Style Selector="Border:pointerover">
+                        <Setter Property="Background" Value="#40FF8F00"/>
+                      </Style>
+                    </Border.Styles>
+                  </Border>
+                  <TextBlock Text="{Binding DisplayText}" Foreground="{Binding Foreground}"
+                             FontWeight="Bold" FontSize="15" IsHitTestVisible="False"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Border>
+
+        <!-- 暂停覆盖层, 只覆盖棋盘区域, 顶部信息栏按钮保持可点击 -->
+        <Border IsVisible="{Binding IsPaused}" Background="#B3000000" Margin="16" CornerRadius="8">
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+            <TextBlock Text="⏸ 已暂停" FontSize="36" FontWeight="Bold" Foreground="White"
+                       HorizontalAlignment="Center"/>
+            <Button Content="继续游戏" Command="{Binding PauseResumeCommand}" Padding="24,10"
+                    HorizontalAlignment="Center"
+                    Background="{DynamicResource SuccessButtonBackgroundBrush}" Foreground="{DynamicResource SuccessButtonForegroundBrush}"/>
+          </StackPanel>
+        </Border>
+
+      </Panel>
+
+    </DockPanel>
+
+  </Panel>
 
 </UserControl>

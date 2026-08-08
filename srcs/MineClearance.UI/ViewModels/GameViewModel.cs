@@ -1,11 +1,534 @@
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using MineClearance.Core;
+using MineClearance.Core.Enums;
+using MineClearance.Core.Interfaces;
+using MineClearance.Core.Models;
+using MineClearance.Core.Models.Records;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MineClearance.UI.ViewModels;
 
 /// <summary>
-/// 游戏视图模型, 负责游戏状态绑定与棋盘构建 (阶段 2 实现)
+/// 游戏视图模型, 负责游戏状态绑定, 棋盘构建, 计时刷新与游戏操作
 /// </summary>
-public sealed partial class GameViewModel : ObservableObject
+public sealed partial class GameViewModel : ObservableObject, IDisposable
 {
+    /// <summary>
+    /// 共享占位格子, 棋盘未生成或超出当前棋盘范围的格子引用它
+    /// </summary>
+    private static readonly Cell PlaceholderCell = new();
 
+    /// <summary>
+    /// 游戏管理器
+    /// </summary>
+    private readonly IGameManager _gameManager;
+
+    /// <summary>
+    /// 全局短暂提示视图模型
+    /// </summary>
+    private readonly ToastViewModel _toast;
+
+    /// <summary>
+    /// 界面状态刷新计时器, 定时触发游戏计时刷新
+    /// </summary>
+    private readonly DispatcherTimer _refreshTimer;
+
+    /// <summary>
+    /// 固定大小的格子视图模型池, 按最大棋盘行列排列只创建一次, 通过可见性复用
+    /// </summary>
+    [ObservableProperty]
+    public partial IReadOnlyList<CellViewModel> Cells { get; set; } = [];
+
+    /// <summary>
+    /// 是否存在游戏
+    /// </summary>
+    [ObservableProperty]
+    public partial bool HasGame { get; set; }
+
+    /// <summary>
+    /// 棋盘行数
+    /// </summary>
+    [ObservableProperty]
+    public partial int Rows { get; set; }
+
+    /// <summary>
+    /// 棋盘列数
+    /// </summary>
+    [ObservableProperty]
+    public partial int Columns { get; set; }
+
+    /// <summary>
+    /// 游戏状态文本 (等待开始/进行中/已暂停/胜利/失败)
+    /// </summary>
+    [ObservableProperty]
+    public partial string StatusText { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 难度文本, 包含棋盘尺寸与地雷数
+    /// </summary>
+    [ObservableProperty]
+    public partial string DifficultyText { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 剩余未标记地雷数
+    /// </summary>
+    [ObservableProperty]
+    public partial int RemainingMines { get; set; }
+
+    /// <summary>
+    /// 已打开格子数
+    /// </summary>
+    [ObservableProperty]
+    public partial int OpenedCount { get; set; }
+
+    /// <summary>
+    /// 完成度文本
+    /// </summary>
+    [ObservableProperty]
+    public partial string CompletionText { get; set; } = "0%";
+
+    /// <summary>
+    /// 游戏时间文本
+    /// </summary>
+    [ObservableProperty]
+    public partial string TimeText { get; set; } = "00:00";
+
+    /// <summary>
+    /// 随机种子
+    /// </summary>
+    [ObservableProperty]
+    public partial int Seed { get; set; }
+
+    /// <summary>
+    /// 是否等待首次点击
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsWaitingStarted { get; set; }
+
+    /// <summary>
+    /// 是否已暂停
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsPaused { get; set; }
+
+    /// <summary>
+    /// 是否已结束
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsGameEnded { get; set; }
+
+    /// <summary>
+    /// 是否胜利
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsWin { get; set; }
+
+    /// <summary>
+    /// 暂停/继续按钮文本
+    /// </summary>
+    [ObservableProperty]
+    public partial string PauseButtonText { get; set; } = "暂停";
+
+    /// <summary>
+    /// 棋盘像素宽度, 由当前列数与格子大小计算, 棋盘容器按当前棋盘自适应尺寸
+    /// </summary>
+    public double BoardPixelWidth => Columns * Constants.CellSize;
+
+    /// <summary>
+    /// 棋盘像素高度, 由当前行数与格子大小计算, 棋盘容器按当前棋盘自适应尺寸
+    /// </summary>
+    public double BoardPixelHeight => Rows * Constants.CellSize;
+
+    /// <summary>
+    /// 请求返回主视图的事件, 由壳视图模型处理
+    /// </summary>
+    public event Action? MainViewRequested;
+
+    /// <summary>
+    /// 创建游戏视图模型
+    /// </summary>
+    /// <param name="gameManager">游戏管理器</param>
+    /// <param name="toastViewModel">全局短暂提示视图模型</param>
+    public GameViewModel(IGameManager gameManager, ToastViewModel toastViewModel)
+    {
+        _gameManager = gameManager;
+        _toast = toastViewModel;
+
+        // 构建固定大小的格子视图模型池, 只创建一次, 此后所有游戏复用
+        BuildCellPool();
+
+        // 订阅游戏管理器事件: 属性变化前退订旧游戏, 属性变化后订阅新游戏
+        gameManager.PropertyChanging += OnGameManagerPropertyChanging;
+        gameManager.PropertyChanged += OnGameManagerPropertyChanged;
+
+        // 启动界面状态刷新计时器
+        _refreshTimer = new(
+            TimeSpan.FromMilliseconds(Constants.UiRefreshIntervalMilliseconds),
+            DispatcherPriority.Background,
+            OnRefreshTimerTick
+        );
+        _refreshTimer.Start();
+
+        // 绑定当前已存在的游戏
+        if (gameManager.Game is not null)
+        {
+            BindGame(gameManager.Game);
+        }
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        _refreshTimer.Stop();
+        _refreshTimer.Tick -= OnRefreshTimerTick;
+        _gameManager.PropertyChanging -= OnGameManagerPropertyChanging;
+        _gameManager.PropertyChanged -= OnGameManagerPropertyChanged;
+        UnbindGame(_gameManager.Game);
+        _gameManager.Game?.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// 行数变化时通知棋盘像素高度
+    /// </summary>
+    /// <param name="value">新的行数</param>
+    partial void OnRowsChanged(int value) => OnPropertyChanged(nameof(BoardPixelHeight));
+
+    /// <summary>
+    /// 列数变化时通知棋盘像素宽度
+    /// </summary>
+    /// <param name="value">新的列数</param>
+    partial void OnColumnsChanged(int value) => OnPropertyChanged(nameof(BoardPixelWidth));
+
+    /// <summary>
+    /// 左键单击处理: 按格子类型分发, 未打开格子打开 (踩雷时记录位置), 数字格子展开周围
+    /// </summary>
+    /// <param name="position">格子位置</param>
+    public void LeftClickAt(Position position)
+    {
+        var game = _gameManager.Game;
+        if (game is not { Status: GameStatus.WaitingStarted or GameStatus.InProgress }) { return; }
+
+        switch (game.Board?[position].Type)
+        {
+            case null or CellType.Unopened:
+                game.OpenCell(position);
+
+                // 点击地雷导致游戏失败时, 记录踩中的位置以便突出显示
+                if (game.Status is GameStatus.Lost)
+                {
+                    MarkHitMine(position);
+                }
+                break;
+
+            case CellType.Number or CellType.WarningNumber:
+                game.OpenAdjacentCells(position);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 在指定位置三态循环标记: 未打开 → 旗 → 问号 → 取消标记, 仅在游戏进行中时有效
+    /// </summary>
+    /// <param name="position">格子位置</param>
+    public void CycleMarkAt(Position position)
+    {
+        if (_gameManager.Game is not { Status: GameStatus.InProgress } game || game.Board is not { } board)
+        {
+            return;
+        }
+
+        switch (board[position].Type)
+        {
+            case CellType.Unopened: game.FlagCell(position); break;
+            case CellType.Flagged: game.QuestionCell(position); break;
+            case CellType.Question: game.UnmarkCell(position); break;
+        }
+    }
+
+    /// <summary>
+    /// 标记数字格周围所有未打开格子为旗, 仅对数字格有效且在游戏进行中时
+    /// </summary>
+    /// <param name="position">数字格位置</param>
+    public void FlagAdjacentAt(Position position)
+    {
+        if (_gameManager.Game is { Status: GameStatus.InProgress } game && game.Board?[position].Type is CellType.Number)
+        {
+            game.FlagAdjacentCells(position);
+        }
+    }
+
+    /// <summary>
+    /// 重新开始当前游戏
+    /// </summary>
+    [RelayCommand]
+    private void Restart()
+    {
+        _gameManager.RestartCurrentGame();
+    }
+
+    /// <summary>
+    /// 暂停或继续当前游戏
+    /// </summary>
+    [RelayCommand]
+    private void PauseResume()
+    {
+        var game = _gameManager.Game;
+        if (game is null) { return; }
+
+        if (game.Status is GameStatus.Paused)
+        {
+            game.CancelPause();
+        }
+        else
+        {
+            game.Pause();
+        }
+    }
+
+    /// <summary>
+    /// 返回主视图: 进行中 (含暂停) 的游戏保存进度并提示, 等待开始或已结束的游戏直接退出
+    /// </summary>
+    [RelayCommand]
+    private async Task SaveAndBackAsync()
+    {
+        if (_gameManager.Game is { Status: GameStatus.InProgress or GameStatus.Paused })
+        {
+            // 有实际进度的游戏: 保存并提示
+            var saved = await _gameManager.SaveAndExitAsync();
+            _toast.Show(saved ? "游戏进度已保存, 下次可继续游戏" : "保存失败");
+        }
+        else
+        {
+            // 等待开始或已结束的游戏: 无进度可存, 直接退出
+            _gameManager.ExitWithoutSaving();
+        }
+        MainViewRequested?.Invoke();
+    }
+
+    /// <summary>
+    /// 强制返回主视图, 不保存进度也不提示
+    /// </summary>
+    [RelayCommand]
+    private void ExitWithoutSave()
+    {
+        _gameManager.ExitWithoutSaving();
+        MainViewRequested?.Invoke();
+    }
+
+    /// <summary>
+    /// 构建固定大小的格子视图模型池, 按最大棋盘尺寸创建一次, 此后所有游戏复用
+    /// </summary>
+    private void BuildCellPool()
+    {
+        Cells = [.. Position.GetAllPositions(Core.Constants.MaxBoardHeight, Core.Constants.MaxBoardWidth)
+            .Select(position => new CellViewModel(position, PlaceholderCell))];
+    }
+
+    /// <summary>
+    /// 将指定位置的格子标记为踩中的地雷, 以深红色突出显示
+    /// </summary>
+    /// <param name="position">踩中的地雷位置</param>
+    private void MarkHitMine(Position position)
+    {
+        foreach (var cellViewModel in Cells)
+        {
+            if (cellViewModel.Position == position)
+            {
+                cellViewModel.SetHitMine();
+                break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 绑定游戏实例并初始化界面状态
+    /// </summary>
+    /// <param name="game">游戏实例</param>
+    private void BindGame(IGame game)
+    {
+        game.PropertyChanged += OnGamePropertyChanged;
+        HasGame = true;
+
+        var config = game.Config;
+        Rows = config.BoardHeight;
+        Columns = config.BoardWidth;
+        Seed = game.Seed;
+        DifficultyText = $"{game.Difficulty.GetDescription()} ({config.BoardHeight}x{config.BoardWidth}, {config.MineCount} 雷)";
+
+        UpdateBoard();
+        UpdateStatus();
+    }
+
+    /// <summary>
+    /// 解绑游戏实例并清理订阅, 应在 GameManager 属性变化前调用, 格子池常驻复用无需清理
+    /// </summary>
+    /// <param name="game">游戏实例</param>
+    private void UnbindGame(IGame? game)
+    {
+        game?.Board?.PropertyChanged -= OnBoardPropertyChanged;
+        game?.PropertyChanged -= OnGamePropertyChanged;
+    }
+
+    /// <summary>
+    /// 更新全部格子: 固定格子池不重建, 仅替换内部格子引用并切换可见性, 超出当前棋盘的部分隐藏
+    /// </summary>
+    private void UpdateBoard()
+    {
+        if (_gameManager.Game is not { } game) { return; }
+
+        var board = game.Board;
+        var index = 0;
+        for (var row = 0; row < Core.Constants.MaxBoardHeight; row++)
+        {
+            for (var col = 0; col < Core.Constants.MaxBoardWidth; col++)
+            {
+                var cellViewModel = Cells[index++];
+                var isInBoard = row < Rows && col < Columns;
+                cellViewModel.IsVisible = isInBoard;
+
+                // 棋盘未生成时使用占位格子, 超出当前棋盘的范围同样引用占位格子
+                cellViewModel.UpdateCell(isInBoard ? board?[new(row, col)] ?? PlaceholderCell : PlaceholderCell);
+            }
+        }
+        board?.PropertyChanged += OnBoardPropertyChanged;
+        UpdateStatus();
+    }
+
+    /// <summary>
+    /// 更新状态相关的界面显示
+    /// </summary>
+    private void UpdateStatus()
+    {
+        if (_gameManager.Game is not { } game)
+        {
+            StatusText = string.Empty;
+            IsWaitingStarted = false;
+            IsPaused = false;
+            IsGameEnded = false;
+            IsWin = false;
+            RemainingMines = 0;
+            OpenedCount = 0;
+            return;
+        }
+
+        StatusText = game.Status.GetDescription();
+        IsWaitingStarted = game.Status is GameStatus.WaitingStarted;
+        IsPaused = game.Status is GameStatus.Paused;
+        IsGameEnded = game.Status is GameStatus.Won or GameStatus.Lost;
+        IsWin = game.Status is GameStatus.Won;
+        PauseButtonText = IsPaused ? "继续" : "暂停";
+        CompletionText = $"{game.Completion * 100:0.##}%";
+        RemainingMines = game.Config.MineCount - (game.Board?.FlagCount ?? 0);
+        OpenedCount = game.Board?.OpenedCount ?? 0;
+
+        // 游戏结束时通过 Toast 提示结果
+        if (IsGameEnded)
+        {
+            var result = game.Result;
+            if (result is not null)
+            {
+                var completion = result.Completion is null
+                    ? string.Empty
+                    : $", 完成度: {result.Completion.Value * 100:0.##}%";
+                _toast.Show(IsWin
+                    ? $"🎉 游戏胜利! 用时: {FormatTime(result.Duration)}"
+                    : $"💣 游戏失败, 用时: {FormatTime(result.Duration)}{completion}"
+                );
+            }
+        }
+    }
+
+    /// <summary>
+    /// 游戏属性变化前: 退订旧游戏事件, 此时 GameManager.Game 仍为旧实例
+    /// </summary>
+    /// <param name="sender">游戏管理器</param>
+    /// <param name="e">属性变化前事件参数</param>
+    private void OnGameManagerPropertyChanging(object? sender, PropertyChangingEventArgs e)
+    {
+        if (e.PropertyName == nameof(IGameManager.Game))
+        {
+            UnbindGame(_gameManager.Game);
+        }
+    }
+
+    /// <summary>
+    /// 游戏属性变化后: 订阅新游戏事件或清空界面状态
+    /// </summary>
+    /// <param name="sender">游戏管理器</param>
+    /// <param name="e">属性变化事件参数</param>
+    private void OnGameManagerPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(IGameManager.Game)) { return; }
+
+        if (_gameManager.Game is { } game)
+        {
+            BindGame(game);
+        }
+        else
+        {
+            HasGame = false;
+            UpdateStatus();
+        }
+    }
+
+    /// <summary>
+    /// 游戏属性变化时更新界面: Board 出现时构建棋盘, Status 变化时更新状态
+    /// </summary>
+    /// <param name="sender">游戏实例</param>
+    /// <param name="e">属性变化事件参数</param>
+    private void OnGamePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(IGame.Board): UpdateBoard(); break;
+            case nameof(IGame.Status): UpdateStatus(); break;
+            case nameof(IGame.Result): UpdateStatus(); break;
+            case nameof(IGame.Completion): CompletionText = $"{_gameManager.Game?.Completion * 100:0.##}%"; break;
+        }
+    }
+
+    /// <summary>
+    /// 棋盘计数变化时更新统计信息
+    /// </summary>
+    /// <param name="sender">棋盘</param>
+    /// <param name="e">属性变化事件参数</param>
+    private void OnBoardPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        var game = _gameManager.Game;
+        if (game?.Board is not { } board) { return; }
+
+        RemainingMines = game.Config.MineCount - board.FlagCount;
+        OpenedCount = board.OpenedCount;
+    }
+
+    /// <summary>
+    /// 定时刷新游戏计时显示
+    /// </summary>
+    /// <param name="sender">计时器</param>
+    /// <param name="e">计时器事件参数</param>
+    private void OnRefreshTimerTick(object? sender, EventArgs e)
+    {
+        var game = _gameManager.Game;
+        if (game is null) { return; }
+
+        game.Timer.Refresh();
+        TimeText = FormatTime(game.Timer.Elapsed);
+    }
+
+    /// <summary>
+    /// 格式化时间为 MM:SS
+    /// </summary>
+    /// <param name="time">时间</param>
+    /// <returns>格式化后的时间文本</returns>
+    private static string FormatTime(TimeSpan time)
+    {
+        return $"{(int)time.TotalMinutes:00}:{time.Seconds:00}";
+    }
 }

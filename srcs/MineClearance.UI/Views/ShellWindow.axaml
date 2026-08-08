@@ -4,7 +4,7 @@
         xmlns:views="using:MineClearance.UI.Views"
         Icon="/Assets/logo.ico"
         Title="MineClearance"
-        Width="1000" Height="700"
+        Width="1300" Height="850"
         WindowStartupLocation="CenterScreen">
 
   <views:ShellView/>

@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using MineClearance.Core.Enums;
 using MineClearance.Core.Interfaces;
-using MineClearance.Core.Models;
 using MineClearance.Core.Models.Records;
 using System;
 using System.ComponentModel;
@@ -23,7 +22,10 @@ internal sealed partial class GameManager(
 ) : IGameManager
 {
     /// <inheritdoc/>
-    public event EventHandler<GameChangedEventArgs>? GameChanged;
+    public event PropertyChangingEventHandler? PropertyChanging;
+
+    /// <inheritdoc/>
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     /// <inheritdoc/>
     public IGame? Game
@@ -33,10 +35,12 @@ internal sealed partial class GameManager(
         {
             if (field != value)
             {
+                PropertyChanging?.Invoke(this, new(nameof(Game)));
                 field?.PropertyChanged -= OnGamePropertyChanged;
+                field?.Dispose();
                 field = value;
-                field?.PropertyChanged += OnGamePropertyChanged;
-                GameChanged?.Invoke(this, new(field));
+                value?.PropertyChanged += OnGamePropertyChanged;
+                PropertyChanged?.Invoke(this, new(nameof(Game)));
                 LogGameChanged();
             }
         }
@@ -51,11 +55,11 @@ internal sealed partial class GameManager(
             throw new ArgumentException(Constants.CustomDifficultyMissingInfoMessage, nameof(difficulty));
         }
 
-        // 释放当前游戏实例
-        Game?.Dispose();
-
         // 使用游戏工厂创建一个新的游戏实例
         Game = _gameFactory.CreateGame(difficulty);
+
+        // 删除之前的存档数据, 因为开始新游戏会放弃之前的游戏进度
+        _ = _dataRepository.DeleteGameSaveDataAsync();
 
         // 记录游戏开始日志
         LogGameStarted(difficulty);
@@ -70,11 +74,11 @@ internal sealed partial class GameManager(
             throw new ArgumentException("Invalid game configuration.", nameof(config));
         }
 
-        // 释放当前游戏实例
-        Game?.Dispose();
-
         // 使用游戏工厂创建一个新的游戏实例
         Game = _gameFactory.CreateGame(config, seed);
+
+        // 删除之前的存档数据, 因为开始新游戏会放弃之前的游戏进度
+        _ = _dataRepository.DeleteGameSaveDataAsync();
 
         // 记录游戏开始日志
         LogGameStartedWithConfig(config);
@@ -83,9 +87,6 @@ internal sealed partial class GameManager(
     /// <inheritdoc/>
     public void RestoreFromSaveData()
     {
-        // 释放当前游戏实例
-        Game?.Dispose();
-
         // 从游戏数据存储库获取存档数据
         var saveData = _dataRepository.SaveData;
 
@@ -111,8 +112,8 @@ internal sealed partial class GameManager(
         // 根据当前游戏的难度重新开始游戏
         if (difficulty is GameDifficulty.Custom)
         {
-            // 如果当前游戏是自定义难度, 则使用当前游戏的配置和种子重新开始游戏
-            StartNewGame(Game.Config, Game.Seed);
+            // 如果当前游戏是自定义难度, 则使用当前游戏的配置重新开始游戏
+            StartNewGame(Game.Config);
         }
         else
         {
@@ -124,9 +125,6 @@ internal sealed partial class GameManager(
     /// <inheritdoc/>
     public void ExitWithoutSaving()
     {
-        // 释放当前游戏实例
-        Game?.Dispose();
-
         // 将当前游戏实例设置为 null, 表示没有游戏正在进行
         Game = null;
     }
@@ -137,14 +135,13 @@ internal sealed partial class GameManager(
         // 如果当前没有游戏正在进行, 则不需要保存
         if (Game is null) { return true; }
 
-        // 获取当前游戏的存档数据
+        // 获取游戏的存档数据
         var saveData = Game.GetSaveData();
 
         // 将存档数据保存到游戏数据存储库
-        var saveResult = await _dataRepository.SaveGameSaveDataAsync(saveData).ConfigureAwait(false);
-
-        // 释放当前游戏实例
-        Game.Dispose();
+        var saveResult = saveData is null
+            ? await _dataRepository.DeleteGameSaveDataAsync().ConfigureAwait(false)
+            : await _dataRepository.SaveGameSaveDataAsync(saveData).ConfigureAwait(false);
 
         // 将当前游戏实例设置为 null, 表示没有游戏正在进行
         Game = null;
@@ -170,9 +167,18 @@ internal sealed partial class GameManager(
             Debug.Assert(game.Result is not null, "Game result should not be null when the game ends.");
 
             // 将游戏结果保存到游戏数据存储库
-            if (!await _dataRepository.AddGameResultAsync(game.Result).ConfigureAwait(false))
+            if (await _dataRepository.AddGameResultAsync(game.Result).ConfigureAwait(false))
             {
-                // 如果保存失败, 则记录日志
+                // 保存成功, 则删除存档数据, 因为游戏已经结束, 不需要再保存存档数据
+                if (!await _dataRepository.DeleteGameSaveDataAsync().ConfigureAwait(false))
+                {
+                    // 删除存档数据失败, 则记录日志
+                    LogGameSaveDataDeleteFailed();
+                }
+            }
+            else
+            {
+                // 保存失败, 则记录日志
                 LogGameResultSaveFailed(game.Result);
             }
         }
@@ -234,4 +240,15 @@ internal sealed partial class GameManager(
         Message = "Failed to save game result: {Result}"
     )]
     private partial void LogGameResultSaveFailed(GameResult result);
+
+    /// <summary>
+    /// 记录删除存档数据失败的错误日志, 当删除存档数据失败时触发
+    /// </summary>
+    [LoggerMessage(
+        EventId = 6,
+        EventName = "GameSaveDataDeleteFailed",
+        Level = LogLevel.Warning,
+        Message = "Failed to delete game save data"
+    )]
+    private partial void LogGameSaveDataDeleteFailed();
 }

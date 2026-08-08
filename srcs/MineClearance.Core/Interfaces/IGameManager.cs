@@ -1,7 +1,7 @@
 using MineClearance.Core.Enums;
-using MineClearance.Core.Models;
 using MineClearance.Core.Models.Records;
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace MineClearance.Core.Interfaces;
@@ -9,13 +9,8 @@ namespace MineClearance.Core.Interfaces;
 /// <summary>
 /// 游戏管理器接口
 /// </summary>
-public interface IGameManager
+public interface IGameManager : INotifyPropertyChanging, INotifyPropertyChanged
 {
-    /// <summary>
-    /// 当游戏变更时触发的事件
-    /// </summary>
-    event EventHandler<GameChangedEventArgs>? GameChanged;
-
     /// <summary>
     /// 获取当前游戏实例, 如果当前没有游戏正在进行, 则返回 <see langword="null"/>
     /// </summary>

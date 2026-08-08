@@ -87,21 +87,17 @@ internal sealed partial class GameDataRepository : IGameDataRepository
     }
 
     /// <inheritdoc/>
-    public async Task<bool> SaveGameSaveDataAsync(GameSaveData? data)
+    public Task<bool> SaveGameSaveDataAsync(GameSaveData data)
     {
         SaveData = data;
-        try
-        {
-            await using var stream = File.Create(Constants.GameSaveDataFilePath);
-            await JsonSerializer.SerializeAsync(stream, data, _jsonOptions).ConfigureAwait(false);
-            LogGameSaveDataSaved();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            LogSaveGameSaveDataException(ex);
-            return false;
-        }
+        return SaveGameSaveDataToFileAsync();
+    }
+
+    /// <inheritdoc/>
+    public Task<bool> DeleteGameSaveDataAsync()
+    {
+        SaveData = null;
+        return SaveGameSaveDataToFileAsync();
     }
 
     /// <inheritdoc/>
@@ -122,6 +118,26 @@ internal sealed partial class GameDataRepository : IGameDataRepository
     {
         _results.Clear();
         return SaveGameResultsToFileAsync();
+    }
+
+    /// <summary>
+    /// 将游戏存档数据保存到文件
+    /// </summary>
+    /// <returns><see langword="true"/> 如果保存成功, 否则为 <see langword="false"/></returns>
+    private async Task<bool> SaveGameSaveDataToFileAsync()
+    {
+        try
+        {
+            await using var stream = File.Create(Constants.GameSaveDataFilePath);
+            await JsonSerializer.SerializeAsync(stream, SaveData, _jsonOptions).ConfigureAwait(false);
+            LogGameSaveDataSaved();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            LogSaveGameSaveDataException(ex);
+            return false;
+        }
     }
 
     /// <summary>

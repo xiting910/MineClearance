@@ -94,7 +94,13 @@ internal partial class Game
         {
             // 如果是地雷, 则游戏失败
             Timer.Pause();
-            cell.Type = CellType.Mine;
+            foreach (var (p, c) in Board)
+            {
+                if (c.Type is CellType.Unopened && _mineField.IsMine(p))
+                {
+                    c.Type = CellType.Mine;
+                }
+            }
             Status = GameStatus.Lost;
             UpdateGameResult();
             return;
@@ -126,6 +132,14 @@ internal partial class Game
         {
             // 如果游戏已完成, 则游戏胜利
             Timer.Pause();
+            Debug.Assert(Board is not null, $"{nameof(Board)} should not be null when game won.");
+            foreach (var (p, c) in Board)
+            {
+                if (c.Type is CellType.Unopened && _mineField.IsMine(p))
+                {
+                    c.Type = CellType.Flagged;
+                }
+            }
             Status = GameStatus.Won;
             UpdateGameResult();
         }

@@ -215,8 +215,8 @@ internal sealed partial class Game : IGame
         var isCompleted = UpdateCompletion();
         Debug.Assert(!isCompleted, "Game should not be completed when loading from save data.");
 
-        // 设置计时器的初始时间为存档中的已运行时间
-        Timer.SetInitialTime(saveData.Duration);
+        // 初始化计时器, 以便在取消暂停后继续计时
+        Timer.Initial(saveData.StartTime, saveData.Duration);
 
         // 记录游戏被创建的日志信息
         LogGameCreated(Difficulty, Config, Seed);
