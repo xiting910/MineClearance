@@ -2,8 +2,205 @@
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:MineClearance.UI.ViewModels"
-             x:DataType="vm:HistoryViewModel">
+             xmlns:models="using:MineClearance.UI.Models"
+             x:DataType="vm:HistoryViewModel"
+             Background="{DynamicResource WindowBackgroundBrush}">
 
-  <TextBlock Text="历史记录视图" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24"/>
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Margin="16" RowSpacing="8">
+
+    <!-- 标题 -->
+    <TextBlock Text="历史记录" FontSize="24" FontWeight="Bold"
+               Foreground="{DynamicResource TitleForegroundBrush}"
+               HorizontalAlignment="Center" Margin="0,8,0,0"/>
+
+    <!-- 总览信息行: 左侧汇总信息, 右侧返回按钮 -->
+    <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+      <TextBlock Text="{Binding TotalSummaryText}" VerticalAlignment="Center"/>
+      <Button Grid.Column="1" Content="返回" Command="{Binding BackToMainCommand}" Padding="12,6"
+              ToolTip.Tip="返回主视图"
+              Background="{DynamicResource SuccessButtonBackgroundBrush}" Foreground="{DynamicResource SuccessButtonForegroundBrush}"/>
+    </Grid>
+
+    <!-- 统计区: 6 组难度范围的汇总统计, "全部"行固定置顶不参与排序, 点击整格列头排序 -->
+    <Border Grid.Row="2" BorderBrush="{DynamicResource SeparatorBrush}" BorderThickness="1"
+            CornerRadius="6" ClipToBounds="True">
+      <DataGrid ItemsSource="{Binding StatsRows}" IsReadOnly="True"
+                AutoGenerateColumns="False" HeadersVisibility="Column" MaxHeight="225">
+        <DataGrid.Columns>
+          <DataGridTextColumn CanUserSort="False" Tag="{x:Static models:SortKeys.DifficultyText}"
+                              Binding="{Binding DifficultyText}" HeaderPointerPressed="OnStatsSortHeaderPressed">
+            <DataGridTextColumn.Header>
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="难度"/>
+                <TextBlock Text="{Binding StatsDifficultyArrow}" Foreground="{DynamicResource SecondaryTextBrush}"/>
+              </StackPanel>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn CanUserSort="False" Tag="{x:Static models:SortKeys.Games}"
+                              Binding="{Binding Games}" HeaderPointerPressed="OnStatsSortHeaderPressed">
+            <DataGridTextColumn.Header>
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="游戏次数"/>
+                <TextBlock Text="{Binding GamesArrow}" Foreground="{DynamicResource SecondaryTextBrush}"/>
+              </StackPanel>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn CanUserSort="False" Tag="{x:Static models:SortKeys.Wins}"
+                              Binding="{Binding Wins}" HeaderPointerPressed="OnStatsSortHeaderPressed">
+            <DataGridTextColumn.Header>
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="胜利次数"/>
+                <TextBlock Text="{Binding WinsArrow}" Foreground="{DynamicResource SecondaryTextBrush}"/>
+              </StackPanel>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn CanUserSort="False" Tag="{x:Static models:SortKeys.WinRate}"
+                              Binding="{Binding WinRateText}" HeaderPointerPressed="OnStatsSortHeaderPressed">
+            <DataGridTextColumn.Header>
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="胜率"/>
+                <TextBlock Text="{Binding WinRateArrow}" Foreground="{DynamicResource SecondaryTextBrush}"/>
+              </StackPanel>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn CanUserSort="False" Tag="{x:Static models:SortKeys.AvgWinDuration}"
+                              Binding="{Binding AvgWinDurationText}" HeaderPointerPressed="OnStatsSortHeaderPressed">
+            <DataGridTextColumn.Header>
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="平均胜利用时"/>
+                <TextBlock Text="{Binding AvgWinDurationArrow}" Foreground="{DynamicResource SecondaryTextBrush}"/>
+              </StackPanel>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn CanUserSort="False" Tag="{x:Static models:SortKeys.MinWinDuration}"
+                              Binding="{Binding MinWinDurationText}" HeaderPointerPressed="OnStatsSortHeaderPressed">
+            <DataGridTextColumn.Header>
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="最短胜利用时"/>
+                <TextBlock Text="{Binding MinWinDurationArrow}" Foreground="{DynamicResource SecondaryTextBrush}"/>
+              </StackPanel>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn CanUserSort="False" Tag="{x:Static models:SortKeys.AvgCompletion}"
+                              Binding="{Binding AvgCompletionText}" HeaderPointerPressed="OnStatsSortHeaderPressed">
+            <DataGridTextColumn.Header>
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="平均完成度"/>
+                <TextBlock Text="{Binding AvgCompletionArrow}" Foreground="{DynamicResource SecondaryTextBrush}"/>
+              </StackPanel>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+
+    <!-- 操作行: 左侧筛选两行 (上日期, 下难度与结果), 右侧删除选中与清空历史垂直居中 -->
+    <Grid Grid.Row="3" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+      <StackPanel Spacing="6" VerticalAlignment="Center">
+        <!-- 第一行: 日期范围 -->
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Text="日期:" VerticalAlignment="Center"
+                     Foreground="{DynamicResource SecondaryTextBrush}"/>
+          <DatePicker SelectedDate="{Binding FromDate}" Width="100"
+                      ToolTip.Tip="起始日期, 为空表示不限"/>
+          <TextBlock Text="至" VerticalAlignment="Center"
+                     Foreground="{DynamicResource SecondaryTextBrush}"/>
+          <DatePicker SelectedDate="{Binding ToDate}" Width="100"
+                      ToolTip.Tip="结束日期, 为空表示不限, 包含当天"/>
+        </StackPanel>
+        <!-- 第二行: 难度多选与结果 -->
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Text="难度:" VerticalAlignment="Center"
+                     Foreground="{DynamicResource SecondaryTextBrush}"/>
+          <ItemsControl ItemsSource="{Binding DifficultyFilters}" VerticalAlignment="Center">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="14"/>
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="models:DifficultyFilterOption">
+                <CheckBox Content="{Binding Text}" IsChecked="{Binding IsSelected}" Padding="2,1,0,1"
+                          ToolTip.Tip="可多选, 不选任何项表示全部难度"/>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Text="结果:" VerticalAlignment="Center" Margin="16,0,0,0"
+                     Foreground="{DynamicResource SecondaryTextBrush}"/>
+          <ComboBox Width="90" ItemsSource="{Binding ResultFilters}"
+                    SelectedItem="{Binding SelectedResultFilter}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="models:ResultFilterOption">
+                <TextBlock Text="{Binding Text}"/>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+        </StackPanel>
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center">
+        <Button Content="清除筛选" Command="{Binding ClearFiltersCommand}" Padding="12,6"
+                ToolTip.Tip="清除全部筛选条件"
+                Background="{DynamicResource YellowLabelBrush}" Foreground="#1A1D24"/>
+        <Button Content="删除选中" Command="{Binding DeleteSelectedCommand}" Padding="12,6"
+                ToolTip.Tip="删除选中的记录, 不做确认弹窗"
+                Background="{DynamicResource AccentButtonBackgroundBrush}" Foreground="{DynamicResource AccentButtonForegroundBrush}"/>
+        <Button Content="{Binding ClearAllButtonText}" Command="{Binding ClearAllCommand}" Padding="12,6"
+                ToolTip.Tip="清空全部历史记录, 首次点击进入确认状态, 3 秒内再次点击执行"
+                Background="{DynamicResource DangerButtonBackgroundBrush}" Foreground="{DynamicResource DangerButtonForegroundBrush}"/>
+      </StackPanel>
+    </Grid>
+
+    <!-- 详细记录: 点击整格列头排序, 支持多选删除 -->
+    <Border Grid.Row="4" BorderBrush="{DynamicResource SeparatorBrush}" BorderThickness="1"
+            CornerRadius="6" ClipToBounds="True">
+      <DataGrid ItemsSource="{Binding DisplayedResults}"
+                IsReadOnly="True" AutoGenerateColumns="False" SelectionMode="Extended"
+                SelectionChanged="OnSelectionChanged">
+        <DataGrid.Columns>
+          <DataGridTextColumn SortMemberPath="Result.StartTime" Binding="{Binding StartTimeText}">
+            <DataGridTextColumn.Header>
+              <TextBlock Text="开始时间"/>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn SortMemberPath="Result.Difficulty" Binding="{Binding DifficultyText}">
+            <DataGridTextColumn.Header>
+              <TextBlock Text="难度"/>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn SortMemberPath="Result.IsWin" Binding="{Binding ResultText}">
+            <DataGridTextColumn.Header>
+              <TextBlock Text="结果"/>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn SortMemberPath="Result.Completion" Binding="{Binding CompletionText}">
+            <DataGridTextColumn.Header>
+              <TextBlock Text="完成度"/>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn SortMemberPath="Result.Duration" Binding="{Binding DurationText}">
+            <DataGridTextColumn.Header>
+              <TextBlock Text="用时"/>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn Binding="{Binding WidthText}">
+            <DataGridTextColumn.Header>
+              <TextBlock Text="宽度"/>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn Binding="{Binding HeightText}">
+            <DataGridTextColumn.Header>
+              <TextBlock Text="高度"/>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+          <DataGridTextColumn SortMemberPath="Config.MineCount" Binding="{Binding MineCountText}">
+            <DataGridTextColumn.Header>
+              <TextBlock Text="雷数"/>
+            </DataGridTextColumn.Header>
+          </DataGridTextColumn>
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+
+  </Grid>
 
 </UserControl>

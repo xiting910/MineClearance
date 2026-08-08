@@ -15,6 +15,7 @@
 - 🖥️ **跨平台支持** — Windows / Linux / macOS
 - 🎮 **经典扫雷玩法** — 左键翻开, 点击数字格自动展开周围, 右键标旗/问号 (数字格一键插旗周围), 按住滑动连续操作, 警告数字检测
 - 💾 **自动保存** — 关闭窗口时自动保存进行中的游戏, 下次可从主视图继续游戏
+- 📊 **历史记录** — 按难度分组的统计汇总 (胜率/用时/完成度), 日期/难度/结果多条件筛选与列头排序, 支持删除选中与二次确认清空
 - 🎨 **主题切换** — 跟随系统 / 浅色 / 深色, 即时生效并自动保存
 - ⚙️ **设置中心** — 主题 / Toast 时长 / 日志级别即时配置, 关于信息
 - 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
@@ -95,7 +96,12 @@ MineClearance/
 │       ├── Constants.cs                            #   UI 常量
 │       ├── EnumDescriptionConverter.cs             #   枚举描述转换器 ([Description] → 文本)
 │       ├── Models/                                 #   UI 模型
+│       │   ├── DifficultyFilterOption.cs           #     难度筛选选项 (多选)
+│       │   ├── GameResultRow.cs                    #     游戏结果行 (显示文本/棋盘尺寸)
 │       │   ├── NavigationTarget.cs                 #     导航目标枚举
+│       │   ├── ResultFilterOption.cs               #     结果筛选选项 (全部/胜利/失败)
+│       │   ├── SortKeys.cs                         #     统计表格排序键常量
+│       │   ├── StatsRow.cs                         #     统计行 (难度范围汇总统计)
 │       │   ├── ThemeMode.cs                        #     主题模式枚举 (跟随系统/浅色/深色)
 │       │   └── UIOptions.cs                        #     UI 配置 (setter 变化自动保存)
 │       ├── Program.cs                              #   应用入口 (DI + Avalonia 启动)
@@ -103,7 +109,7 @@ MineClearance/
 │       ├── ViewModels/                             #   视图模型
 │       │   ├── CellViewModel.cs                    #     格子视图模型 (固定格子池)
 │       │   ├── GameViewModel.cs                    #     游戏视图模型 (固定格子池/交互分发)
-│       │   ├── HistoryViewModel.cs                 #     历史记录视图模型
+│       │   ├── HistoryViewModel.cs                 #     历史记录视图模型 (统计/筛选/排序/删除)
 │       │   ├── MainViewModel.cs                    #     主视图模型 (难度选择/参数输入/导航)
 │       │   ├── SettingsViewModel.cs                #     设置视图模型
 │       │   ├── ShellViewModel.cs                   #     壳视图模型 (视图切换/导航)

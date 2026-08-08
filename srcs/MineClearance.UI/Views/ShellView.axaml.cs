@@ -59,7 +59,10 @@ public sealed partial class ShellView : UserControl
     {
         if (_settingsWindow is not null && _settingsWindow.IsVisible)
         {
-            // 已打开则激活现有窗口
+            if (_settingsWindow.WindowState is WindowState.Minimized)
+            {
+                _settingsWindow.WindowState = WindowState.Normal;
+            }
             _settingsWindow.Activate();
             return;
         }

@@ -17,7 +17,8 @@
       <views:GameView DataContext="{Binding Game}"/>
     </Panel>
 
-    <Panel IsVisible="{Binding IsHistoryViewVisible}">
+    <!-- 历史记录视图常驻布局 (预热 DataGrid 等重控件), 通过透明度与命中测试控制可见与交互 -->
+    <Panel Opacity="{Binding HistoryViewOpacity}" IsHitTestVisible="{Binding IsHistoryViewVisible}">
       <views:HistoryView DataContext="{Binding History}"/>
     </Panel>
 

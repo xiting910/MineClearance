@@ -45,6 +45,11 @@
 - UI 层: 操作提示按钮 (Toast 展示首次点击机制与鼠标操作说明)
 - UI 层: Toast 剩余时间进度条 (ScaleTransform 补间平滑缩短) 与鼠标悬停暂停倒计时
 - UI 层: ShellWindow 关闭前自动保存进行中的游戏 (取消关闭 → SaveAndExitAsync → 再次关闭, 避免进程退出截断文件写入)
+- UI 层: 历史记录视图完整实现 (6 组难度范围统计汇总 DataGrid, 列头点击排序且"全部"行固定置顶, 缺项数值映射排最后; 日期范围 DatePicker / 难度 CheckBox 多选 / 结果 ComboBox 筛选, 不选任何难度项表示全部)
+- UI 层: 历史记录操作 (详细记录 DataGrid 内置排序与多选, 删除选中不做确认, 清空历史 3 秒二次确认按钮, 清除筛选一键恢复全部)
+- UI 层: UI 模型 (GameResultRow 显示文本与内置/自定义棋盘尺寸, StatsRow 统计行, DifficultyFilterOption 难度多选选项, ResultFilterOption 结果选项, SortKeys 统计排序键常量)
+- UI 层: 主视图退出按钮 (ExitCommand → 关闭主窗口, 进行中的游戏由窗口关闭事件自动保存)
+- UI 层: 历史视图启动预热常驻布局 (ShellView 宿主层 Opacity + IsHitTestVisible 控制, 启动即预热 DataGrid, 切换到历史视图时延迟到空闲时刷新数据)
 
 ### Changed
 
@@ -62,6 +67,8 @@
 - UI 层: Toast 倒计时由 Task.Delay + CancellationTokenSource 改为 DispatcherTimer 驱动 (按实际经过时间精确扣减, 支撑进度条与悬停暂停)
 - UI 层: CellViewModel / GameViewModel / ToastViewModel 移除 IDisposable (单例常驻无需手动释放)
 - UI 层: UpdateBoard / MarkHitMine 改用 Position.ToIndex 直接索引固定格子池, UpdateCell 相同引用时跳过重复订阅与刷新
+- UI 层: Program.cs 服务容器改为 using 声明并设置 ShutdownMode.OnMainWindowClose (主窗口关闭即退出应用), 设置窗口最小化后重新打开时恢复 Normal 再激活
+- Infrastructure 层: FileLoggerProvider 写入器启用 AutoFlush (日志即时落盘, 防止异常退出丢失日志)
 
 ### Fixed
 

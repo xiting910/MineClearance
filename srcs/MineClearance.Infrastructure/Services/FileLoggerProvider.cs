@@ -14,11 +14,10 @@ internal sealed class FileLoggerProvider(FileLoggerOptions _options) : ILoggerPr
     /// <summary>
     /// 文件日志记录器的写入器
     /// </summary>
-    private readonly StreamWriter _writer = new(
-        Constants.LatestLogFilePath,
-        append: true,
-        encoding: Encoding.UTF8
-    );
+    private readonly StreamWriter _writer = new(Constants.LatestLogFilePath, true, Encoding.UTF8)
+    {
+        AutoFlush = true
+    };
 
     /// <inheritdoc/>
     public ILogger CreateLogger(string categoryName)

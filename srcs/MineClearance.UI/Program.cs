@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MineClearance.Core;
@@ -22,7 +23,7 @@ file static class Program
     [STAThread]
     private static int Main(string[] args)
     {
-        App.Services = new ServiceCollection()
+        using var service = new ServiceCollection()
             .AddSingleton<IConfiguration>(Initialize())
             .AddLogging(builder => builder.AddFileLogger())
             .AddCore()
@@ -36,11 +37,12 @@ file static class Program
             .AddTransient<SettingsViewModel>()
             .BuildServiceProvider();
 
+        App.Services = service;
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace()
-            .StartWithClassicDesktopLifetime(args);
+            .StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
     }
 
     /// <summary>

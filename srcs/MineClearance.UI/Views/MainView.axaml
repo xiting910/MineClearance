@@ -77,6 +77,9 @@
         <Button Content="设置" Command="{Binding ShowSettingsCommand}" Width="150" Padding="16,8"
                 HorizontalContentAlignment="Center"
                 Background="{DynamicResource AccentButtonBackgroundBrush}" Foreground="{DynamicResource AccentButtonForegroundBrush}"/>
+        <Button Content="退出" Command="{Binding ExitCommand}" Width="150" Padding="16,8"
+                HorizontalContentAlignment="Center"
+                Background="{DynamicResource DangerButtonBackgroundBrush}" Foreground="{DynamicResource DangerButtonForegroundBrush}"/>
       </StackPanel>
 
     </Grid>

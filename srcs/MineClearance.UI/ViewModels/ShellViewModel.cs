@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MineClearance.UI.Models;
@@ -36,6 +37,11 @@ public sealed partial class ShellViewModel : ObservableObject
     public double GameViewOpacity => IsGameViewVisible ? 1.0 : 0.0;
 
     /// <summary>
+    /// 历史记录视图透明度, 未显示时为 0 (透明常驻布局以便预热表格控件), 显示时为 1
+    /// </summary>
+    public double HistoryViewOpacity => IsHistoryViewVisible ? 1.0 : 0.0;
+
+    /// <summary>
     /// 当前可见的视图
     /// </summary>
     [ObservableProperty]
@@ -65,6 +71,11 @@ public sealed partial class ShellViewModel : ObservableObject
     public event Action? SettingsWindowRequested;
 
     /// <summary>
+    /// 请求退出程序的事件, 由视图层关闭主窗口
+    /// </summary>
+    public event Action? ExitRequested;
+
+    /// <summary>
     /// 创建壳视图模型
     /// </summary>
     /// <param name="main">主视图模型</param>
@@ -86,8 +97,14 @@ public sealed partial class ShellViewModel : ObservableObject
         // 订阅主视图的导航请求
         main.NavigationRequested += OnNavigationRequested;
 
+        // 转发主视图的退出请求
+        main.ExitRequested += () => ExitRequested?.Invoke();
+
         // 订阅游戏视图返回主视图的请求
         game.MainViewRequested += ShowMainView;
+
+        // 订阅历史记录视图返回主视图的请求
+        history.MainViewRequested += ShowMainView;
     }
 
     /// <summary>
@@ -111,6 +128,15 @@ public sealed partial class ShellViewModel : ObservableObject
     }
 
     /// <summary>
+    /// 历史记录视图可见性变化时同步透明度
+    /// </summary>
+    /// <param name="value">新的可见性</param>
+    partial void OnIsHistoryViewVisibleChanged(bool value)
+    {
+        OnPropertyChanged(nameof(HistoryViewOpacity));
+    }
+
+    /// <summary>
     /// 切换到主视图, 并刷新存档状态
     /// </summary>
     [RelayCommand]
@@ -129,11 +155,12 @@ public sealed partial class ShellViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 切换到历史记录视图
+    /// 切换到历史记录视图, 游戏结果数据延迟到空闲时刷新, 避免同步重建造成卡顿
     /// </summary>
     private void ShowHistoryView()
     {
         CurrentView = History;
+        Dispatcher.UIThread.Post(History.Refresh, DispatcherPriority.Background);
     }
 
     /// <summary>

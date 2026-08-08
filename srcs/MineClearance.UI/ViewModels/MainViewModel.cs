@@ -89,6 +89,11 @@ public sealed partial class MainViewModel : ObservableObject
     public event Action<NavigationTarget>? NavigationRequested;
 
     /// <summary>
+    /// 请求退出程序的事件, 由视图层关闭主窗口
+    /// </summary>
+    public event Action? ExitRequested;
+
+    /// <summary>
     /// 初始化主视图模型
     /// </summary>
     /// <param name="dataRepository">数据存储库</param>
@@ -242,5 +247,14 @@ public sealed partial class MainViewModel : ObservableObject
     private void ShowSettings()
     {
         NavigationRequested?.Invoke(NavigationTarget.SettingsWindow);
+    }
+
+    /// <summary>
+    /// 退出程序, 由视图层关闭主窗口, 进行中的游戏由窗口关闭事件自动保存
+    /// </summary>
+    [RelayCommand]
+    private void Exit()
+    {
+        ExitRequested?.Invoke();
     }
 }

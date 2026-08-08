@@ -2,6 +2,8 @@ using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using MineClearance.Core.Enums;
 using MineClearance.Core.Interfaces;
+using MineClearance.UI.ViewModels;
+using System;
 
 namespace MineClearance.UI.Views;
 
@@ -21,6 +23,26 @@ public sealed partial class ShellWindow : Window
     public ShellWindow()
     {
         InitializeComponent();
+    }
+
+    /// <inheritdoc/>
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+
+        // 订阅主视图的退出请求, 直接关闭窗口
+        if (DataContext is ShellViewModel viewModel)
+        {
+            viewModel.ExitRequested += OnExitRequested;
+        }
+    }
+
+    /// <summary>
+    /// 退出程序: 关闭本窗口, 进行中的游戏由关闭事件自动保存
+    /// </summary>
+    private void OnExitRequested()
+    {
+        Close();
     }
 
     /// <summary>
