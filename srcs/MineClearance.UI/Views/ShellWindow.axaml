@@ -5,7 +5,8 @@
         Icon="/Assets/logo.ico"
         Title="MineClearance"
         Width="1300" Height="850"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Closing="OnClosing">
 
   <views:ShellView/>
 

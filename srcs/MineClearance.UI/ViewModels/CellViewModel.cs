@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using MineClearance.Core.Enums;
 using MineClearance.Core.Models;
 using MineClearance.Core.Models.Records;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
@@ -12,7 +11,7 @@ namespace MineClearance.UI.ViewModels;
 /// <summary>
 /// 格子视图模型, 包装棋盘中的单个格子, 负责显示文本与配色
 /// </summary>
-public sealed partial class CellViewModel : ObservableObject, IDisposable
+public sealed partial class CellViewModel : ObservableObject
 {
     private static readonly IBrush UnopenedBrush = new SolidColorBrush(Color.Parse("#C8C8C8"));
     private static readonly IBrush EmptyBrush = new SolidColorBrush(Color.Parse("#FFFFFF"));
@@ -107,23 +106,19 @@ public sealed partial class CellViewModel : ObservableObject, IDisposable
         UpdateDisplay();
     }
 
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        _cell.PropertyChanged -= OnCellPropertyChanged;
-        GC.SuppressFinalize(this);
-    }
-
     /// <summary>
     /// 替换内部格子引用 (占位格子升级为真实格子), 不重建视图模型
     /// </summary>
     /// <param name="cell">新的格子</param>
     public void UpdateCell(Cell cell)
     {
-        _cell.PropertyChanged -= OnCellPropertyChanged;
-        _cell = cell;
-        _cell.PropertyChanged += OnCellPropertyChanged;
-        UpdateDisplay();
+        if (!ReferenceEquals(_cell, cell))
+        {
+            _cell.PropertyChanged -= OnCellPropertyChanged;
+            _cell = cell;
+            _cell.PropertyChanged += OnCellPropertyChanged;
+            UpdateDisplay();
+        }
     }
 
     /// <summary>

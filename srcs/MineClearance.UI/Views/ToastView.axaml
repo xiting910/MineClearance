@@ -5,9 +5,30 @@
              x:DataType="vm:ToastViewModel"
              IsVisible="{Binding FeedbackVisible}"
              HorizontalAlignment="Right" VerticalAlignment="Bottom"
-             Margin="0,0,16,16">
+             Margin="0,0,16,16"
+             PointerEntered="OnToastPointerEntered"
+             PointerExited="OnToastPointerExited">
   <Border Padding="12,8" CornerRadius="6"
           Background="#E6202020" BoxShadow="0 4 12 0 #33000000">
-    <TextBlock Text="{Binding Feedback}" Foreground="White" FontSize="13" TextWrapping="Wrap" MaxWidth="400"/>
+    <StackPanel Spacing="6">
+      <TextBlock Text="{Binding Feedback}" Foreground="White" FontSize="13" TextWrapping="Wrap" MaxWidth="400"/>
+
+      <!-- 剩余时间进度条: 前景条按剩余比例从满宽缩至零, 线性过渡补间保证平滑缩短, 鼠标悬停时倒计时暂停进度条也停住 -->
+      <Border Height="3" CornerRadius="1.5" Background="#33FFFFFF">
+        <Border CornerRadius="1.5" Background="#FFFFFF" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+          <Border.RenderTransform>
+            <ScaleTransform ScaleX="{Binding Progress}" ScaleY="1">
+              <ScaleTransform.Transitions>
+                <Transitions>
+                  <!-- 过渡时长略大于刷新间隔, 每次进度更新都连续补间而非跳变 -->
+                  <DoubleTransition Property="ScaleX" Duration="0:0:0.06"/>
+                </Transitions>
+              </ScaleTransform.Transitions>
+            </ScaleTransform>
+          </Border.RenderTransform>
+          <Border.RenderTransformOrigin>0,0.5</Border.RenderTransformOrigin>
+        </Border>
+      </Border>
+    </StackPanel>
   </Border>
 </UserControl>

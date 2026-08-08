@@ -17,7 +17,7 @@ namespace MineClearance.UI.ViewModels;
 /// <summary>
 /// 游戏视图模型, 负责游戏状态绑定, 棋盘构建, 计时刷新与游戏操作
 /// </summary>
-public sealed partial class GameViewModel : ObservableObject, IDisposable
+public sealed partial class GameViewModel : ObservableObject
 {
     /// <summary>
     /// 共享占位格子, 棋盘未生成或超出当前棋盘范围的格子引用它
@@ -163,6 +163,16 @@ public sealed partial class GameViewModel : ObservableObject, IDisposable
         // 构建固定大小的格子视图模型池, 只创建一次, 此后所有游戏复用
         BuildCellPool();
 
+        // 棋盘区域初始化为最大尺寸, 使游戏视图在启动布局时即实例化全部格子控件 (预热)
+        Rows = Core.Constants.MaxBoardHeight;
+        Columns = Core.Constants.MaxBoardWidth;
+
+        // 预热: 占位格子全部设为可见, 使启动布局同时完成全部格子的实例化与布局
+        foreach (var cellViewModel in Cells)
+        {
+            cellViewModel.IsVisible = true;
+        }
+
         // 订阅游戏管理器事件: 属性变化前退订旧游戏, 属性变化后订阅新游戏
         gameManager.PropertyChanging += OnGameManagerPropertyChanging;
         gameManager.PropertyChanged += OnGameManagerPropertyChanged;
@@ -180,18 +190,6 @@ public sealed partial class GameViewModel : ObservableObject, IDisposable
         {
             BindGame(gameManager.Game);
         }
-    }
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        _refreshTimer.Stop();
-        _refreshTimer.Tick -= OnRefreshTimerTick;
-        _gameManager.PropertyChanging -= OnGameManagerPropertyChanging;
-        _gameManager.PropertyChanged -= OnGameManagerPropertyChanged;
-        UnbindGame(_gameManager.Game);
-        _gameManager.Game?.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -262,6 +260,22 @@ public sealed partial class GameViewModel : ObservableObject, IDisposable
         {
             game.FlagAdjacentCells(position);
         }
+    }
+
+    /// <summary>
+    /// 显示操作提示的 Toast 通知, 包含首次点击机制与鼠标操作说明
+    /// </summary>
+    [RelayCommand]
+    private void ShowHelp()
+    {
+        _toast.Show(
+            "🎮 操作提示\n" +
+            "首次点击后生成地雷, 确保首次点击的格子及周围格子尽量不会是地雷\n" +
+            "左键: 未打开格子打开, 数字格子在周围插旗数匹配时展开周围\n" +
+            "右键: 数字格在周围未打开格子数匹配时一键插旗周围, 其他格循环标记 旗/问号/取消\n" +
+            "在首次点击前不允许右键操作\n" +
+            "按住左键/右键滑动: 持续操作"
+        );
     }
 
     /// <summary>
@@ -337,14 +351,7 @@ public sealed partial class GameViewModel : ObservableObject, IDisposable
     /// <param name="position">踩中的地雷位置</param>
     private void MarkHitMine(Position position)
     {
-        foreach (var cellViewModel in Cells)
-        {
-            if (cellViewModel.Position == position)
-            {
-                cellViewModel.SetHitMine();
-                break;
-            }
-        }
+        Cells[position.ToIndex(Core.Constants.MaxBoardWidth)].SetHitMine();
     }
 
     /// <summary>
@@ -382,20 +389,13 @@ public sealed partial class GameViewModel : ObservableObject, IDisposable
     private void UpdateBoard()
     {
         if (_gameManager.Game is not { } game) { return; }
-
         var board = game.Board;
-        var index = 0;
-        for (var row = 0; row < Core.Constants.MaxBoardHeight; row++)
+        foreach (var pos in Position.GetAllPositions(Core.Constants.MaxBoardHeight, Core.Constants.MaxBoardWidth))
         {
-            for (var col = 0; col < Core.Constants.MaxBoardWidth; col++)
-            {
-                var cellViewModel = Cells[index++];
-                var isInBoard = row < Rows && col < Columns;
-                cellViewModel.IsVisible = isInBoard;
-
-                // 棋盘未生成时使用占位格子, 超出当前棋盘的范围同样引用占位格子
-                cellViewModel.UpdateCell(isInBoard ? board?[new(row, col)] ?? PlaceholderCell : PlaceholderCell);
-            }
+            var cellViewModel = Cells[pos.ToIndex(Core.Constants.MaxBoardWidth)];
+            var isInBoard = pos.IsInBounds(Rows, Columns);
+            cellViewModel.IsVisible = isInBoard;
+            cellViewModel.UpdateCell(isInBoard ? board?[pos] ?? PlaceholderCell : PlaceholderCell);
         }
         board?.PropertyChanged += OnBoardPropertyChanged;
         UpdateStatus();

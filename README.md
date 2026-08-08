@@ -13,11 +13,12 @@
 ## ✨ 特性
 
 - 🖥️ **跨平台支持** — Windows / Linux / macOS
-- 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
 - 🎮 **经典扫雷玩法** — 左键翻开, 点击数字格自动展开周围, 右键标旗/问号 (数字格一键插旗周围), 按住滑动连续操作, 警告数字检测
-- 🧩 **MVVM 模式** — 基于 CommunityToolkit.Mvvm 源代码生成器
+- 💾 **自动保存** — 关闭窗口时自动保存进行中的游戏, 下次可从主视图继续游戏
 - 🎨 **主题切换** — 跟随系统 / 浅色 / 深色, 即时生效并自动保存
 - ⚙️ **设置中心** — 主题 / Toast 时长 / 日志级别即时配置, 关于信息
+- 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
+- 🧩 **MVVM 模式** — 基于 CommunityToolkit.Mvvm 源代码生成器
 - 📝 **结构化日志** — ILogger + LoggerMessage 源代码生成器，记录游戏关键事件
 - 🧪 **完善的测试** — xUnit + Moq 单元测试，coverlet 代码覆盖率
 - 🔁 **CI/CD 自动化** — GitHub Actions 自动构建、测试、CodeQL 安全分析、Release 发布

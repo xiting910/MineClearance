@@ -14,8 +14,8 @@
                HorizontalAlignment="Center" VerticalAlignment="Center"
                IsVisible="{Binding !HasGame}"/>
 
-    <!-- 游戏区 -->
-    <DockPanel IsVisible="{Binding HasGame}">
+    <!-- 游戏区 (常驻布局, 无游戏时仅显示空白棋盘与提示, 启动时预热实例化格子控件) -->
+    <DockPanel>
 
       <!-- 顶部信息栏: 按钮右侧常驻, 信息区空间不足时自动裁剪 -->
       <Border DockPanel.Dock="Top" Padding="12,8" ClipToBounds="True"
@@ -25,6 +25,9 @@
 
           <!-- 操作按钮, 右侧常驻 -->
           <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <Button Content="操作提示" Command="{Binding ShowHelpCommand}" Padding="10,4"
+                    ToolTip.Tip="查看首次点击机制与鼠标操作说明"
+                    Background="{DynamicResource PrimaryButtonBackgroundBrush}" Foreground="{DynamicResource PrimaryButtonForegroundBrush}"/>
             <Button Content="重新开始" Command="{Binding RestartCommand}" Padding="10,4"
                     ToolTip.Tip="以当前参数重新开始游戏"
                     Background="{DynamicResource YellowLabelBrush}" Foreground="#1A1D24"/>

@@ -31,6 +31,11 @@ public sealed partial class ShellViewModel : ObservableObject
     public ToastViewModel Toast { get; }
 
     /// <summary>
+    /// 游戏视图透明度, 未显示时为 0 (透明常驻布局以便预热棋盘控件), 显示时为 1
+    /// </summary>
+    public double GameViewOpacity => IsGameViewVisible ? 1.0 : 0.0;
+
+    /// <summary>
     /// 当前可见的视图
     /// </summary>
     [ObservableProperty]
@@ -94,6 +99,15 @@ public sealed partial class ShellViewModel : ObservableObject
         IsMainViewVisible = value is MainViewModel;
         IsGameViewVisible = value is GameViewModel;
         IsHistoryViewVisible = value is HistoryViewModel;
+    }
+
+    /// <summary>
+    /// 游戏视图可见性变化时同步透明度
+    /// </summary>
+    /// <param name="value">新的可见性</param>
+    partial void OnIsGameViewVisibleChanged(bool value)
+    {
+        OnPropertyChanged(nameof(GameViewOpacity));
     }
 
     /// <summary>

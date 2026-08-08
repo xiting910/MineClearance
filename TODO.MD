@@ -9,14 +9,14 @@
 
 ### 1.1 技术栈
 
-| 项目 | 选型                                                                                  |
-| ---- | ------------------------------------------------------------------------------------- |
-| 框架 | Avalonia 12.1.1 (FluentTheme, 编译绑定默认开启)                                       |
-| MVVM | CommunityToolkit.Mvvm 8.4.2 (ObservableObject, [ObservableProperty], [RelayCommand])  |
-| 表格 | Avalonia.Controls.DataGrid 12.1.2 (已引入)                                            |
+| 项目 | 选型                                                                                                   |
+| ---- | ------------------------------------------------------------------------------------------------------ |
+| 框架 | Avalonia 12.1.1 (FluentTheme, 编译绑定默认开启)                                                        |
+| MVVM | CommunityToolkit.Mvvm 8.4.2 (ObservableObject, [ObservableProperty], [RelayCommand])                   |
+| 表格 | Avalonia.Controls.DataGrid 12.1.2 (已引入)                                                             |
 | DI   | Microsoft.Extensions.DependencyInjection (AddCore / AddInfrastructure + UI 服务直接在 Program.cs 注册) |
-| 配置 | Microsoft.Extensions.Configuration (Settings 目录下所有 JSON 已加载进 IConfiguration) |
-| 日志 | 现有 Infrastructure FileLogger (ILogger + LoggerMessage)                              |
+| 配置 | Microsoft.Extensions.Configuration (Settings 目录下所有 JSON 已加载进 IConfiguration)                  |
+| 日志 | 现有 Infrastructure FileLogger (ILogger + LoggerMessage)                                               |
 
 ### 1.2 架构模式 (参照 CalculateFolderSize)
 
@@ -31,7 +31,7 @@ ShellWindow (主窗口)
 SettingsWindow (附加窗口, 独立打开, 非抽屉)
 ```
 
-- **视图切换**: ShellViewModel 常驻持有 `Main` / `Game` / `History` 三个子 ViewModel 实例 (均注册为单例), 通过 `[ObservableProperty] CurrentView` 切换并同步各视图可见性. 三视图常驻 ShellView 的 Panel (宿主层 IsVisible 切换而非 ContentControl 重建), 游戏视图与棋盘控件池常驻, 切换视图零重建 (游戏实例本身存于 Core 的 IGameManager).
+- **视图切换**: ShellViewModel 常驻持有 `Main` / `Game` / `History` 三个子 ViewModel 实例 (均注册为单例), 通过 `[ObservableProperty] CurrentView` 切换并同步各视图可见性. 三视图常驻 ShellView 的 Panel (宿主层控制可见性而非 ContentControl 重建: 其余视图 IsVisible 切换, 游戏视图常驻布局以预热棋盘控件池), 游戏视图与棋盘控件池常驻, 切换视图零重建 (游戏实例本身存于 Core 的 IGameManager).
 - **设置窗口**: 独立 Window, **窗口单例** (由 ShellView code-behind 创建, 已打开则 Activate), SettingsViewModel 每次打开新建 (Transient). VM 不持有 View, 弹窗职责在 View 层
 - **所有通知统一为右下角 Toast**: 游戏结果提示、删除/清空历史反馈、保存反馈、错误提示等一律走 ToastViewModel.Show(). 不使用系统 MessageBox.
 
@@ -51,12 +51,12 @@ SettingsWindow (附加窗口, 独立打开, 非抽屉)
 
 ### 2.1 ShellWindow + ShellView
 
-| 文件                    | 职责                                                                                        |
-| ----------------------- | ------------------------------------------------------------------------------------------- |
-| Views/ShellWindow.axaml | 桌面主窗口: Title "MineClearance", Icon logo.ico, 居中启动, 承载 ShellView |
-| Views/ShellView.axaml   | 根视图: 3 视图常驻 Panel (宿主层 IsVisible 切换) + 全局 ToastView 覆盖层                  |
+| 文件                    | 职责                                                                                      |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| Views/ShellWindow.axaml | 桌面主窗口: Title "MineClearance", Icon logo.ico, 居中启动, 承载 ShellView                |
+| Views/ShellView.axaml   | 根视图: 3 视图常驻 Panel (宿主层控制可见性, 游戏视图常驻布局预热) + 全局 ToastView 覆盖层 |
 
-ShellWindow 挂接 `Closing` 事件: 若游戏进行中 (状态为 WaitingStarted / InProgress / Paused), 调用 `IGameManager.SaveAndExitAsync()` 自动保存进度 (无弹窗, 主视图显示"继续游戏").
+ShellWindow 挂接 `Closing` 事件: 若游戏进行中 (状态为 InProgress / Paused), 取消关闭并调用 `IGameManager.SaveAndExitAsync()` 保存进度后真正关闭 (无弹窗, 主视图显示"继续游戏").
 
 ### 2.2 主视图 MainView (替代旧 MenuPanel + GamePreparePanel)
 
@@ -76,16 +76,16 @@ ShellWindow 挂接 `Closing` 事件: 若游戏进行中 (状态为 WaitingStarte
 
 #### 2.3.1 顶部信息栏
 
-| 元素         | 绑定/说明                                                                          |
-| ------------ | ---------------------------------------------------------------------------------- |
-| 状态         | `IGame.Status` 描述文本 (等待开始/进行中/已暂停/胜利/失败, 黄色)                   |
-| 难度         | `IGame.Difficulty` 描述文本 + 棋盘尺寸与雷数                                       |
-| 剩余地雷数   | 总雷数 - `Board.FlagCount`                                                         |
-| 已打开格子数 | `Board.OpenedCount`                                                                |
-| 完成度       | `IGame.Completion` 内部 0-1, 显示为百分比                                          |
-| 游戏时间     | MM:SS, DispatcherTimer (250ms, 计入常量) 调 `IGame.Timer.Refresh()` 后读 `Elapsed` |
-| 种子         | `IGame.Seed` (灰色, 自定义难度可复现)                                              |
-| 按钮         | 重新开始 / 暂停·继续 / 保存并返回主视图 / 不保存并返回主视图 (均带 ToolTip, 右侧常驻, 宽度不足时信息区裁剪) |
+| 元素         | 绑定/说明                                                                                                              |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| 状态         | `IGame.Status` 描述文本 (等待开始/进行中/已暂停/胜利/失败, 黄色)                                                       |
+| 难度         | `IGame.Difficulty` 描述文本 + 棋盘尺寸与雷数                                                                           |
+| 剩余地雷数   | 总雷数 - `Board.FlagCount`                                                                                             |
+| 已打开格子数 | `Board.OpenedCount`                                                                                                    |
+| 完成度       | `IGame.Completion` 内部 0-1, 显示为百分比                                                                              |
+| 游戏时间     | MM:SS, DispatcherTimer (250ms, 计入常量) 调 `IGame.Timer.Refresh()` 后读 `Elapsed`                                     |
+| 种子         | `IGame.Seed` (灰色, 自定义难度可复现)                                                                                  |
+| 按钮         | 操作提示 / 重新开始 / 暂停·继续 / 保存并返回主视图 / 不保存并返回主视图 (均带 ToolTip, 右侧常驻, 宽度不足时信息区裁剪) |
 
 - 暂停: `IGame.Pause()/CancelPause()`, 暂停时棋盘上方显示"已暂停"覆盖层 (非弹窗)
 - 保存并返回主视图: `IGameManager.SaveAndExitAsync()` 保存进度 + Toast "游戏进度已保存, 下次可继续游戏"; 不保存并返回主视图: `IGameManager.ExitWithoutSaving()` 丢弃进度
@@ -95,16 +95,16 @@ ShellWindow 挂接 `Closing` 事件: 若游戏进行中 (状态为 WaitingStarte
 - **格子池**: GameViewModel 构造时按最大棋盘 30×50 = 1500 格一次性构建固定 CellViewModel 池, 每格 X/Y 像素坐标按最大棋盘位置 × CellSize 计算且固定不变, 启动构建毫秒级无感
 - **渲染**: `ItemsControl` + `ItemsPanel` = `Canvas`; 每个格子容器通过 ItemContainerTheme 绑定 `Canvas.Left/Top` (X/Y) 与 `IsVisible` (Canvas 只读取直接子元素的布局参数, 故不能写在 DataTemplate 上); ItemsControl 宽高绑定当前棋盘像素尺寸 (`Columns×CellSize` / `Rows×CellSize`), 低难度时超出棋盘的行列格子 `IsVisible=false` 隐藏, 棋盘整体顶部居中显示 (与旧项目一致)
 - **数据更新**: UpdateBoard 全量遍历格子池只做两件事——按 `row < Rows && col < Columns` 切换 IsVisible, `UpdateCell(cell)` 替换内部 Cell 引用 (首击前 Board 为 null 或超出范围时引用共享占位 Cell); 不重建任何控件
-- **控件实例化只发生一次** (首次进入游戏视图), 此后开始/重开/切换难度/首击/视图往返全部零控件创建, 仅更新数据与可见性
+- **控件实例化只发生一次** (启动预热: 构造时初始化最大棋盘尺寸并预置占位格子可见, 常驻布局首次布局即完成全部实例化), 此后开始/重开/切换难度/首击/视图往返全部零控件创建, 仅更新数据与可见性
 - 格子模板: 3 层 (背景 Border + 悬停高亮 Border + TextBlock), 按 `Cell.Type` 显示:
-  | CellType      | 显示                                                          |
-  | ------------- | ------------------------------------------------------------- |
-  | Unopened      | 灰色块                                                        |
-  | Empty         | 白色块                                                        |
-  | Number        | 白色块 + 数字 (1-8 经典配色: 1蓝 2绿 3红 4紫 5栗 6青 7黑 8灰) |
-  | WarningNumber | 黄色块 (周围旗数超过实际雷数)                                 |
-  | Flagged       | 绿色块 + 旗符号 ⚑                                             |
-  | Question      | 灰块 + 问号 ?                                                 |
+  | CellType      | 显示                                                           |
+  | ------------- | -------------------------------------------------------------- |
+  | Unopened      | 灰色块                                                         |
+  | Empty         | 白色块                                                         |
+  | Number        | 白色块 + 数字 (1-8 经典配色: 1蓝 2绿 3红 4紫 5栗 6青 7黑 8灰)  |
+  | WarningNumber | 黄色块 (周围旗数超过实际雷数)                                  |
+  | Flagged       | 绿色块 + 旗符号 ⚑                                              |
+  | Question      | 灰块 + 问号 ?                                                  |
   | Mine          | 红色块 + 地雷符号 💣 (失败后揭示全部地雷, 踩中的格子深红色突出) |
 - 全部格子有悬停效果 (pointerover 半透明橙色高亮层)
 - 格子大小: 固定 `Constants.CellSize` = 25px 正方形
@@ -112,13 +112,13 @@ ShellWindow 挂接 `Closing` 事件: 若游戏进行中 (状态为 WaitingStarte
 
 #### 2.3.3 交互 (GameView code-behind 处理指针事件)
 
-| 操作           | 行为                                                                                |
-| -------------- | ----------------------------------------------------------------------------------- |
-| 左键点击       | 统一分发 `GameViewModel.LeftClickAt(pos)`: 未打开格 `OpenCell` (首次点击由 Core 生成地雷, 踩雷记录位置突出显示), 数字格 `OpenAdjacentCells` (chord 展开) |
-| 右键点击       | 数字格 `FlagAdjacentCells` (周围未开格全插旗) + 其他格三态循环: Flagged → Question → Unopened (FlagCell / QuestionCell / UnmarkCell) |
-| 按住左键滑动   | 持续 LeftClickAt 分发 (扫一片)                                                      |
-| 按住右键滑动   | 持续三态标记                                                                        |
-| 状态提示       | 等待开始/已结束状态禁止交互 (Core AssertGamePerformable), 结束由右下角 Toast 通知结果 |
+| 操作         | 行为                                                                                                                                                     |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 左键点击     | 统一分发 `GameViewModel.LeftClickAt(pos)`: 未打开格 `OpenCell` (首次点击由 Core 生成地雷, 踩雷记录位置突出显示), 数字格 `OpenAdjacentCells` (chord 展开) |
+| 右键点击     | 数字格 `FlagAdjacentCells` (周围未开格全插旗) + 其他格三态循环: Flagged → Question → Unopened (FlagCell / QuestionCell / UnmarkCell)                     |
+| 按住左键滑动 | 持续 LeftClickAt 分发 (扫一片)                                                                                                                           |
+| 按住右键滑动 | 持续三态标记                                                                                                                                             |
+| 状态提示     | 等待开始/已结束状态禁止交互 (Core AssertGamePerformable), 结束由右下角 Toast 通知结果                                                                    |
 
 ### 2.4 历史记录视图 HistoryView
 
@@ -140,11 +140,11 @@ ShellWindow 挂接 `Closing` 事件: 若游戏进行中 (状态为 WaitingStarte
 
 独立 Window (420×520), 承载 SettingsView, **窗口单例** (已打开则 Activate), 无窗口内标题行与关闭按钮 (窗口标题栏自带):
 
-| 区域        | 标题色                           | 内容                                                                 |
-| ----------- | -------------------------------- | -------------------------------------------------------------------- |
-| UI 配置     | 蓝 (TitleForegroundBrush)        | 主题 ComboBox (跟随系统/浅色/深色, 即时切换) + Toast 显示时长 (0-20 秒, 默认 5) |
-| 日志        | 紫 (VioletLabelBrush)            | 日志级别 ComboBox + 打开日志文件夹按钮 (最左, 蓝 Primary)            |
-| 关于        | 红 (RedLabelBrush)               | 产品/版本/作者/许可证/GitHub 链接 (AssemblyMetadata, 点击打开仓库)   |
+| 区域    | 标题色                    | 内容                                                                            |
+| ------- | ------------------------- | ------------------------------------------------------------------------------- |
+| UI 配置 | 蓝 (TitleForegroundBrush) | 主题 ComboBox (跟随系统/浅色/深色, 即时切换) + Toast 显示时长 (0-20 秒, 默认 5) |
+| 日志    | 紫 (VioletLabelBrush)     | 日志级别 ComboBox + 打开日志文件夹按钮 (最左, 蓝 Primary)                       |
+| 关于    | 红 (RedLabelBrush)        | 产品/版本/作者/许可证/GitHub 链接 (AssemblyMetadata, 点击打开仓库)              |
 
 - 所有配置控件直接双向绑定配置属性 (ComboBox SelectedItem / NumericUpDown Value), **setter 变化即自动保存文件并即时生效, 无需保存按钮**:
   - 主题: 绑定 UIOptions.Theme, setter 写文件, SettingsViewModel 的 OnThemeChanged 回调中设置 Application.Current.RequestedThemeVariant
@@ -156,8 +156,8 @@ ShellWindow 挂接 `Closing` 事件: 若游戏进行中 (状态为 WaitingStarte
 
 完全照搬 CalculateFolderSize 模式:
 
-- `ToastViewModel` (单例): `Feedback` / `FeedbackVisible` 属性, `Show(message)` 显示后经 `Task.Delay` 自动消失, 新提示取代旧提示, 时长每次 Show 时从 UIOptions.ToastDurationSeconds 读取 (变化即时生效)
-- `ToastView`: 右下角, 半透明深色圆角卡片, 白字, 最大宽度 400
+- `ToastViewModel` (单例): `Feedback` / `FeedbackVisible` / `Progress` (剩余时间比例) 属性, `Show(message)` 显示后由 DispatcherTimer 按实际经过时间扣减倒计时, 鼠标悬停暂停, 新提示取代旧提示, 时长每次 Show 时从 UIOptions.ToastDurationSeconds 读取 (变化即时生效)
+- `ToastView`: 右下角, 半透明深色圆角卡片, 白字, 最大宽度 400, 底部剩余时间进度条 (ScaleTransform 补间平滑缩短)
 
 ---
 
@@ -181,7 +181,7 @@ srcs/MineClearance.UI/
 │   ├── SettingsViewModel.cs         # 设置窗口逻辑 + 关于信息 (AssemblyMetadata)
 │   └── ToastViewModel.cs            # 右下角通知
 └── Views/
-    ├── ShellWindow.axaml / .cs      # 主窗口 (Closing 自动保存待做)
+    ├── ShellWindow.axaml / .cs      # 主窗口 (Closing 自动保存)
     ├── ShellView.axaml / .cs        # 根视图 + 设置窗口单例创建
     ├── MainView.axaml / .cs
     ├── GameView.axaml / .cs         # 棋盘 + 指针交互 code-behind
@@ -193,12 +193,12 @@ srcs/MineClearance.UI/
 
 ### 3.2 修改文件
 
-| 文件         | 修改内容                                                                                                                                                                                  |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 文件         | 修改内容                                                                                                                                                                                 |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | App.axaml    | 添加 DataGrid Fluent 主题 StyleInclude; ThemeDictionaries 浅色/深色资源 (窗口背景/标题/分隔线/按钮四色/卡片背景/标签色/次级文本/强调色等) + 全局 EnumDescriptionConverter                |
-| App.axaml.cs | OnFrameworkInitializationCompleted: 按 UIOptions.Theme 设置 RequestedThemeVariant; MainWindow = ShellWindow (DataContext = ShellViewModel)                                                |
+| App.axaml.cs | OnFrameworkInitializationCompleted: 按 UIOptions.Theme 设置 RequestedThemeVariant; MainWindow = ShellWindow (DataContext = ShellViewModel)                                               |
 | Program.cs   | DI 注册: AddCore / AddInfrastructure + UIOptions 与全部 ViewModel (Shell/Main/Game/History/Toast 为 Singleton, Settings 为 Transient); 其余保持不变 (目录初始化/日志轮转/配置加载已就绪) |
-| Constants.cs | 追加 UI 常量: Toast 时长默认值/范围, UI 配置设置文件路径 (UISettings.json)                                                                                                                |
+| Constants.cs | 追加 UI 常量: Toast 时长默认值/范围, UI 配置设置文件路径 (UISettings.json)                                                                                                               |
 
 ---
 
@@ -243,24 +243,3 @@ srcs/MineClearance.UI/
 - [x] ViewModels/SettingsViewModel.cs: 主题/Toast 时长 (UIOptions), 日志级别 (IFileLoggerOptions), 关于 (AssemblyMetadata), 主题变化回调即时切换 RequestedThemeVariant, 打开日志文件夹
 - [x] Views/SettingsView.axaml + .cs + SettingsWindow.axaml + .cs (独立窗口, 窗口单例由 ShellView 创建, 无保存按钮/无窗口内标题, 配置控件直接双向绑定)
 - [x] 验证: 主题/Toast 时长/日志级别即时生效并自动保存, 重启后仍生效, 关于信息正确, GitHub 链接可打开, 多次点击只弹一个窗口
-
-### 阶段 5: 打磨与收尾
-
-- [ ] 主视图/游戏视图深色主题适配检查 (棋盘配色走 ThemeDictionaries 资源)
-- [ ] ShellWindow.Closing 自动保存进行中的游戏
-- [ ] 键盘操作 (可选): 方向键移动光标 / 空格开格 / F 插旗
-- [ ] README.md 更新 (UI 功能与截图说明), CHANGELOG.md 更新
-- [ ] 全部验证 + 清理 (dotnet format)
-
----
-
-## 5. 测试计划
-
-参照 CalculateFolderSize.UI.Shared.Tests 风格, 扩充 `tests/MineClearance.UI.Tests` (现有 SmokeTest):
-
-| 测试对象                  | 用例                                                |
-| ------------------------- | --------------------------------------------------- |
-| UIOptions                 | IConfiguration 初始值解析, 默认值, 非法值钳制, setter 变化自动保存文件 |
-| ToastViewModel            | Show 后自动消失, 新提示取代旧提示                   |
-| ShellViewModel            | 视图切换逻辑, 退出保存调用 (Moq IGameManager)       |
-| MainViewModel             | 继续游戏按钮可见性 (有/无存档), 难度切换联动参数, 自定义可编辑/预设只读, 雷数上限联动 |

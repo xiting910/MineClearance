@@ -42,6 +42,9 @@
 - UI 层: 游戏指针交互 (左键开格/点击数字格展开周围, 右键三态循环/数字格一键插旗, 按住滑动连续操作)
 - UI 层: 游戏信息栏 (状态/难度/剩余地雷/已打开/完成度/时间/种子) 与暂停覆盖层, 游戏结束通过 Toast 提示结果
 - Core 层: 游戏失败时揭示全部地雷, 胜利时自动将未开地雷格标记为旗
+- UI 层: 操作提示按钮 (Toast 展示首次点击机制与鼠标操作说明)
+- UI 层: Toast 剩余时间进度条 (ScaleTransform 补间平滑缩短) 与鼠标悬停暂停倒计时
+- UI 层: ShellWindow 关闭前自动保存进行中的游戏 (取消关闭 → SaveAndExitAsync → 再次关闭, 避免进程退出截断文件写入)
 
 ### Changed
 
@@ -55,6 +58,10 @@
 - Core 层: IGameTimer.SetInitialTime 改为 Initial (记录开始时间与已用时间), 支持存档恢复后继续计时
 - UI 层: 视图切换由 ContentControl 重建改为三视图常驻 Panel 宿主层 IsVisible 切换
 - UI 层: 主视图清空存档逻辑移入 GameManager.StartNewGame; Toast 默认时长 3→5 秒且上限 10→20 秒, 新增 GreenLabelBrush 并重命名 DifficultyLabelBrush 为 YellowLabelBrush
+- UI 层: 游戏视图改为启动预热常驻布局 (ShellView 宿主层由 IsVisible 改为 Opacity + IsHitTestVisible 控制游戏视图, 启动即初始化最大棋盘尺寸并实例化全部格子控件)
+- UI 层: Toast 倒计时由 Task.Delay + CancellationTokenSource 改为 DispatcherTimer 驱动 (按实际经过时间精确扣减, 支撑进度条与悬停暂停)
+- UI 层: CellViewModel / GameViewModel / ToastViewModel 移除 IDisposable (单例常驻无需手动释放)
+- UI 层: UpdateBoard / MarkHitMine 改用 Position.ToIndex 直接索引固定格子池, UpdateCell 相同引用时跳过重复订阅与刷新
 
 ### Fixed
 
