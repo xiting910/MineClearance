@@ -9,6 +9,14 @@
 
 ## [Unreleased]
 
+---
+
+## [1.0.0] - 2026-08-09
+
+**首个正式发布版本**: 一个基于 Avalonia UI + Clean Architecture 的跨平台扫雷游戏, 提供经典扫雷玩法 (左键翻开/右键标旗/点击数字格展开/按住滑动连续操作), 游戏自动保存与继续, 历史记录统计与筛选, 主题切换与设置中心, 结构化日志与数据持久化.
+
+下方为自项目初始化以来的完整变更记录.
+
 ### Added
 
 - 项目初始化: 基于 Avalonia UI 的跨平台扫雷游戏, 采用 Clean Architecture, .NET 10.0
@@ -84,4 +92,5 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/commits/main
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.0.0
