@@ -50,6 +50,11 @@
 - UI 层: UI 模型 (GameResultRow 显示文本与内置/自定义棋盘尺寸, StatsRow 统计行, DifficultyFilterOption 难度多选选项, ResultFilterOption 结果选项, SortKeys 统计排序键常量)
 - UI 层: 主视图退出按钮 (ExitCommand → 关闭主窗口, 进行中的游戏由窗口关闭事件自动保存)
 - UI 层: 历史视图启动预热常驻布局 (ShellView 宿主层 Opacity + IsHitTestVisible 控制, 启动即预热 DataGrid, 切换到历史视图时延迟到空闲时刷新数据)
+- Core 层: CellType 新增 ErrorFlag (错误插旗) / OpenedMine (被打开的地雷) 枚举
+- Core 层: IGame 新增 IsPerformable / HasProgress 属性 (公开暴露可操作状态与是否有实际进度)
+- UI 层: ShellWindow 按当前视图动态调整最小窗口尺寸 (主视图/历史视图固定常量, 游戏视图按棋盘尺寸) 并钳制窗口位置到工作区 (参照旧项目 WM_MOVING)
+- UI 层: Toast 背景与进度条颜色主题资源化 (浅色/深色各一套)
+- UI 层: SettingsWindow 补充最小尺寸约束
 
 ### Changed
 
@@ -69,9 +74,14 @@
 - UI 层: UpdateBoard / MarkHitMine 改用 Position.ToIndex 直接索引固定格子池, UpdateCell 相同引用时跳过重复订阅与刷新
 - UI 层: Program.cs 服务容器改为 using 声明并设置 ShutdownMode.OnMainWindowClose (主窗口关闭即退出应用), 设置窗口最小化后重新打开时恢复 Normal 再激活
 - Infrastructure 层: FileLoggerProvider 写入器启用 AutoFlush (日志即时落盘, 防止异常退出丢失日志)
+- Core 层: 游戏失败揭示逻辑增强 (错误插旗以 ErrorFlag 浅红显示, 问号格按是否为雷还原为地雷或未打开, 踩中的地雷以 OpenedMine 深红显示)
+- Core 层: 胜利判定时问号格的未开地雷同样自动标旗; AssertGamePerformable 私有方法改为公开 IsPerformable 属性, 标记类操作断言收紧为仅 InProgress
+- UI 层: CellViewModel 移除 _isHitMine / SetHitMine, 踩中地雷改由 OpenedMine 枚举驱动; GameViewModel / ShellWindow 关闭逻辑改用 IsPerformable / HasProgress
+- UI 层: ShellWindow 移除固定初始宽高, 启动时按主视图最小尺寸初始化
 
 ### Fixed
 
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
+- UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
 [Unreleased]: https://github.com/xiting910/MineClearance/commits/main

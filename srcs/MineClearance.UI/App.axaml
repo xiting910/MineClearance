@@ -32,6 +32,8 @@
           <SolidColorBrush x:Key="DangerButtonBackgroundBrush" Color="#FCE8E6"/>
           <SolidColorBrush x:Key="DangerButtonForegroundBrush" Color="#B3261E"/>
           <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="ToastBackgroundBrush" Color="#E6E27508"/>
+          <SolidColorBrush x:Key="ToastProgressBrush" Color="#8DD30C"/>
           <SolidColorBrush x:Key="VioletLabelBrush" Color="#7B1FA2"/>
           <SolidColorBrush x:Key="RedLabelBrush" Color="#C62828"/>
           <SolidColorBrush x:Key="GreenLabelBrush" Color="#2E7D32"/>
@@ -56,6 +58,8 @@
           <SolidColorBrush x:Key="DangerButtonBackgroundBrush" Color="#4A2222"/>
           <SolidColorBrush x:Key="DangerButtonForegroundBrush" Color="#FF8A80"/>
           <SolidColorBrush x:Key="CardBackgroundBrush" Color="#232733"/>
+          <SolidColorBrush x:Key="ToastBackgroundBrush" Color="#E6200E02"/>
+          <SolidColorBrush x:Key="ToastProgressBrush" Color="#1B2C03"/>
           <SolidColorBrush x:Key="VioletLabelBrush" Color="#CE93D8"/>
           <SolidColorBrush x:Key="RedLabelBrush" Color="#EF9A9A"/>
           <SolidColorBrush x:Key="GreenLabelBrush" Color="#A5D6A7"/>

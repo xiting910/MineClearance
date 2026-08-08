@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace MineClearance.Core.Services;
 
-// Game 类的私有实现部分, 包含构造函数和私有字段
+// Game 类的私有实现部分
 internal partial class Game
 {
     /// <summary>
@@ -35,15 +35,6 @@ internal partial class Game
     /// 内部地雷场
     /// </summary>
     private readonly IMineField _mineField;
-
-    /// <summary>
-    /// 断言当前游戏处于可以进行操作的状态
-    /// </summary>
-    private void AssertGamePerformable()
-    {
-        const string errorMessage = "Game must be in progress or waiting to start to perform this operation.";
-        Debug.Assert(Status is GameStatus.WaitingStarted or GameStatus.InProgress, errorMessage);
-    }
 
     /// <summary>
     /// 更新当前游戏的完成度, 并返回是否已完成
@@ -94,11 +85,21 @@ internal partial class Game
         {
             // 如果是地雷, 则游戏失败
             Timer.Pause();
+            cell.Type = CellType.OpenedMine;
             foreach (var (p, c) in Board)
             {
-                if (c.Type is CellType.Unopened && _mineField.IsMine(p))
+                var isMine = _mineField.IsMine(p);
+                if (c.Type is CellType.Unopened && isMine)
                 {
                     c.Type = CellType.Mine;
+                }
+                else if (c.Type is CellType.Flagged && !isMine)
+                {
+                    c.Type = CellType.ErrorFlag;
+                }
+                else if (c.Type is CellType.Question)
+                {
+                    c.Type = isMine ? CellType.Mine : CellType.Unopened;
                 }
             }
             Status = GameStatus.Lost;
@@ -135,7 +136,7 @@ internal partial class Game
             Debug.Assert(Board is not null, $"{nameof(Board)} should not be null when game won.");
             foreach (var (p, c) in Board)
             {
-                if (c.Type is CellType.Unopened && _mineField.IsMine(p))
+                if (c.Type is CellType.Unopened or CellType.Question && _mineField.IsMine(p))
                 {
                     c.Type = CellType.Flagged;
                 }

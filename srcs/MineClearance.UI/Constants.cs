@@ -23,9 +23,49 @@ public static class Constants
     public const int UiRefreshIntervalMilliseconds = 250;
 
     /// <summary>
+    /// 窗口钳制到工作区时的右边额外留边距
+    /// </summary>
+    public const int WindowClampRightMargin = 20;
+
+    /// <summary>
+    /// 窗口钳制到工作区时的底部额外留边距
+    /// </summary>
+    public const int WindowClampBottomMargin = 60;
+
+    /// <summary>
     /// 棋盘格子大小 (像素), 固定正方形
     /// </summary>
     public const double CellSize = 25;
+
+    /// <summary>
+    /// 最小窗口宽度的额外值
+    /// </summary>
+    public const double GameViewMinWidthExtra = 50;
+
+    /// <summary>
+    /// 最小窗口高度的额外值
+    /// </summary>
+    public const double GameViewMinHeightExtra = 100;
+
+    /// <summary>
+    /// 主视图最小窗口宽度
+    /// </summary>
+    public const double MainViewMinWidth = 700;
+
+    /// <summary>
+    /// 主视图最小窗口高度
+    /// </summary>
+    public const double MainViewMinHeight = 500;
+
+    /// <summary>
+    /// 历史记录视图最小窗口宽度
+    /// </summary>
+    public const double HistoryViewMinWidth = 1000;
+
+    /// <summary>
+    /// 历史记录视图最小窗口高度
+    /// </summary>
+    public const double HistoryViewMinHeight = 600;
 
     /// <summary>
     /// 默认的 Toast 提示显示时间 (秒)

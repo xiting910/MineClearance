@@ -211,18 +211,12 @@ public sealed partial class GameViewModel : ObservableObject
     public void LeftClickAt(Position position)
     {
         var game = _gameManager.Game;
-        if (game is not { Status: GameStatus.WaitingStarted or GameStatus.InProgress }) { return; }
+        if (game is not { IsPerformable: true }) { return; }
 
         switch (game.Board?[position].Type)
         {
             case null or CellType.Unopened:
                 game.OpenCell(position);
-
-                // 点击地雷导致游戏失败时, 记录踩中的位置以便突出显示
-                if (game.Status is GameStatus.Lost)
-                {
-                    MarkHitMine(position);
-                }
                 break;
 
             case CellType.Number or CellType.WarningNumber:
@@ -312,7 +306,7 @@ public sealed partial class GameViewModel : ObservableObject
     [RelayCommand]
     private async Task SaveAndBackAsync()
     {
-        if (_gameManager.Game is { Status: GameStatus.InProgress or GameStatus.Paused })
+        if (_gameManager.Game is { HasProgress: true })
         {
             // 有实际进度的游戏: 保存并提示
             var saved = await _gameManager.SaveAndExitAsync();
@@ -343,15 +337,6 @@ public sealed partial class GameViewModel : ObservableObject
     {
         Cells = [.. Position.GetAllPositions(Core.Constants.MaxBoardHeight, Core.Constants.MaxBoardWidth)
             .Select(position => new CellViewModel(position, PlaceholderCell))];
-    }
-
-    /// <summary>
-    /// 将指定位置的格子标记为踩中的地雷, 以深红色突出显示
-    /// </summary>
-    /// <param name="position">踩中的地雷位置</param>
-    private void MarkHitMine(Position position)
-    {
-        Cells[position.ToIndex(Core.Constants.MaxBoardWidth)].SetHitMine();
     }
 
     /// <summary>

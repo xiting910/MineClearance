@@ -132,6 +132,26 @@ internal sealed partial class Game : IGame
         }
     }
 
+    /// <inheritdoc/>
+    public bool IsPerformable
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return Status is GameStatus.WaitingStarted or GameStatus.InProgress;
+        }
+    }
+
+    /// <inheritdoc/>
+    public bool HasProgress
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return Board is not null && Status is GameStatus.InProgress or GameStatus.Paused;
+        }
+    }
+
     /// <summary>
     /// 以开始新游戏的方式初始化游戏实例
     /// </summary>
@@ -226,7 +246,7 @@ internal sealed partial class Game : IGame
     public void Pause()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        AssertGamePerformable();
+        Debug.Assert(IsPerformable, "Game must be in progress or waiting to start to pause.");
         Timer.Pause();
         Status = GameStatus.Paused;
     }
@@ -254,7 +274,7 @@ internal sealed partial class Game : IGame
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         // 断言当前游戏处于可以进行操作的状态, 因为在游戏暂停或结束后不允许再打开格子
-        AssertGamePerformable();
+        Debug.Assert(IsPerformable, "Game must be in progress or waiting to start to open a cell.");
 
         // 如果游戏棋盘字典为空, 则表示游戏尚未开始, 需要先生成地雷场和游戏棋盘字典
         if (Board is null)
@@ -285,8 +305,8 @@ internal sealed partial class Game : IGame
         // 如果当前实例已被释放, 则抛出异常
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        // 断言当前游戏处于可以进行操作的状态, 因为在游戏暂停或结束后不允许再标记格子
-        AssertGamePerformable();
+        // 断言当前游戏处于进行中的状态, 因为只有在游戏进行中才能标记格子
+        Debug.Assert(Status is GameStatus.InProgress, "Game must be in progress to flag a cell.");
 
         // 如果游戏棋盘字典为空, 则表示游戏尚未开始, 无法标记格子
         if (Board is null) { return; }
@@ -304,8 +324,8 @@ internal sealed partial class Game : IGame
         // 如果当前实例已被释放, 则抛出异常
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        // 断言当前游戏处于可以进行操作的状态, 因为在游戏暂停或结束后不允许再标记格子
-        AssertGamePerformable();
+        // 断言当前游戏处于进行中的状态, 因为只有在游戏进行中才能标记格子
+        Debug.Assert(Status is GameStatus.InProgress, "Game must be in progress to question a cell.");
 
         // 如果游戏棋盘字典为空, 则表示游戏尚未开始, 无法标记格子
         if (Board is null) { return; }
@@ -332,8 +352,8 @@ internal sealed partial class Game : IGame
         // 如果当前实例已被释放, 则抛出异常
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        // 断言当前游戏处于可以进行操作的状态, 因为在游戏暂停或结束后不允许再取消标记格子
-        AssertGamePerformable();
+        // 断言当前游戏处于进行中的状态, 因为只有在游戏进行中才能标记格子
+        Debug.Assert(Status is GameStatus.InProgress, "Game must be in progress to unmark a cell.");
 
         // 如果游戏棋盘字典为空, 则表示游戏尚未开始, 无法取消标记格子
         if (Board is null) { return; }
@@ -360,8 +380,8 @@ internal sealed partial class Game : IGame
         // 如果当前实例已被释放, 则抛出异常
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        // 断言当前游戏处于可以进行操作的状态, 因为在游戏暂停或结束后不允许再打开格子
-        AssertGamePerformable();
+        // 断言当前游戏处于进行中的状态, 因为只有在游戏进行中才能点击数字格子打开相邻格子
+        Debug.Assert(Status is GameStatus.InProgress, "Game must be in progress to open adjacent cells.");
 
         // 如果游戏棋盘字典为空, 则表示游戏尚未开始, 无法打开相邻格子
         if (Board is null) { return; }
@@ -376,7 +396,7 @@ internal sealed partial class Game : IGame
         var adjacentPositions = position.GetAdjacentPositions(Config.BoardHeight, Config.BoardWidth);
 
         // 如果指定位置周围的旗子数量等于该数字格子的数字
-        if (cell.AdjacentMineCount == adjacentPositions.Count(adjacentPosition => Board[adjacentPosition].Type is CellType.Flagged))
+        if (cell.AdjacentMineCount == adjacentPositions.Count(pos => Board[pos].Type is CellType.Flagged))
         {
             // 遍历该位置周围的所有相邻位置, 并尝试打开相邻格子
             foreach (var adjacentPosition in adjacentPositions)
@@ -395,8 +415,8 @@ internal sealed partial class Game : IGame
         // 如果当前实例已被释放, 则抛出异常
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        // 断言当前游戏处于可以进行操作的状态, 因为在游戏暂停或结束后不允许再标记格子
-        AssertGamePerformable();
+        // 断言当前游戏处于进行中的状态, 因为只有在游戏进行中才能点击数字格子标记相邻格子
+        Debug.Assert(Status is GameStatus.InProgress, "Game must be in progress to flag adjacent cells.");
 
         // 如果游戏棋盘字典为空, 则表示游戏尚未开始, 无法标记相邻格子
         if (Board is null) { return; }

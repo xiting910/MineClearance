@@ -38,5 +38,15 @@ public enum CellType
     /// <summary>
     /// 标记为问号的格子
     /// </summary>
-    Question
+    Question,
+
+    /// <summary>
+    /// 错误的插旗格子
+    /// </summary>
+    ErrorFlag,
+
+    /// <summary>
+    /// 被打开的地雷格子
+    /// </summary>
+    OpenedMine
 }

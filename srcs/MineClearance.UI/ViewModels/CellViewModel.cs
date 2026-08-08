@@ -21,6 +21,7 @@ public sealed partial class CellViewModel : ObservableObject
     private static readonly IBrush QuestionBrush = new SolidColorBrush(Color.Parse("#E3E3E3"));
     private static readonly IBrush MineBrush = new SolidColorBrush(Color.Parse("#FF6B6B"));
     private static readonly IBrush HitMineBrush = new SolidColorBrush(Color.Parse("#B71C1C"));
+    private static readonly IBrush ErrorFlagBrush = new SolidColorBrush(Color.Parse("#FFCDD2"));
     private static readonly IBrush TextBrush = new SolidColorBrush(Color.Parse("#1A1D24"));
 
     /// <summary>
@@ -42,11 +43,6 @@ public sealed partial class CellViewModel : ObservableObject
     /// 被包装的格子
     /// </summary>
     private Cell _cell;
-
-    /// <summary>
-    /// 是否为玩家踩中的地雷格子
-    /// </summary>
-    private bool _isHitMine;
 
     /// <summary>
     /// 格子位置
@@ -122,15 +118,6 @@ public sealed partial class CellViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 标记该格子为玩家踩中的地雷, 以深红色显示
-    /// </summary>
-    public void SetHitMine()
-    {
-        _isHitMine = true;
-        UpdateDisplay();
-    }
-
-    /// <summary>
     /// 格子类型变化时刷新显示
     /// </summary>
     /// <param name="sender">格子</param>
@@ -188,7 +175,19 @@ public sealed partial class CellViewModel : ObservableObject
 
             case CellType.Mine:
                 DisplayText = "💣";
-                Background = _isHitMine ? HitMineBrush : MineBrush;
+                Background = MineBrush;
+                Foreground = TextBrush;
+                break;
+
+            case CellType.ErrorFlag:
+                DisplayText = "⚑";
+                Background = ErrorFlagBrush;
+                Foreground = TextBrush;
+                break;
+
+            case CellType.OpenedMine:
+                DisplayText = "💣";
+                Background = HitMineBrush;
                 Foreground = TextBrush;
                 break;
         }

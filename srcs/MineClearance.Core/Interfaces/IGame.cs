@@ -59,6 +59,18 @@ public interface IGame : INotifyPropertyChanged, IDisposable
     GameResult? Result { get; }
 
     /// <summary>
+    /// 获取当前游戏是否处于可进行操作的状态
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
+    bool IsPerformable { get; }
+
+    /// <summary>
+    /// 获取当前游戏是否有实际进度
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
+    bool HasProgress { get; }
+
+    /// <summary>
     /// 暂停游戏
     /// </summary>
     /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>

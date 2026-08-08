@@ -77,6 +77,9 @@ file static class Program
             // 获取最新日志文件的 FileInfo 对象
             var latestLogFileInfo = new FileInfo(Infrastructure.Constants.LatestLogFilePath);
 
+            // 提前获取最新日志文件名, 因为在接下来执行 MoveTo 方法后, latestLogFileInfo.Name 将不再是最新日志文件名
+            var latestLogFileName = latestLogFileInfo.Name;
+
             // 判断最新日志是否存在并且不为空
             if (latestLogFileInfo.Exists && latestLogFileInfo.Length > 0)
             {
@@ -95,7 +98,7 @@ file static class Program
             // 获取所有旧的日志文件, 按时间降序排序, 并跳过最新的 N 个文件
             var oldFiles = logsDir
                 .EnumerateFiles($"*{Infrastructure.Constants.LogFileSuffix}", SearchOption.TopDirectoryOnly)
-                .Where(path => !comparer.Equals(path.Name, latestLogFileInfo.Name))
+                .Where(path => !comparer.Equals(path.Name, latestLogFileName))
                 .OrderByDescending(static path => path.Name)
                 .Skip(Infrastructure.Constants.MaxLogFiles - 1)
                 .ToList();
