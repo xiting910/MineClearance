@@ -15,13 +15,18 @@
 - Infrastructure 层: BootstrapUpdateHelper 引导更新辅助 (启动参数请求引导更新, 等待同名进程退出, 备份原始目录, 解压更新包并失败自动恢复备份, 成功后重启更新后的程序, 全程更新日志与 UpdateInfo 结果文件)
 - Infrastructure 层: 更新相关常量 (Update 数据目录 / 备份目录 / 引导副本目录 / 更新包与新版本号文件 / 更新信息与日志文件)
 - UI 层: AppMetadata 应用元数据封装 (基于 AssemblyMetadata 按键读取)
-- UI 层: Toast 提示支持点击回调 (点击立即关闭并执行回调, 悬停时切换手型光标)
+- UI 层: Toast 提示支持点击回调 (点击立即关闭并执行回调)
 - UI 层: 历史记录详细表格行头显示当前显示顺序序号, 双击行复制该局种子到剪贴板并 Toast 提示
-- Infrastructure 层: UpdateState 更新状态枚举 (空闲/检查中/已是最新/需要更新/下载中/下载完成/下载失败), UpdateService 状态机实现 (INotifyPropertyChanged + volatile/Interlocked 状态守卫, CheckNewestAsync / DownloadAsync / CancelDownload 入口与占位逻辑, PerformBootstrapUpdateIfNecessary 与 GetLastUpdateInfoAndCleanUp 转交引导辅助, UpdateService.Logging 新增强类型日志)
+- Infrastructure 层: UpdateState 更新状态枚举 (空闲/检查中/已是最新/需要更新/下载中/下载完成/下载失败), UpdateService 状态机实现 (INotifyPropertyChanged + volatile/Interlocked 状态守卫, CheckNewestAsync / DownloadAsync / CancelDownload 完整实现, PerformBootstrapUpdateIfNecessary 与 GetLastUpdateInfoAndCleanUp 转交引导辅助, UpdateService.Logging 新增强类型日志)
 - Infrastructure 层: BootstrapUpdateHelper 引导更新准备与清理 (PrepareBootstrapUpdate 复制程序目录到引导副本目录并启动副本程序, GetLastUpdateInfoAndCleanUp 删除引导副本/读取更新信息, 更新成功后清理更新包/新版本号/日志/备份残留), 更新日志改为追加模式
 - UI 层: App.ExitCts 程序退出取消令牌源 (desktop.Exit 时取消), 游戏保存/历史删除与清空/二次确认延迟接入取消令牌
 - UI 层: 设置抽屉 (移除 SettingsWindow, 壳视图内左侧抽屉 + 半透明遮罩, 关闭按钮/遮罩点击/Esc 呼出与收起, 游戏视图内打开自动暂停游戏, 关闭时恢复)
 - UI 层: ShellWindow 关闭放行时执行引导更新 (PerformBootstrapUpdateIfNecessary), Esc 键切换设置抽屉
+- Infrastructure 层: UpdateService 检查更新完整实现 (GitHub API 查询最新 release 并解析, 版本比较, 按平台匹配更新包资产, 已是最新/发现新版本状态流转)
+- Infrastructure 层: UpdateService 下载完整实现 (Downloader 并发分块与断点续传, 下载进度/速度属性通知, 取消保留断点供续传, 失败可重试, 完整更新包校验后跳过)
+- Infrastructure 层: UpdateService.Private 私有成员拆分 (平台更新包名/HttpClient/资产查找/版本校验辅助方法), UpdateService.Logging 新增强类型日志, IUpdateService 继承 IDisposable, 新增下载临时文件后缀常量
+- UI 层: ToastItem 单条提示模型 (剩余时间进度/入场动画/悬停暂停/点击回调), ToastViewModel 重构为多条目集合 (满员顶掉最早, 每条独立倒计时, 集合为空停止计时器)
+- UI 层: Toast 同时显示最大条数设置 (UIOptions MaxToastCount 自动保存, 设置抽屉 1-5 配置项, 默认 2), 新增 Toast 刷新间隔/入场偏移常量
 
 ### Changed
 
@@ -32,6 +37,7 @@
 - UI 层: ShellWindow 移至根命名空间 MineClearance.UI, Program.cs 移除 ShutdownMode.OnMainWindowClose (设置窗口删除后主窗口关闭即退出应用)
 - UI 层: NavigationTarget.SettingsWindow 重命名为 SettingsDrawer, 设置打开逻辑由壳视图窗口单例改为 ShellViewModel 抽屉状态 (Settings / IsSettingsOpen)
 - 工程化: Directory.Build.props 移除显式 AssemblyVersion / FileVersion (跟随 Version), ReBuild.bat 重命名为 RePublish.bat
+- UI 层: ToastView 由单条提示改为多条目堆叠展示 (ItemsControl, 新提示淡入并从下方滑入)
 
 ---
 

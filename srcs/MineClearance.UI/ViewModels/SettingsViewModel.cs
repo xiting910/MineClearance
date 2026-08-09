@@ -55,6 +55,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     public partial double ToastDurationSeconds { get; set; }
 
     /// <summary>
+    /// Toast 同时显示的最大条数
+    /// </summary>
+    [ObservableProperty]
+    public partial int MaxToastCount { get; set; }
+
+    /// <summary>
     /// 日志级别
     /// </summary>
     [ObservableProperty]
@@ -107,6 +113,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
         Theme = uiOptions.Theme;
         ToastDurationSeconds = uiOptions.ToastDurationSeconds;
+        MaxToastCount = uiOptions.MaxToastCount;
         Level = loggerOptions.Level;
 
         Product = AppMetadata.Get(nameof(Product));
@@ -141,6 +148,15 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnToastDurationSecondsChanged(double value)
     {
         _uiOptions.ToastDurationSeconds = value;
+    }
+
+    /// <summary>
+    /// Toast 数量变化时同步配置
+    /// </summary>
+    /// <param name="value">新最大条数</param>
+    partial void OnMaxToastCountChanged(int value)
+    {
+        _uiOptions.MaxToastCount = value;
     }
 
     /// <summary>

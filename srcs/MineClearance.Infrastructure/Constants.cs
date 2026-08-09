@@ -120,6 +120,11 @@ public static class Constants
     );
 
     /// <summary>
+    /// 下载临时文件后缀
+    /// </summary>
+    public const string DownloadTempFileSuffix = ".download";
+
+    /// <summary>
     /// 日志文件后缀
     /// </summary>
     public const string LogFileSuffix = ".log";

@@ -41,6 +41,20 @@ public sealed class UIOptions(IConfiguration _configuration)
         }
     } = GetToastDurationFromConfiguration(_configuration);
 
+    /// <inheritdoc/>
+    public int MaxToastCount
+    {
+        get;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                SaveToFile();
+            }
+        }
+    } = GetMaxToastCountFromConfiguration(_configuration);
+
     /// <summary>
     /// 从应用程序配置对象中获取主题模式
     /// </summary>
@@ -66,6 +80,19 @@ public sealed class UIOptions(IConfiguration _configuration)
     }
 
     /// <summary>
+    /// 从应用程序配置对象中获取 Toast 同时显示的最大条数
+    /// </summary>
+    /// <param name="configuration">应用程序配置对象</param>
+    /// <returns>Toast 同时显示的最大条数</returns>
+    private static int GetMaxToastCountFromConfiguration(IConfiguration configuration)
+    {
+        var section = configuration.GetSection(nameof(UIOptions));
+        return int.TryParse(section[nameof(MaxToastCount)], out var count)
+            ? Math.Clamp(count, Constants.MinMaxToastCount, Constants.MaxMaxToastCount)
+            : Constants.DefaultMaxToastCount;
+    }
+
+    /// <summary>
     /// 将当前配置保存到文件
     /// </summary>
     private void SaveToFile()
@@ -77,7 +104,8 @@ public sealed class UIOptions(IConfiguration _configuration)
                 [nameof(UIOptions)] = new JsonObject
                 {
                     [nameof(Theme)] = Theme.ToString(),
-                    [nameof(ToastDurationSeconds)] = ToastDurationSeconds
+                    [nameof(ToastDurationSeconds)] = ToastDurationSeconds,
+                    [nameof(MaxToastCount)] = MaxToastCount
                 }
             }.ToJsonString(Infrastructure.Constants.JsonSerializerOptions));
         }

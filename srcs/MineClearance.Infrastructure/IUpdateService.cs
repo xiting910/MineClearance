@@ -9,7 +9,7 @@ namespace MineClearance.Infrastructure;
 /// <summary>
 /// 更新服务接口
 /// </summary>
-public interface IUpdateService : INotifyPropertyChanged
+public interface IUpdateService : INotifyPropertyChanged, IDisposable
 {
     /// <summary>
     /// 获取当前状态

@@ -2,6 +2,8 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MineClearance.UI.Models;
 using System;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 namespace MineClearance.UI.ViewModels;
 
@@ -11,24 +13,21 @@ namespace MineClearance.UI.ViewModels;
 public sealed partial class ToastViewModel : ObservableObject
 {
     /// <summary>
-    /// 最大时间比例
-    /// </summary>
-    private const double MaxProgress = 1.0;
-
-    /// <summary>
     /// 进度条刷新间隔, 用于平滑更新剩余时间进度条
     /// </summary>
-    private static readonly TimeSpan RefreshInterval = TimeSpan.FromMilliseconds(50);
+    private static readonly TimeSpan RefreshInterval = TimeSpan.FromMilliseconds(
+        Constants.ToastRefreshIntervalMilliseconds
+    );
 
     /// <summary>
-    /// UI 配置, 每次显示时读取提示时长
-    /// </summary>
-    private readonly UIOptions _uiOptions;
-
-    /// <summary>
-    /// 进度条刷新计时器, 驱动剩余时间扣减与进度条更新
+    /// 进度条刷新计时器, 驱动所有条目的剩余时间扣减与进度条更新, 集合为空时停止
     /// </summary>
     private readonly DispatcherTimer _refreshTimer;
+
+    /// <summary>
+    /// UI 配置, 每次显示时读取提示时长与最大条数
+    /// </summary>
+    private readonly UIOptions _uiOptions;
 
     /// <summary>
     /// 上一次刷新计时的时间点, 用于计算实际经过的时间
@@ -36,37 +35,14 @@ public sealed partial class ToastViewModel : ObservableObject
     private DateTime _lastTickTime;
 
     /// <summary>
-    /// 剩余显示时间
+    /// 当前显示中的提示条目集合, 满员时新提示顶掉最早的一条
     /// </summary>
-    private TimeSpan _remaining;
+    public ObservableCollection<ToastItem> Items { get; } = [];
 
     /// <summary>
-    /// 是否因鼠标悬停而暂停倒计时
+    /// 是否存在显示的提示条目, 供视图控制显隐
     /// </summary>
-    private bool _isPaused;
-
-    /// <summary>
-    /// 点击回调, 点击提示时执行
-    /// </summary>
-    private Action? _clickAction;
-
-    /// <summary>
-    /// 短暂提示文本
-    /// </summary>
-    [ObservableProperty]
-    public partial string Feedback { get; set; } = string.Empty;
-
-    /// <summary>
-    /// 短暂提示是否可见
-    /// </summary>
-    [ObservableProperty]
-    public partial bool FeedbackVisible { get; set; }
-
-    /// <summary>
-    /// 剩余显示时间比例 (0-1), 驱动底部进度条从满宽缩至零
-    /// </summary>
-    [ObservableProperty]
-    public partial double Progress { get; set; } = 1.0;
+    public bool HasItems => Items.Count > 0;
 
     /// <summary>
     /// 创建短暂提示视图模型
@@ -76,81 +52,69 @@ public sealed partial class ToastViewModel : ObservableObject
     {
         _uiOptions = uiOptions;
         _refreshTimer = new(RefreshInterval, DispatcherPriority.Background, OnRefreshTimerTick);
+        Items.CollectionChanged += OnItemsCollectionChanged;
     }
 
     /// <summary>
-    /// 显示短暂提示后消失, 新提示会取代旧提示, 显示时长每次从配置读取
+    /// 显示短暂提示后消失, 满员时顶掉最早的一条, 显示时长与最大条数每次从配置读取
     /// </summary>
     /// <param name="message">提示文本</param>
     /// <param name="clickAction">点击回调</param>
     public void Show(string message, Action? clickAction = null)
     {
-        Feedback = message;
-        Progress = MaxProgress;
-
-        // 显示时长
+        // 显示时长为零时忽略提示
         var duration = TimeSpan.FromSeconds(_uiOptions.ToastDurationSeconds);
-        if (duration <= TimeSpan.Zero)
+        if (duration <= TimeSpan.Zero) { return; }
+
+        // 满员时顶掉最早的一条, 为新提示腾出位置
+        while (Items.Count >= _uiOptions.MaxToastCount)
         {
-            FeedbackVisible = false;
-            return;
+            Items.RemoveAt(0);
         }
 
-        // 显示提示
-        FeedbackVisible = true;
+        // 创建并加入新条目
+        var item = new ToastItem(message, duration, clickAction);
+        Items.Add(item);
 
-        // 重置状态
+        // 下一帧触发入场动画, 确保起始状态先完成布局渲染再补间
+        Dispatcher.UIThread.Post(() =>
+        {
+            item.EnterOffset = 0;
+            item.EnterOpacity = ToastItem.MaxOpacity;
+        });
+
+        // 启动计时器驱动进度条扣减
         _lastTickTime = DateTime.Now;
-        _remaining = duration;
-        _isPaused = false;
-
-        // 设置点击回调
-        _clickAction = clickAction;
-
-        // 启动计时器, 以便在每次刷新时扣减剩余时间与更新进度条
         _refreshTimer.Start();
     }
 
     /// <summary>
-    /// 点击提示时由视图调用, 立即关闭提示并执行点击回调
+    /// 点击提示时由视图调用, 立即关闭该提示并执行其点击回调
     /// </summary>
-    public void InvokeClick()
+    /// <param name="item">被点击的提示条目</param>
+    public void InvokeClick(ToastItem item)
     {
-        // 点击视为已处理, 立即关闭提示并停止计时
-        FeedbackVisible = false;
-        Feedback = string.Empty;
-        _refreshTimer.Stop();
+        item.InvokeClick();
+        _ = Items.Remove(item);
+    }
 
-        // 执行点击回调, 防止回调异常影响全局提示服务
-        try
+    /// <summary>
+    /// 提示条目集合变化时同步显隐状态, 集合为空时停止计时器
+    /// </summary>
+    /// <param name="sender">集合</param>
+    /// <param name="e">集合变化事件参数</param>
+    private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(HasItems));
+
+        if (Items.Count == 0)
         {
-            _clickAction?.Invoke();
-        }
-        catch { /* 忽略回调异常 */ }
-        finally
-        {
-            _clickAction = null;
+            _refreshTimer.Stop();
         }
     }
 
     /// <summary>
-    /// 鼠标悬停在提示上时暂停倒计时
-    /// </summary>
-    public void Pause()
-    {
-        _isPaused = true;
-    }
-
-    /// <summary>
-    /// 鼠标移开提示后恢复倒计时
-    /// </summary>
-    public void Resume()
-    {
-        _isPaused = false;
-    }
-
-    /// <summary>
-    /// 定时刷新剩余时间与进度条, 剩余时间为零时隐藏提示
+    /// 定时刷新所有条目的剩余时间与进度条, 剩余时间耗尽的条目被移除
     /// </summary>
     /// <param name="sender">计时器</param>
     /// <param name="e">计时器事件参数</param>
@@ -160,24 +124,13 @@ public sealed partial class ToastViewModel : ObservableObject
         var delta = now - _lastTickTime;
         _lastTickTime = now;
 
-        // 悬停暂停期间不扣减剩余时间, 进度条保持不动
-        if (!_isPaused)
+        // 倒序驱动所有条目扣减剩余时间, 耗尽的条目直接移除避免索引错位
+        for (var i = Items.Count - 1; i >= 0; i--)
         {
-            _remaining -= delta;
-        }
-
-        // 计算剩余时间比例, 用于驱动进度条从满宽缩至零
-        Progress = Math.Clamp(
-            _remaining / TimeSpan.FromSeconds(_uiOptions.ToastDurationSeconds),
-            0.0, MaxProgress
-        );
-
-        // 剩余时间为零时隐藏提示并停止计时
-        if (_remaining <= TimeSpan.Zero)
-        {
-            FeedbackVisible = false;
-            Feedback = string.Empty;
-            _refreshTimer.Stop();
+            if (Items[i].Tick(delta))
+            {
+                Items.RemoveAt(i);
+            }
         }
     }
 }

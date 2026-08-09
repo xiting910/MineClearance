@@ -23,6 +23,16 @@ public static class Constants
     public const int UiRefreshIntervalMilliseconds = 250;
 
     /// <summary>
+    /// Toast 提示轮询刷新间隔 (毫秒), 用于提示进度条显示
+    /// </summary>
+    public const int ToastRefreshIntervalMilliseconds = 50;
+
+    /// <summary>
+    /// Toast 提示入场偏移 (像素), 新提示从下方滑入时使用的初始位移
+    /// </summary>
+    public const double ToastEnterOffset = 16;
+
+    /// <summary>
     /// 窗口钳制到工作区时的右边额外留边距
     /// </summary>
     public const int WindowClampRightMargin = 20;
@@ -81,6 +91,21 @@ public static class Constants
     /// Toast 提示的最长显示时间 (秒)
     /// </summary>
     public const double MaxToastDurationSeconds = 20;
+
+    /// <summary>
+    /// 默认的 Toast 同时显示最大条数
+    /// </summary>
+    public const int DefaultMaxToastCount = 2;
+
+    /// <summary>
+    /// Toast 同时显示的最少条数
+    /// </summary>
+    public const int MinMaxToastCount = 1;
+
+    /// <summary>
+    /// Toast 同时显示的最多条数
+    /// </summary>
+    public const int MaxMaxToastCount = 5;
 
     /// <summary>
     /// UI 配置设置文件路径
