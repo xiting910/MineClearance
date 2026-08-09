@@ -3,14 +3,12 @@ using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MineClearance.Infrastructure;
+using MineClearance.Infrastructure.Models;
 using MineClearance.UI.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 
 namespace MineClearance.UI.ViewModels;
 
@@ -106,15 +104,11 @@ public sealed partial class SettingsViewModel : ObservableObject
         ToastDurationSeconds = uiOptions.ToastDurationSeconds;
         Level = loggerOptions.Level;
 
-        var metadata = typeof(App).Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .ToDictionary(attribute => attribute.Key, attribute => attribute.Value!);
-
-        Product = metadata[nameof(Product)];
-        Version = metadata[nameof(Version)];
-        Authors = metadata[nameof(Authors)];
-        License = metadata[nameof(License)];
-        GitHubUrl = metadata[nameof(GitHubUrl)];
+        Product = AppMetadata.Get(nameof(Product));
+        Version = AppMetadata.Get(nameof(Version));
+        Authors = AppMetadata.Get(nameof(Authors));
+        License = AppMetadata.Get(nameof(License));
+        GitHubUrl = AppMetadata.Get(nameof(GitHubUrl));
     }
 
     /// <summary>
@@ -165,7 +159,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             {
                 FileName = Path.Combine(
                     Infrastructure.Constants.AppDataRootDirectory,
-                    Infrastructure.Constants.LogDirectory
+                    Infrastructure.Constants.LogDirectoryName
                 ),
                 UseShellExecute = true
             });

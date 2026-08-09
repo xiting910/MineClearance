@@ -87,7 +87,7 @@ public static class Constants
     /// </summary>
     public static readonly string UIOptionsSettingsFilePath = Path.Combine(
         Infrastructure.Constants.AppDataRootDirectory,
-        Infrastructure.Constants.SettingsDirectory,
-        $"UISettings{Infrastructure.Constants.SettingFileSuffix}"
+        Infrastructure.Constants.SettingsDirectoryName,
+        $"UISettings{Infrastructure.Constants.JsonFileSuffix}"
     );
 }

@@ -20,6 +20,9 @@
     <!-- MVVM 工具包 -->
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
 
+    <!-- 下载工具包 -->
+    <PackageVersion Include="Downloader" Version="5.9.5" />
+
     <!-- 测试框架 -->
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="Moq" Version="4.20.72" />

@@ -7,7 +7,8 @@
              HorizontalAlignment="Right" VerticalAlignment="Bottom"
              Margin="0,0,16,16"
              PointerEntered="OnToastPointerEntered"
-             PointerExited="OnToastPointerExited">
+             PointerExited="OnToastPointerExited"
+             Tapped="OnToastTapped">
   <Border Padding="12,8" CornerRadius="6"
           Background="{DynamicResource ToastBackgroundBrush}" BoxShadow="0 4 12 0 #33000000">
     <StackPanel Spacing="6">

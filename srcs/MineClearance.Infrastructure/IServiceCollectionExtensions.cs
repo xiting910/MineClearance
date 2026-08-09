@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using MineClearance.Core.Interfaces;
+using MineClearance.Infrastructure.Models;
 using MineClearance.Infrastructure.Services;
 
 namespace MineClearance.Infrastructure;
@@ -22,7 +23,8 @@ public static class IServiceCollectionExtensions
         public IServiceCollection AddInfrastructure()
         {
             return services.AddSingleton<FileLoggerOptions>()
-                .AddSingleton<IGameDataRepository, GameDataRepository>();
+                .AddSingleton<IGameDataRepository, GameDataRepository>()
+                .AddSingleton<IUpdateService, UpdateService>();
         }
     }
 }

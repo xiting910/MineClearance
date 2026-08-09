@@ -9,6 +9,22 @@
 
 ## [Unreleased]
 
+### Added
+
+- Infrastructure 层: 应用自动更新基础设施 (IUpdateService 接口与 UpdateService 占位实现, UpdateInfo 更新信息记录, Downloader 下载工具包)
+- Infrastructure 层: BootstrapUpdateHelper 引导更新辅助 (启动参数请求引导更新, 等待同名进程退出, 备份原始目录, 解压更新包并失败自动恢复备份, 成功后重启更新后的程序, 全程更新日志与 UpdateInfo 结果文件)
+- Infrastructure 层: 更新相关常量 (Update 数据目录 / 备份目录 / 引导副本目录 / 更新包与新版本号文件 / 更新信息与日志文件)
+- UI 层: AppMetadata 应用元数据封装 (基于 AssemblyMetadata 按键读取)
+- UI 层: Toast 提示支持点击回调 (点击立即关闭并执行回调, 悬停时切换手型光标)
+- UI 层: 历史记录详细表格行头显示当前显示顺序序号, 双击行复制该局种子到剪贴板并 Toast 提示
+
+### Changed
+
+- Infrastructure 层: FileLoggerOptions 移至 Models 目录并调整命名空间为 MineClearance.Infrastructure.Models
+- Infrastructure 层: 常量重命名 (DataDirectory / LogDirectory / SettingsDirectory → 加 Name 后缀, SettingFileSuffix → JsonFileSuffix), 日志轮转路径比较器提取为 Constants.PathComparer
+- UI 层: Program.Main 入口检查引导更新请求并转交 BootstrapUpdateHelper, SettingsViewModel 改用 AppMetadata 读取关于信息
+- 工程化: Directory.Build.props 移除显式 AssemblyVersion / FileVersion (跟随 Version), ReBuild.bat 重命名为 RePublish.bat
+
 ---
 
 ## [1.0.0] - 2026-08-09

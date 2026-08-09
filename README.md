@@ -40,7 +40,7 @@ MineClearance/
 ├── LICENSE                                         #   MIT 许可证
 ├── MineClearance.slnx                              #   解决方案文件 (.NET XML 格式)
 ├── README.md                                       #   本文档
-├── ReBuild.bat                                     #   Windows 清理构建脚本
+├── RePublish.bat                                   #   Windows 清理构建脚本
 ├── srcs/
 │   ├── MineClearance.Core/                         # 核心层 — 领域模型、接口、枚举、领域服务
 │   │   ├── Constants.cs                            #   游戏常量
@@ -81,18 +81,24 @@ MineClearance/
 │   │   │   └── SolvabilityChecker.cs               #     可解性检查器实现
 │   │   └── IServiceCollectionExtensions.cs         # DI 注册扩展
 │   ├── MineClearance.Infrastructure/               # 基础设施层 — 数据访问、外部服务实现
+│   │   ├── BootstrapUpdateHelper.cs                #   引导更新辅助 (备份/解压/回滚/重启)
 │   │   ├── Constants.cs                            #   常量 (数据目录, 文件路径, Json 选项)
-│   │   ├── FileLoggerOptions.cs                    #   文件日志选项
 │   │   ├── ILoggingBuilderExtensions.cs            #   日志构建器扩展 (AddFileLogger)
 │   │   ├── IServiceCollectionExtensions.cs         #   DI 注册扩展 (AddInfrastructure)
+│   │   ├── IUpdateService.cs                       #   更新服务接口
+│   │   ├── Models/                                 #   基础设施模型
+│   │   │   ├── FileLoggerOptions.cs                #     文件日志选项
+│   │   │   └── UpdateInfo.cs                       #     更新信息记录
 │   │   └── Services/                               #   服务实现
 │   │       ├── FileLoggerProvider.cs               #     文件日志提供程序实现
 │   │       ├── GameDataRepository.cs               #     游戏数据仓储实现
 │   │       ├── GameDataRepository.Converter.cs     #     游戏数据仓储 Json 转换器
-│   │       └── GameDataRepository.Logging.cs       #     游戏数据仓储日志 (LoggerMessage)
+│   │       ├── GameDataRepository.Logging.cs       #     游戏数据仓储日志 (LoggerMessage)
+│   │       └── UpdateService.cs                    #     更新服务实现
 │   └── MineClearance.UI/                           # 表示层 — Avalonia 桌面应用
 │       ├── App.axaml                               #   应用定义 (主题/DataTemplate/颜色资源)
 │       ├── App.axaml.cs                            #   应用类 (服务容器/主题应用/主窗口)
+│       ├── AppMetadata.cs                          #   应用元数据 (AssemblyMetadata 读取)
 │       ├── Constants.cs                            #   UI 常量
 │       ├── EnumDescriptionConverter.cs             #   枚举描述转换器 ([Description] → 文本)
 │       ├── Models/                                 #   UI 模型
@@ -150,11 +156,7 @@ dotnet run --project srcs/MineClearance.UI
 ### 构建
 
 ```bash
-# 完整清理构建
 dotnet build
-
-# 或使用清理脚本（仅 Windows）
-.\ReBuild.bat
 ```
 
 ### 运行测试
@@ -168,6 +170,9 @@ dotnet test
 ```bash
 # Windows
 dotnet publish srcs/MineClearance.UI -c Release -r win-x64
+
+# Windows 还可以使用脚本
+.\RePublish.bat
 
 # Linux
 dotnet publish srcs/MineClearance.UI -c Release -r linux-x64

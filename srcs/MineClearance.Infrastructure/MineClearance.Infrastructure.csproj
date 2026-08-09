@@ -8,4 +8,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Downloader" />
+  </ItemGroup>
+
 </Project>

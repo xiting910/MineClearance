@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using MineClearance.Infrastructure.Models;
 using System;
 using System.IO;
 using System.Text;

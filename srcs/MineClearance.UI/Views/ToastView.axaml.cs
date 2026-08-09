@@ -18,7 +18,7 @@ public sealed partial class ToastView : UserControl
     }
 
     /// <summary>
-    /// 鼠标进入提示区域时暂停倒计时
+    /// 鼠标进入提示区域时暂停倒计时并切换为手型光标
     /// </summary>
     /// <param name="sender">提示视图</param>
     /// <param name="e">指针事件参数</param>
@@ -27,11 +27,12 @@ public sealed partial class ToastView : UserControl
         if (DataContext is ToastViewModel viewModel)
         {
             viewModel.Pause();
+            Cursor = new(StandardCursorType.Hand);
         }
     }
 
     /// <summary>
-    /// 鼠标离开提示区域时恢复倒计时
+    /// 鼠标离开提示区域时恢复倒计时并还原光标
     /// </summary>
     /// <param name="sender">提示视图</param>
     /// <param name="e">指针事件参数</param>
@@ -40,6 +41,20 @@ public sealed partial class ToastView : UserControl
         if (DataContext is ToastViewModel viewModel)
         {
             viewModel.Resume();
+            Cursor = Cursor.Default;
+        }
+    }
+
+    /// <summary>
+    /// 点击提示时关闭提示并执行点击回调
+    /// </summary>
+    /// <param name="sender">提示视图</param>
+    /// <param name="e">点击事件参数</param>
+    private void OnToastTapped(object? sender, TappedEventArgs e)
+    {
+        if (DataContext is ToastViewModel viewModel)
+        {
+            viewModel.InvokeClick();
         }
     }
 }

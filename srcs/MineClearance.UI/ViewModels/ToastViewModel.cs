@@ -46,6 +46,11 @@ public sealed partial class ToastViewModel : ObservableObject
     private bool _isPaused;
 
     /// <summary>
+    /// 点击回调, 点击提示时执行
+    /// </summary>
+    private Action? _clickAction;
+
+    /// <summary>
     /// 短暂提示文本
     /// </summary>
     [ObservableProperty]
@@ -77,7 +82,8 @@ public sealed partial class ToastViewModel : ObservableObject
     /// 显示短暂提示后消失, 新提示会取代旧提示, 显示时长每次从配置读取
     /// </summary>
     /// <param name="message">提示文本</param>
-    public void Show(string message)
+    /// <param name="clickAction">点击回调</param>
+    public void Show(string message, Action? clickAction = null)
     {
         Feedback = message;
         Progress = MaxProgress;
@@ -98,8 +104,33 @@ public sealed partial class ToastViewModel : ObservableObject
         _remaining = duration;
         _isPaused = false;
 
+        // 设置点击回调
+        _clickAction = clickAction;
+
         // 启动计时器, 以便在每次刷新时扣减剩余时间与更新进度条
         _refreshTimer.Start();
+    }
+
+    /// <summary>
+    /// 点击提示时由视图调用, 立即关闭提示并执行点击回调
+    /// </summary>
+    public void InvokeClick()
+    {
+        // 点击视为已处理, 立即关闭提示并停止计时
+        FeedbackVisible = false;
+        Feedback = string.Empty;
+        _refreshTimer.Stop();
+
+        // 执行点击回调, 防止回调异常影响全局提示服务
+        try
+        {
+            _clickAction?.Invoke();
+        }
+        catch { /* 忽略回调异常 */ }
+        finally
+        {
+            _clickAction = null;
+        }
     }
 
     /// <summary>

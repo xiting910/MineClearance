@@ -150,11 +150,13 @@
       </StackPanel>
     </Grid>
 
-    <!-- 详细记录: 点击整格列头排序, 支持多选删除 -->
+    <!-- 详细记录: 点击整格列头排序, 支持多选删除, 行头显示当前显示顺序的序号, 双击行复制种子 -->
     <Border Grid.Row="4" BorderBrush="{DynamicResource SeparatorBrush}" BorderThickness="1"
             CornerRadius="6" ClipToBounds="True">
       <DataGrid ItemsSource="{Binding DisplayedResults}"
                 IsReadOnly="True" AutoGenerateColumns="False" SelectionMode="Extended"
+                HeadersVisibility="All" RowHeaderWidth="50"
+                LoadingRow="OnRowLoading" CellPointerPressed="OnCellPointerPressed"
                 SelectionChanged="OnSelectionChanged">
         <DataGrid.Columns>
           <DataGridTextColumn SortMemberPath="Result.StartTime" Binding="{Binding StartTimeText}">

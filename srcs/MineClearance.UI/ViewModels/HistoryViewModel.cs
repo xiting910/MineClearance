@@ -258,6 +258,15 @@ public sealed partial class HistoryViewModel : ObservableObject
     }
 
     /// <summary>
+    /// 显示短暂提示
+    /// </summary>
+    /// <param name="message">提示文本</param>
+    public void Show(string message)
+    {
+        _toast.Show(message);
+    }
+
+    /// <summary>
     /// 返回主视图
     /// </summary>
     [RelayCommand]

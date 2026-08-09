@@ -23,6 +23,12 @@ file static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        if (BootstrapUpdateHelper.IsBootstrapUpdateRequested(
+            args, out var originalDirectory, out var originalVersion))
+        {
+            return BootstrapUpdateHelper.ExecuteBootstrapUpdate(originalDirectory, originalVersion);
+        }
+
         using var service = new ServiceCollection()
             .AddSingleton<IConfiguration>(Initialize())
             .AddLogging(builder => builder.AddFileLogger())
@@ -60,16 +66,16 @@ file static class Program
             var root = Directory.CreateDirectory(Infrastructure.Constants.AppDataRootDirectory);
 
             // 创建日志目录
-            var logsDir = root.CreateSubdirectory(Infrastructure.Constants.LogDirectory);
+            var logsDir = root.CreateSubdirectory(Infrastructure.Constants.LogDirectoryName);
 
             // 创建设置目录
-            var settingsDir = root.CreateSubdirectory(Infrastructure.Constants.SettingsDirectory);
+            var settingsDir = root.CreateSubdirectory(Infrastructure.Constants.SettingsDirectoryName);
 
             // 创建数据目录
-            _ = root.CreateSubdirectory(Infrastructure.Constants.DataDirectory);
+            _ = root.CreateSubdirectory(Infrastructure.Constants.DataDirectoryName);
 
             // 遍历所有的设置文件, 将所有的设置文件加载到配置构建器中
-            foreach (var file in settingsDir.EnumerateFiles($"*{Infrastructure.Constants.SettingFileSuffix}"))
+            foreach (var file in settingsDir.EnumerateFiles($"*{Infrastructure.Constants.JsonFileSuffix}"))
             {
                 _ = configBuilder.AddJsonFile(file.FullName);
             }
@@ -90,15 +96,10 @@ file static class Program
                 ));
             }
 
-            // 要使用的路径比较器
-            var comparer = OperatingSystem.IsWindows()
-                ? StringComparer.OrdinalIgnoreCase
-                : StringComparer.Ordinal;
-
             // 获取所有旧的日志文件, 按时间降序排序, 并跳过最新的 N 个文件
             var oldFiles = logsDir
                 .EnumerateFiles($"*{Infrastructure.Constants.LogFileSuffix}", SearchOption.TopDirectoryOnly)
-                .Where(path => !comparer.Equals(path.Name, latestLogFileName))
+                .Where(path => !Infrastructure.Constants.PathComparer.Equals(path.Name, latestLogFileName))
                 .OrderByDescending(static path => path.Name)
                 .Skip(Infrastructure.Constants.MaxLogFiles - 1)
                 .ToList();

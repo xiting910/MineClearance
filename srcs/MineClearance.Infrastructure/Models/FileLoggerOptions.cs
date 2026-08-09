@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Text.Json.Nodes;
 
-namespace MineClearance.Infrastructure;
+namespace MineClearance.Infrastructure.Models;
 
 /// <summary>
 /// 文件日志记录器选项实现类
