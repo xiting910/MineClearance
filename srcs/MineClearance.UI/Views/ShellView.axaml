@@ -22,6 +22,15 @@
       <views:HistoryView DataContext="{Binding History}"/>
     </Panel>
 
+    <!-- 设置抽屉: 半透明遮罩, 点击收起抽屉 -->
+    <Border IsVisible="{Binding IsSettingsOpen}" Background="#66000000" PointerPressed="OnSettingsMaskPressed"/>
+
+    <!-- 设置抽屉: 左侧面板 -->
+    <Border IsVisible="{Binding IsSettingsOpen}" Background="{DynamicResource WindowBackgroundBrush}"
+            HorizontalAlignment="Left" Width="400">
+      <ContentControl Content="{Binding Settings}"/>
+    </Border>
+
     <!-- 全局 Toast 通知 -->
     <views:ToastView DataContext="{Binding Toast}"/>
 

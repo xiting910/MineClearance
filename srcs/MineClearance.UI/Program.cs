@@ -1,5 +1,4 @@
 using Avalonia;
-using Avalonia.Controls;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MineClearance.Core;
@@ -48,7 +47,7 @@ file static class Program
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace()
-            .StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
+            .StartWithClassicDesktopLifetime(args);
     }
 
     /// <summary>

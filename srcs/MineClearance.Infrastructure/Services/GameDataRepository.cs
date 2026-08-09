@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MineClearance.Infrastructure.Services;
@@ -87,49 +88,50 @@ internal sealed partial class GameDataRepository : IGameDataRepository
     }
 
     /// <inheritdoc/>
-    public Task<bool> SaveGameSaveDataAsync(GameSaveData data)
+    public Task<bool> SaveGameSaveDataAsync(GameSaveData data, CancellationToken ct = default)
     {
         SaveData = data;
-        return SaveGameSaveDataToFileAsync();
+        return SaveGameSaveDataToFileAsync(ct);
     }
 
     /// <inheritdoc/>
-    public Task<bool> DeleteGameSaveDataAsync()
+    public Task<bool> DeleteGameSaveDataAsync(CancellationToken ct = default)
     {
         SaveData = null;
-        return SaveGameSaveDataToFileAsync();
+        return SaveGameSaveDataToFileAsync(ct);
     }
 
     /// <inheritdoc/>
-    public Task<bool> AddGameResultAsync(GameResult result)
+    public Task<bool> AddGameResultAsync(GameResult result, CancellationToken ct = default)
     {
         _results.Insert(0, result);
-        return SaveGameResultsToFileAsync();
+        return SaveGameResultsToFileAsync(ct);
     }
 
     /// <inheritdoc/>
-    public Task<bool> DeleteGameResultAsync(GameResult result)
+    public Task<bool> DeleteGameResultAsync(GameResult result, CancellationToken ct = default)
     {
-        return _results.Remove(result) ? SaveGameResultsToFileAsync() : Task.FromResult(false);
+        return _results.Remove(result) ? SaveGameResultsToFileAsync(ct) : Task.FromResult(false);
     }
 
     /// <inheritdoc/>
-    public Task<bool> ClearGameResultsAsync()
+    public Task<bool> ClearGameResultsAsync(CancellationToken ct = default)
     {
         _results.Clear();
-        return SaveGameResultsToFileAsync();
+        return SaveGameResultsToFileAsync(ct);
     }
 
     /// <summary>
     /// 将游戏存档数据保存到文件
     /// </summary>
+    /// <param name="ct">取消令牌</param>
     /// <returns><see langword="true"/> 如果保存成功, 否则为 <see langword="false"/></returns>
-    private async Task<bool> SaveGameSaveDataToFileAsync()
+    private async Task<bool> SaveGameSaveDataToFileAsync(CancellationToken ct)
     {
         try
         {
             await using var stream = File.Create(Constants.GameSaveDataFilePath);
-            await JsonSerializer.SerializeAsync(stream, SaveData, _jsonOptions).ConfigureAwait(false);
+            await JsonSerializer.SerializeAsync(stream, SaveData, _jsonOptions, ct).ConfigureAwait(false);
             LogGameSaveDataSaved();
             return true;
         }
@@ -143,13 +145,14 @@ internal sealed partial class GameDataRepository : IGameDataRepository
     /// <summary>
     /// 将游戏结果保存到文件
     /// </summary>
+    /// <param name="ct">取消令牌</param>
     /// <returns><see langword="true"/> 如果保存成功, 否则为 <see langword="false"/></returns>
-    private async Task<bool> SaveGameResultsToFileAsync()
+    private async Task<bool> SaveGameResultsToFileAsync(CancellationToken ct)
     {
         try
         {
             await using var stream = File.Create(Constants.GameResultsFilePath);
-            await JsonSerializer.SerializeAsync(stream, _results, _jsonOptions).ConfigureAwait(false);
+            await JsonSerializer.SerializeAsync(stream, _results, _jsonOptions, ct).ConfigureAwait(false);
             LogGameResultsSaved();
             return true;
         }

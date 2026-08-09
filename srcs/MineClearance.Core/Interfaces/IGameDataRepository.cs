@@ -1,5 +1,7 @@
 using MineClearance.Core.Models.Records;
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MineClearance.Core.Interfaces;
@@ -25,32 +27,42 @@ public interface IGameDataRepository
     /// 保存存档数据, 会覆盖之前的存档数据
     /// </summary>
     /// <param name="data">存档数据</param>
+    /// <param name="ct">取消令牌</param>
     /// <returns><see langword="true"/> 表示保存成功, <see langword="false"/> 表示保存失败</returns>
-    Task<bool> SaveGameSaveDataAsync(GameSaveData data);
+    /// <exception cref="OperationCanceledException">当操作被取消时抛出</exception>
+    Task<bool> SaveGameSaveDataAsync(GameSaveData data, CancellationToken ct = default);
 
     /// <summary>
     /// 删除存档数据, 会清空之前的存档数据
     /// </summary>
+    /// <param name="ct">取消令牌</param>
     /// <returns><see langword="true"/> 表示删除成功, <see langword="false"/> 表示删除失败</returns>
-    Task<bool> DeleteGameSaveDataAsync();
+    /// <exception cref="OperationCanceledException">当操作被取消时抛出</exception>
+    Task<bool> DeleteGameSaveDataAsync(CancellationToken ct = default);
 
     /// <summary>
     /// 添加一条游戏结果记录
     /// </summary>
     /// <param name="result">游戏结果记录</param>
+    /// <param name="ct">取消令牌</param>
     /// <returns><see langword="true"/> 表示添加成功, <see langword="false"/> 表示添加失败</returns>
-    Task<bool> AddGameResultAsync(GameResult result);
+    /// <exception cref="OperationCanceledException">当操作被取消时抛出</exception>
+    Task<bool> AddGameResultAsync(GameResult result, CancellationToken ct = default);
 
     /// <summary>
     /// 删除一条游戏结果记录
     /// </summary>
     /// <param name="result">游戏结果记录</param>
+    /// <param name="ct">取消令牌</param>
     /// <returns><see langword="true"/> 表示删除成功, <see langword="false"/> 表示删除失败</returns>
-    Task<bool> DeleteGameResultAsync(GameResult result);
+    /// <exception cref="OperationCanceledException">当操作被取消时抛出</exception>
+    Task<bool> DeleteGameResultAsync(GameResult result, CancellationToken ct = default);
 
     /// <summary>
     /// 清空所有游戏结果记录
     /// </summary>
+    /// <param name="ct">取消令牌</param>
     /// <returns><see langword="true"/> 表示清空成功, <see langword="false"/> 表示清空失败</returns>
-    Task<bool> ClearGameResultsAsync();
+    /// <exception cref="OperationCanceledException">当操作被取消时抛出</exception>
+    Task<bool> ClearGameResultsAsync(CancellationToken ct = default);
 }

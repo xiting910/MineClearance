@@ -9,6 +9,14 @@
   <ScrollViewer>
     <StackPanel Margin="16" Spacing="16">
 
+      <!-- 标题与关闭按钮 -->
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Text="设置" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                   Foreground="{DynamicResource TitleForegroundBrush}"/>
+        <Button Grid.Column="1" Content="✕" Click="OnCloseClick" Padding="10,4"
+                Background="{DynamicResource DangerButtonBackgroundBrush}" Foreground="{DynamicResource DangerButtonForegroundBrush}"/>
+      </Grid>
+
       <!-- UI 配置 (主题与 Toast 时长) -->
       <TextBlock Text="UI 配置" FontWeight="Bold"
                  Foreground="{DynamicResource TitleForegroundBrush}"/>

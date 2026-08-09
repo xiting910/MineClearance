@@ -17,7 +17,7 @@
 - 💾 **自动保存** — 关闭窗口时自动保存进行中的游戏, 下次可从主视图继续游戏
 - 📊 **历史记录** — 按难度分组的统计汇总 (胜率/用时/完成度), 日期/难度/结果多条件筛选与列头排序, 支持删除选中与二次确认清空
 - 🎨 **主题切换** — 跟随系统 / 浅色 / 深色, 即时生效并自动保存
-- ⚙️ **设置中心** — 主题 / Toast 时长 / 日志级别即时配置, 关于信息
+- ⚙️ **设置抽屉** — 主题 / Toast 时长 / 日志级别即时配置, 关于信息 (游戏视图内呼出自动暂停)
 - 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
 - 🧩 **MVVM 模式** — 基于 CommunityToolkit.Mvvm 源代码生成器
 - 📝 **结构化日志** — ILogger + LoggerMessage 源代码生成器，记录游戏关键事件
@@ -81,19 +81,21 @@ MineClearance/
 │   │   │   └── SolvabilityChecker.cs               #     可解性检查器实现
 │   │   └── IServiceCollectionExtensions.cs         # DI 注册扩展
 │   ├── MineClearance.Infrastructure/               # 基础设施层 — 数据访问、外部服务实现
-│   │   ├── BootstrapUpdateHelper.cs                #   引导更新辅助 (备份/解压/回滚/重启)
+│   │   ├── BootstrapUpdateHelper.cs                #   引导更新辅助 (准备副本/备份/解压/回滚/重启/清理)
 │   │   ├── Constants.cs                            #   常量 (数据目录, 文件路径, Json 选项)
 │   │   ├── ILoggingBuilderExtensions.cs            #   日志构建器扩展 (AddFileLogger)
 │   │   ├── IServiceCollectionExtensions.cs         #   DI 注册扩展 (AddInfrastructure)
 │   │   ├── IUpdateService.cs                       #   更新服务接口
 │   │   ├── Models/                                 #   基础设施模型
 │   │   │   ├── FileLoggerOptions.cs                #     文件日志选项
-│   │   │   └── UpdateInfo.cs                       #     更新信息记录
+│   │   │   ├── UpdateInfo.cs                       #     更新信息记录
+│   │   │   └── UpdateState.cs                      #     更新状态枚举
 │   │   └── Services/                               #   服务实现
 │   │       ├── FileLoggerProvider.cs               #     文件日志提供程序实现
 │   │       ├── GameDataRepository.cs               #     游戏数据仓储实现
 │   │       ├── GameDataRepository.Converter.cs     #     游戏数据仓储 Json 转换器
 │   │       ├── GameDataRepository.Logging.cs       #     游戏数据仓储日志 (LoggerMessage)
+│   │       ├── UpdateService.Logging.cs            #     更新服务日志 (LoggerMessage)
 │   │       └── UpdateService.cs                    #     更新服务实现
 │   └── MineClearance.UI/                           # 表示层 — Avalonia 桌面应用
 │       ├── App.axaml                               #   应用定义 (主题/DataTemplate/颜色资源)
@@ -111,23 +113,23 @@ MineClearance/
 │       │   ├── ThemeMode.cs                        #     主题模式枚举 (跟随系统/浅色/深色)
 │       │   └── UIOptions.cs                        #     UI 配置 (setter 变化自动保存)
 │       ├── Program.cs                              #   应用入口 (DI + Avalonia 启动)
+│       ├── ShellWindow.axaml                       #   主窗口 (关闭自动保存/退出触发引导更新/Esc 设置抽屉)
+│       ├── ShellWindow.axaml.cs                    #   主窗口代码 (自动保存/引导更新/设置抽屉快捷键)
 │       ├── ViewLocator.cs                          #   ViewModel → View 定位器
 │       ├── ViewModels/                             #   视图模型
 │       │   ├── CellViewModel.cs                    #     格子视图模型 (固定格子池)
 │       │   ├── GameViewModel.cs                    #     游戏视图模型 (固定格子池/交互分发)
 │       │   ├── HistoryViewModel.cs                 #     历史记录视图模型 (统计/筛选/排序/删除)
 │       │   ├── MainViewModel.cs                    #     主视图模型 (难度选择/参数输入/导航)
-│       │   ├── SettingsViewModel.cs                #     设置视图模型
-│       │   ├── ShellViewModel.cs                   #     壳视图模型 (视图切换/导航)
+│       │   ├── SettingsViewModel.cs                #     设置视图模型 (关闭请求事件)
+│       │   ├── ShellViewModel.cs                   #     壳视图模型 (视图切换/导航/设置抽屉)
 │       │   └── ToastViewModel.cs                   #     Toast 提示视图模型
 │       └── Views/                                  #   视图
 │           ├── GameView.axaml                      #     游戏视图
 │           ├── HistoryView.axaml                   #     历史记录视图
 │           ├── MainView.axaml                      #     主视图
-│           ├── SettingsView.axaml                  #     设置视图
-│           ├── SettingsWindow.axaml                #     设置窗口
-│           ├── ShellView.axaml                     #     壳视图 (视图切换 + Toast 覆盖层)
-│           ├── ShellWindow.axaml                   #     主窗口
+│           ├── SettingsView.axaml                  #     设置抽屉内容视图
+│           ├── ShellView.axaml                     #     壳视图 (视图切换 + 设置抽屉 + Toast 覆盖层)
 │           └── ToastView.axaml                     #     Toast 视图
 └── tests/
     ├── MineClearance.Core.Tests/                   # Core 层单元测试

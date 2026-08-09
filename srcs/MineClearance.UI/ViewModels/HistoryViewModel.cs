@@ -285,14 +285,17 @@ public sealed partial class HistoryViewModel : ObservableObject
 
         // 收集选中的游戏结果并逐个删除
         var results = rows.Select(static row => row.Result).ToArray();
-        var success = true;
+        var failed = 0;
         foreach (var result in results)
         {
-            success &= await _dataRepository.DeleteGameResultAsync(result).ConfigureAwait(false);
+            if (!await _dataRepository.DeleteGameResultAsync(result, App.ExitCts.Token).ConfigureAwait(false))
+            {
+                failed++;
+            }
         }
 
         Refresh();
-        _toast.Show(success ? $"已删除 {results.Length} 条记录" : "部分记录删除失败");
+        _toast.Show(failed == 0 ? $"已删除 {results.Length} 条记录" : $"{failed} 条记录删除失败");
     }
 
     /// <summary>
@@ -311,7 +314,7 @@ public sealed partial class HistoryViewModel : ObservableObject
             ClearAllButtonText = "确认清空";
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(3));
+                await Task.Delay(TimeSpan.FromSeconds(3), App.ExitCts.Token);
             }
             finally
             {
@@ -324,7 +327,7 @@ public sealed partial class HistoryViewModel : ObservableObject
         // 第二次点击: 执行清空
         _isClearConfirmed = false;
         ClearAllButtonText = "清空历史";
-        var ok = await _dataRepository.ClearGameResultsAsync().ConfigureAwait(false);
+        var ok = await _dataRepository.ClearGameResultsAsync(App.ExitCts.Token).ConfigureAwait(false);
         Refresh();
         _toast.Show(ok ? "历史记录已清空" : "清空历史失败");
     }

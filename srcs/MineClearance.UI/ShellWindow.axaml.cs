@@ -1,12 +1,15 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Microsoft.Extensions.DependencyInjection;
 using MineClearance.Core.Interfaces;
+using MineClearance.Infrastructure;
 using MineClearance.UI.ViewModels;
+using MineClearance.UI.Views;
 using System;
 using System.ComponentModel;
 
-namespace MineClearance.UI.Views;
+namespace MineClearance.UI;
 
 /// <summary>
 /// 桌面端壳窗口, 承载 <see cref="ShellView"/>
@@ -110,32 +113,56 @@ public sealed partial class ShellWindow : Window
     }
 
     /// <summary>
+    /// 按下 Esc 键时呼出或隐藏设置抽屉
+    /// </summary>
+    /// <param name="sender">窗口</param>
+    /// <param name="e">键盘事件参数</param>
+    private void OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key is not Key.Escape || e.Handled) { return; }
+
+        if (DataContext is ShellViewModel viewModel)
+        {
+            viewModel.ToggleSettings();
+            e.Handled = true;
+        }
+    }
+
+    /// <summary>
     /// 关闭前自动保存进行中的游戏: 取消本次关闭, 保存完成后真正关闭, 避免进程退出截断文件写入
     /// </summary>
     /// <param name="sender">窗口</param>
     /// <param name="e">关闭事件参数</param>
     private async void OnClosing(object? sender, WindowClosingEventArgs e)
     {
-        // 保存完成后再次关闭, 放行
-        if (_isSaving) { return; }
+        // 仅在第一次关闭时检查游戏进度, 避免保存完成后再次触发关闭事件导致死循环
+        if (!_isSaving)
+        {
+            // 获取游戏管理器
+            var manager = App.Services.GetRequiredService<IGameManager>();
 
-        // 获取游戏管理器
-        var manager = App.Services.GetRequiredService<IGameManager>();
+            // 检查当前游戏是否有进度
+            if (manager.Game is { HasProgress: true })
+            {
+                // 有进度时取消本次关闭, 等待保存完成后再关闭
+                e.Cancel = true;
 
-        // 当前没有有实际进度的游戏, 放行关闭
-        if (manager.Game is not { HasProgress: true }) { return; }
+                // 保存当前游戏
+                _ = await manager.SaveAndExitAsync();
 
-        // 取消本次关闭
-        e.Cancel = true;
+                // 标记正在执行保存后的关闭, 放行第二次关闭请求
+                _isSaving = true;
 
-        // 保存当前游戏
-        _ = await manager.SaveAndExitAsync();
+                // 真正关闭窗口
+                Close();
 
-        // 设置标记, 避免再次触发保存
-        _isSaving = true;
+                // 返回以避免继续执行后续代码
+                return;
+            }
+        }
 
-        // 真正关闭窗口
-        Close();
+        // 真正执行关闭时, 执行引导更新
+        App.Services.GetRequiredService<IUpdateService>().PerformBootstrapUpdateIfNecessary();
     }
 
     /// <summary>

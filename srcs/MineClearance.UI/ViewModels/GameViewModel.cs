@@ -205,6 +205,31 @@ public sealed partial class GameViewModel : ObservableObject
     partial void OnColumnsChanged(int value) => OnPropertyChanged(nameof(BoardPixelWidth));
 
     /// <summary>
+    /// 游戏可暂停时暂停游戏, 返回是否成功暂停
+    /// </summary>
+    /// <returns><see langword="true"/> 成功暂停, <see langword="false"/> 游戏不可暂停</returns>
+    public bool PauseIfPerformable()
+    {
+        if (_gameManager.Game is { IsPerformable: true } game)
+        {
+            game.Pause();
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 取消暂停恢复游戏
+    /// </summary>
+    public void ResumeIfPaused()
+    {
+        if (_gameManager.Game is { Status: GameStatus.Paused } game)
+        {
+            game.CancelPause();
+        }
+    }
+
+    /// <summary>
     /// 左键单击处理: 按格子类型分发, 未打开格子打开 (踩雷时记录位置), 数字格子展开周围
     /// </summary>
     /// <param name="position">格子位置</param>
@@ -309,7 +334,7 @@ public sealed partial class GameViewModel : ObservableObject
         if (_gameManager.Game is { HasProgress: true })
         {
             // 有实际进度的游戏: 保存并提示
-            var saved = await _gameManager.SaveAndExitAsync();
+            var saved = await _gameManager.SaveAndExitAsync(App.ExitCts.Token);
             _toast.Show(saved ? "游戏进度已保存, 下次可继续游戏" : "保存失败");
         }
         else

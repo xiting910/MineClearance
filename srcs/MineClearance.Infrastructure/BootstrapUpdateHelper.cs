@@ -64,7 +64,7 @@ public static class BootstrapUpdateHelper
         }
 
         // 打开更新日志文件的写入流
-        using var logStream = new StreamWriter(Constants.UpdateLogFilePath, append: false, Encoding.UTF8)
+        using var logStream = new StreamWriter(Constants.UpdateLogFilePath, append: true, Encoding.UTF8)
         {
             AutoFlush = true
         };
@@ -254,5 +254,135 @@ public static class BootstrapUpdateHelper
             );
         }
         catch { /* 忽略写入更新信息时的异常 */ }
+    }
+
+    /// <summary>
+    /// 递归复制目录及其内容
+    /// </summary>
+    /// <param name="sourceDir">源目录</param>
+    /// <param name="destinationDir">目标目录</param>
+    private static void CopyDirectory(DirectoryInfo sourceDir, DirectoryInfo destinationDir)
+    {
+        // 确保目标目录存在
+        if (!destinationDir.Exists)
+        {
+            destinationDir.Create();
+        }
+
+        // 复制所有文件
+        foreach (var file in sourceDir.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
+        {
+            _ = file.CopyTo(Path.Combine(destinationDir.FullName, file.Name), overwrite: true);
+        }
+
+        // 递归复制所有子目录
+        foreach (var dir in sourceDir.EnumerateDirectories("*", SearchOption.TopDirectoryOnly))
+        {
+            CopyDirectory(dir, new(Path.Combine(destinationDir.FullName, dir.Name)));
+        }
+    }
+
+    /// <summary>
+    /// 安全删除目录, 忽略删除目录时的异常
+    /// </summary>
+    /// <param name="directoryPath">要删除的目录路径</param>
+    private static void DeleteDirectory(string directoryPath)
+    {
+        try
+        {
+            if (Directory.Exists(directoryPath))
+            {
+                Directory.Delete(directoryPath, recursive: true);
+            }
+        }
+        catch { /* 忽略删除目录时的异常 */ }
+    }
+
+    /// <summary>
+    /// 安全删除文件, 忽略删除文件时的异常
+    /// </summary>
+    /// <param name="filePath">要删除的文件路径</param>
+    private static void DeleteFile(string filePath)
+    {
+        try
+        {
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+        catch { /* 忽略删除文件时的异常 */ }
+    }
+
+    /// <summary>
+    /// 准备引导更新, 将副本程序复制到引导副本目录, 并启动副本程序执行引导更新
+    /// </summary>
+    /// <param name="originalVersion">原始版本号</param>
+    /// <exception cref="InvalidOperationException">无法获取当前可执行文件名</exception>
+    internal static void PrepareBootstrapUpdate(string originalVersion)
+    {
+        // 复制当前程序目录到引导副本目录
+        CopyDirectory(new(AppContext.BaseDirectory), new(Constants.BootstrapCopyDirectory));
+
+        // 获取当前可执行文件名
+        var currentExecutableName = Path.GetFileName(Environment.ProcessPath);
+        if (string.IsNullOrWhiteSpace(currentExecutableName))
+        {
+            throw new InvalidOperationException("无法获取当前可执行文件名");
+        }
+
+        // 构建进程信息
+        var startInfo = new ProcessStartInfo
+        {
+            WorkingDirectory = Constants.BootstrapCopyDirectory,
+            FileName = Path.Combine(Constants.BootstrapCopyDirectory, currentExecutableName)
+        };
+
+        // 添加引导更新参数
+        startInfo.ArgumentList.Add(Constants.UseBootstrapUpdateModeArgument);
+        startInfo.ArgumentList.Add(AppContext.BaseDirectory);
+        startInfo.ArgumentList.Add(originalVersion);
+
+        // 启动引导副本程序
+        _ = Process.Start(startInfo);
+    }
+
+    /// <summary>
+    /// 获取上次更新的更新信息并清理残留
+    /// </summary>
+    /// <returns>上次更新的更新信息</returns>
+    internal static UpdateInfo? GetLastUpdateInfoAndCleanUp()
+    {
+        // 删除引导副本目录, 忽略删除目录时的异常
+        DeleteDirectory(Constants.BootstrapCopyDirectory);
+
+        // 如果更新信息文件不存在, 返回 null, 不做其他清理以便用户手动处理
+        if (!File.Exists(Constants.UpdateInfoFilePath))
+        {
+            return null;
+        }
+
+        UpdateInfo? info = null;
+        try
+        {
+            // 读取更新信息文件并反序列化为 UpdateInfo 对象, 然后删除更新信息文件
+            info = JsonSerializer.Deserialize<UpdateInfo>(File.ReadAllText(Constants.UpdateInfoFilePath));
+        }
+        catch { }
+
+        // 删除更新信息文件, 忽略删除文件时的异常
+        DeleteFile(Constants.UpdateInfoFilePath);
+
+        // 如果更新成功, 删除各种临时文件和目录
+        if (info?.IsSuccess == true)
+        {
+            DeleteFile(Constants.NewVersionFilePath);
+            DeleteFile(Constants.UpdatePackageFilePath);
+            DeleteFile(Constants.UpdateLogFilePath);
+            DeleteDirectory(Constants.BackupDirectory);
+        }
+
+        // 返回上次更新的更新信息
+        return info;
     }
 }

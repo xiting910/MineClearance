@@ -241,12 +241,12 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 请求打开设置窗口
+    /// 请求打开设置抽屉
     /// </summary>
     [RelayCommand]
     private void ShowSettings()
     {
-        NavigationRequested?.Invoke(NavigationTarget.SettingsWindow);
+        NavigationRequested?.Invoke(NavigationTarget.SettingsDrawer);
     }
 
     /// <summary>

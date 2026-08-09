@@ -86,6 +86,11 @@ public sealed partial class SettingsViewModel : ObservableObject
     public string GitHubUrl { get; }
 
     /// <summary>
+    /// 请求关闭设置抽屉的事件, 由壳视图模型处理
+    /// </summary>
+    public event Action? CloseRequested;
+
+    /// <summary>
     /// 创建设置视图模型
     /// </summary>
     /// <param name="uiOptions">UI 配置</param>
@@ -187,5 +192,13 @@ public sealed partial class SettingsViewModel : ObservableObject
         {
             _toast.Show($"打开链接失败: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// 请求关闭设置抽屉
+    /// </summary>
+    public void RequestClose()
+    {
+        CloseRequested?.Invoke();
     }
 }

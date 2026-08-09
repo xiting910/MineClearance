@@ -5,6 +5,7 @@ using MineClearance.Core.Models.Records;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MineClearance.Core.Services;
@@ -130,7 +131,7 @@ internal sealed partial class GameManager(
     }
 
     /// <inheritdoc/>
-    public async Task<bool> SaveAndExitAsync()
+    public async Task<bool> SaveAndExitAsync(CancellationToken ct = default)
     {
         // 如果当前没有游戏正在进行, 则不需要保存
         if (Game is null) { return true; }
@@ -140,8 +141,8 @@ internal sealed partial class GameManager(
 
         // 将存档数据保存到游戏数据存储库
         var saveResult = saveData is null
-            ? await _dataRepository.DeleteGameSaveDataAsync().ConfigureAwait(false)
-            : await _dataRepository.SaveGameSaveDataAsync(saveData).ConfigureAwait(false);
+            ? await _dataRepository.DeleteGameSaveDataAsync(ct).ConfigureAwait(false)
+            : await _dataRepository.SaveGameSaveDataAsync(saveData, ct).ConfigureAwait(false);
 
         // 将当前游戏实例设置为 null, 表示没有游戏正在进行
         Game = null;

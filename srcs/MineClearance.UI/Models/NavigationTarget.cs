@@ -16,7 +16,7 @@ public enum NavigationTarget
     HistoryView,
 
     /// <summary>
-    /// 设置窗口
+    /// 设置抽屉
     /// </summary>
-    SettingsWindow
+    SettingsDrawer
 }

@@ -2,6 +2,7 @@ using MineClearance.Core.Enums;
 using MineClearance.Core.Models.Records;
 using System;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MineClearance.Core.Interfaces;
@@ -49,6 +50,8 @@ public interface IGameManager : INotifyPropertyChanging, INotifyPropertyChanged
     /// <summary>
     /// 保存并退出当前游戏
     /// </summary>
+    /// <param name="ct">取消令牌</param>
     /// <returns><see langword="true"/> 如果保存成功, <see langword="false"/> 如果保存失败</returns>
-    Task<bool> SaveAndExitAsync();
+    /// <exception cref="OperationCanceledException">当操作被取消时抛出</exception>
+    Task<bool> SaveAndExitAsync(CancellationToken ct = default);
 }

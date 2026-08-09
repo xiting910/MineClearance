@@ -1,13 +1,14 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using MineClearance.UI.Models;
 using System;
 
 namespace MineClearance.UI.ViewModels;
 
 /// <summary>
-/// 壳视图模型, 负责主视图/游戏视图/历史记录视图之间的切换
+/// 壳视图模型, 负责主视图/游戏视图/历史记录视图之间的切换与设置抽屉
 /// </summary>
 public sealed partial class ShellViewModel : ObservableObject
 {
@@ -66,14 +67,26 @@ public sealed partial class ShellViewModel : ObservableObject
     public partial bool IsHistoryViewVisible { get; set; }
 
     /// <summary>
-    /// 请求打开设置窗口的事件, 由视图层创建窗口
+    /// 设置视图模型, 打开设置抽屉时创建
     /// </summary>
-    public event Action? SettingsWindowRequested;
+    [ObservableProperty]
+    public partial SettingsViewModel? Settings { get; set; }
+
+    /// <summary>
+    /// 设置抽屉是否打开
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsSettingsOpen { get; set; }
 
     /// <summary>
     /// 请求退出程序的事件, 由视图层关闭主窗口
     /// </summary>
     public event Action? ExitRequested;
+
+    /// <summary>
+    /// 是否因打开设置抽屉而暂停了游戏, 关闭抽屉时据此恢复
+    /// </summary>
+    private bool _isGamePausedByDrawer;
 
     /// <summary>
     /// 创建壳视图模型
@@ -173,7 +186,51 @@ public sealed partial class ShellViewModel : ObservableObject
         {
             case NavigationTarget.GameView: ShowGameView(); break;
             case NavigationTarget.HistoryView: ShowHistoryView(); break;
-            case NavigationTarget.SettingsWindow: SettingsWindowRequested?.Invoke(); break;
+            case NavigationTarget.SettingsDrawer: OpenSettings(); break;
+        }
+    }
+
+    /// <summary>
+    /// 打开设置抽屉: 游戏视图打开时自动暂停游戏, 并记录暂停来源以便关闭时恢复
+    /// </summary>
+    private void OpenSettings()
+    {
+        _isGamePausedByDrawer = IsGameViewVisible && Game.PauseIfPerformable();
+
+        Settings = App.Services.GetRequiredService<SettingsViewModel>();
+        Settings.CloseRequested += CloseSettings;
+
+        IsSettingsOpen = true;
+    }
+
+    /// <summary>
+    /// 关闭设置抽屉, 并恢复因打开抽屉而暂停的游戏
+    /// </summary>
+    public void CloseSettings()
+    {
+        IsSettingsOpen = false;
+        Settings?.CloseRequested -= CloseSettings;
+        Settings = null;
+
+        if (_isGamePausedByDrawer)
+        {
+            Game.ResumeIfPaused();
+            _isGamePausedByDrawer = false;
+        }
+    }
+
+    /// <summary>
+    /// 呼出或隐藏设置抽屉, 供 Esc 键调用
+    /// </summary>
+    public void ToggleSettings()
+    {
+        if (IsSettingsOpen)
+        {
+            CloseSettings();
+        }
+        else
+        {
+            OpenSettings();
         }
     }
 }
