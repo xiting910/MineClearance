@@ -9,6 +9,14 @@
 
 ## [Unreleased]
 
+---
+
+## [1.1.0] - 2026-08-10
+
+**自动更新版本**: 引入应用自动更新系统 (启动后台检查 GitHub 新版本, 断点续传下载与更新包完整性校验, 下载进度悬浮球与详情抽屉, 退出后引导更新并在失败时自动回滚), 设置窗口改为壳视图内动画抽屉, Toast 重构为多条目堆叠提示, 历史记录支持双击复制种子, 窗口尺寸变化时钳制抽屉宽度.
+
+下方为自 1.0.0 以来的完整变更记录.
+
 ### Added
 
 - Infrastructure 层: 应用自动更新基础设施 (IUpdateService 接口与 UpdateService 占位实现, UpdateInfo 更新信息记录, Downloader 下载工具包)
@@ -137,5 +145,6 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.0
 [1.0.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.0.0
