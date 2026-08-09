@@ -11,6 +11,21 @@ namespace MineClearance.UI;
 public static class AppMetadata
 {
     /// <summary>
+    /// 作者元数据键
+    /// </summary>
+    public const string AuthorKey = "Authors";
+
+    /// <summary>
+    /// 产品元数据键
+    /// </summary>
+    public const string ProductKey = "Product";
+
+    /// <summary>
+    /// 版本元数据键
+    /// </summary>
+    public const string VersionKey = "Version";
+
+    /// <summary>
     /// 应用元数据
     /// </summary>
     private static readonly IEnumerable<AssemblyMetadataAttribute> _metadata = Assembly.GetExecutingAssembly()

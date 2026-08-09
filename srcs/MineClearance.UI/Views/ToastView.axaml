@@ -20,6 +20,7 @@
         <Border Padding="12,8" CornerRadius="6"
                 Background="{DynamicResource ToastBackgroundBrush}" BoxShadow="0 4 12 0 #33000000"
                 Opacity="{Binding EnterOpacity}"
+                Cursor="Hand"
                 PointerEntered="OnToastPointerEntered"
                 PointerExited="OnToastPointerExited"
                 Tapped="OnToastTapped">

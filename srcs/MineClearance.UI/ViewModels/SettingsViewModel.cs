@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace MineClearance.UI.ViewModels;
 
@@ -31,6 +32,11 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// 全局短暂提示视图模型, 用于操作失败时的反馈
     /// </summary>
     private readonly ToastViewModel _toast;
+
+    /// <summary>
+    /// 更新视图模型, 用于手动检查更新与悬浮球可见性联动
+    /// </summary>
+    private readonly UpdateViewModel _update;
 
     /// <summary>
     /// 可选择的主题模式列表
@@ -59,6 +65,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     public partial int MaxToastCount { get; set; }
+
+    /// <summary>
+    /// 是否显示下载悬浮球
+    /// </summary>
+    [ObservableProperty]
+    public partial bool ShowDownloadBall { get; set; }
 
     /// <summary>
     /// 日志级别
@@ -102,18 +114,22 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <param name="uiOptions">UI 配置</param>
     /// <param name="loggerOptions">文件日志记录器选项</param>
     /// <param name="toastViewModel">全局短暂提示视图模型</param>
+    /// <param name="updateViewModel">更新视图模型</param>
     public SettingsViewModel(
         UIOptions uiOptions,
         FileLoggerOptions loggerOptions,
-        ToastViewModel toastViewModel)
+        ToastViewModel toastViewModel,
+        UpdateViewModel updateViewModel)
     {
         _uiOptions = uiOptions;
         _loggerOptions = loggerOptions;
         _toast = toastViewModel;
+        _update = updateViewModel;
 
         Theme = uiOptions.Theme;
         ToastDurationSeconds = uiOptions.ToastDurationSeconds;
         MaxToastCount = uiOptions.MaxToastCount;
+        ShowDownloadBall = uiOptions.ShowDownloadBall;
         Level = loggerOptions.Level;
 
         Product = AppMetadata.Get(nameof(Product));
@@ -166,6 +182,25 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnLevelChanged(LogLevel value)
     {
         _loggerOptions.Level = value;
+    }
+
+    /// <summary>
+    /// 悬浮球可见性变化时同步配置并立即刷新悬浮球
+    /// </summary>
+    /// <param name="value">新的可见性</param>
+    partial void OnShowDownloadBallChanged(bool value)
+    {
+        _uiOptions.ShowDownloadBall = value;
+        _update.RefreshBallVisibility();
+    }
+
+    /// <summary>
+    /// 手动检查更新, 由设置抽屉的检查更新按钮触发
+    /// </summary>
+    [RelayCommand]
+    private Task CheckForUpdatesAsync()
+    {
+        return _update.CheckForUpdatesAsync(manual: true);
     }
 
     /// <summary>

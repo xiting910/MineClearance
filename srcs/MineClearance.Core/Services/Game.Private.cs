@@ -42,10 +42,10 @@ internal partial class Game
     /// <returns><see langword="true"/> 如果游戏已完成, 否则为 <see langword="false"/></returns>
     private bool UpdateCompletion()
     {
-        // 如果游戏棋盘字典为空, 则完成度为 0.0
+        // 如果游戏棋盘字典为空, 则完成度为 0
         if (Board is null)
         {
-            Completion = 0.0;
+            Completion = 0;
             return false;
         }
 

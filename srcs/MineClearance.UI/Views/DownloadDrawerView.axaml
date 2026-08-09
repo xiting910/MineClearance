@@ -1,0 +1,93 @@
+<UserControl x:Class="MineClearance.UI.Views.DownloadDrawerView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MineClearance.UI.ViewModels"
+             x:DataType="vm:UpdateViewModel"
+             IsVisible="{Binding IsDrawerVisible}"
+             Opacity="{Binding DrawerOpacity}"
+             HorizontalAlignment="Left" Width="{Binding DrawerWidth}">
+
+  <!-- 抽屉滑入滑出动画: 透明度淡入淡出 + 水平位移从左侧滑入 -->
+  <UserControl.Transitions>
+    <Transitions>
+      <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+    </Transitions>
+  </UserControl.Transitions>
+  <UserControl.RenderTransform>
+    <TranslateTransform X="{Binding DrawerSlideOffset}">
+      <TranslateTransform.Transitions>
+        <Transitions>
+          <DoubleTransition Property="X" Duration="0:0:0.2" Easing="CubicEaseOut"/>
+        </Transitions>
+      </TranslateTransform.Transitions>
+    </TranslateTransform>
+  </UserControl.RenderTransform>
+
+  <Grid>
+    <Border Background="{DynamicResource WindowBackgroundBrush}">
+      <ScrollViewer>
+        <StackPanel Margin="16" Spacing="16">
+
+          <!-- 标题与取消按钮 -->
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="4">
+              <TextBlock Text="更新下载" FontSize="16" FontWeight="Bold"
+                         Foreground="{DynamicResource TitleForegroundBrush}"/>
+              <TextBlock Text="{Binding DrawerVersionText}"
+                         Foreground="{DynamicResource SecondaryTextBrush}"/>
+            </StackPanel>
+            <Button Grid.Column="1" Content="取消" Command="{Binding CancelDownloadCommand}"
+                    IsVisible="{Binding IsCancelVisible}" VerticalAlignment="Center" Padding="12,6"
+                    Background="{DynamicResource DangerButtonBackgroundBrush}" Foreground="{DynamicResource DangerButtonForegroundBrush}"/>
+          </Grid>
+
+          <!-- 下载进度条: 前景条按进度比例伸缩, 线性过渡补间保证平滑 -->
+          <Border Height="6" CornerRadius="3" Background="{DynamicResource SeparatorBrush}">
+            <Border CornerRadius="3" Background="{DynamicResource PrimaryButtonBackgroundBrush}"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+              <Border.RenderTransform>
+                <ScaleTransform ScaleX="{Binding DrawerProgress}" ScaleY="1">
+                  <ScaleTransform.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="ScaleX" Duration="0:0:0.12"/>
+                    </Transitions>
+                  </ScaleTransform.Transitions>
+                </ScaleTransform>
+              </Border.RenderTransform>
+              <Border.RenderTransformOrigin>0,0.5</Border.RenderTransformOrigin>
+            </Border>
+          </Border>
+
+          <!-- 下载详情 -->
+          <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
+            <TextBlock Text="已下载:" VerticalAlignment="Center"
+                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+            <TextBlock Grid.Column="1" Text="{Binding DownloadedText}" VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="1" Text="速度:" VerticalAlignment="Center"
+                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SpeedText}" VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="2" Text="状态:" VerticalAlignment="Center"
+                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding StateText}" VerticalAlignment="Center"/>
+          </Grid>
+
+          <!-- 异常信息区: 下载失败时显示 -->
+          <Border IsVisible="{Binding IsFailed}" CornerRadius="6" Padding="10"
+                  Background="{DynamicResource DangerButtonBackgroundBrush}">
+            <TextBlock Text="{Binding ExceptionText}" TextWrapping="Wrap"
+                       Foreground="{DynamicResource DangerButtonForegroundBrush}"/>
+          </Border>
+
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+
+    <!-- 右边界拖动手柄: 拖动调整抽屉宽度, 不保存 -->
+    <Border Width="6" HorizontalAlignment="Right" VerticalAlignment="Stretch" Background="Transparent"
+            Cursor="SizeWestEast"
+            PointerPressed="OnResizeHandlePressed"
+            PointerMoved="OnResizeHandleMoved"
+            PointerReleased="OnResizeHandleReleased"/>
+  </Grid>
+
+</UserControl>

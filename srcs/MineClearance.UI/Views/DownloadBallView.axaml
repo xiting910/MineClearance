@@ -1,0 +1,43 @@
+<UserControl x:Class="MineClearance.UI.Views.DownloadBallView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MineClearance.UI.ViewModels"
+             x:DataType="vm:UpdateViewModel"
+             IsVisible="{Binding IsBallVisible}"
+             HorizontalAlignment="Left" VerticalAlignment="Bottom"
+             Margin="16,0,0,16"
+             Cursor="Hand"
+             Tapped="OnBallTapped">
+
+  <!-- 下载进度悬浮球: 轨道底圆 + 自底部随进度填充的实心球体 + 中心下载箭头 -->
+  <Grid Width="48" Height="48">
+
+    <!-- 轨道底圆 -->
+    <Ellipse Fill="{DynamicResource CardBackgroundBrush}"
+             Stroke="{DynamicResource SecondaryTextBrush}" StrokeThickness="1.5"/>
+
+    <!-- 填充层: 椭圆几何裁剪为圆形, 填充块高度随进度从底部向上增长, 高度过渡保证平滑填充 -->
+    <Border>
+      <Border.Clip>
+        <EllipseGeometry Center="24,24" RadiusX="24" RadiusY="24"/>
+      </Border.Clip>
+      <Border Background="{DynamicResource PrimaryButtonBackgroundBrush}"
+              HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+              Height="{Binding BallFillHeight}">
+        <Border.Transitions>
+          <Transitions>
+            <DoubleTransition Property="Height" Duration="0:0:0.12"/>
+          </Transitions>
+        </Border.Transitions>
+      </Border>
+    </Border>
+
+    <!-- 中心下载箭头: 强调色单层箭头, 无需底板即可在轨道色与填充色上分辨 -->
+    <TextBlock Text="↓" FontSize="20" FontWeight="Bold"
+               Foreground="{DynamicResource AccentButtonBackgroundBrush}"
+               HorizontalAlignment="Center" VerticalAlignment="Center"
+               IsHitTestVisible="False"/>
+
+  </Grid>
+
+</UserControl>

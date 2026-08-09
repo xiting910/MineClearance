@@ -17,10 +17,10 @@
                 Background="{DynamicResource DangerButtonBackgroundBrush}" Foreground="{DynamicResource DangerButtonForegroundBrush}"/>
       </Grid>
 
-      <!-- UI 配置 (主题/Toast 时长与数量) -->
+      <!-- UI 配置 (主题/Toast 时长与数量/悬浮球) -->
       <TextBlock Text="UI 配置" FontWeight="Bold"
                  Foreground="{DynamicResource TitleForegroundBrush}"/>
-      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
         <TextBlock Text="主题:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
         <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
@@ -42,6 +42,11 @@
         <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding MaxToastCount}"
                        Minimum="1" Maximum="5" Increment="1" FormatString="0"
                        ToolTip.Tip="右下角提示的同时显示最大条数, 修改后立即生效并自动保存"/>
+        <TextBlock Grid.Row="3" Text="下载悬浮球:" VerticalAlignment="Center"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+        <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowDownloadBall}"
+                  Content="下载时在左下角显示进度悬浮球" VerticalAlignment="Center"
+                  ToolTip.Tip="下载更新时在左下角显示进度悬浮球, 修改后立即生效并自动保存"/>
       </Grid>
 
       <Separator/>
@@ -61,6 +66,20 @@
                 HorizontalAlignment="Stretch" Padding="12,6"
                 ToolTip.Tip="在文件资源管理器中打开日志文件夹"
                 Background="{DynamicResource PrimaryButtonBackgroundBrush}" Foreground="{DynamicResource PrimaryButtonForegroundBrush}"/>
+      </Grid>
+
+      <Separator/>
+
+      <!-- 更新 -->
+      <TextBlock Text="更新" FontWeight="Bold"
+                 Foreground="{DynamicResource GreenLabelBrush}"/>
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+        <TextBlock Text="操作:" VerticalAlignment="Center"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+        <Button Grid.Column="1" Content="检查更新" Command="{Binding CheckForUpdatesCommand}"
+                HorizontalAlignment="Stretch" Padding="12,6"
+                ToolTip.Tip="检查 GitHub 上是否有新版本"
+                Background="{DynamicResource SuccessButtonBackgroundBrush}" Foreground="{DynamicResource SuccessButtonForegroundBrush}"/>
       </Grid>
 
       <Separator/>

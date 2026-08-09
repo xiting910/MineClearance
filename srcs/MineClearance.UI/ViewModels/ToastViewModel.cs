@@ -80,7 +80,7 @@ public sealed partial class ToastViewModel : ObservableObject
         Dispatcher.UIThread.Post(() =>
         {
             item.EnterOffset = 0;
-            item.EnterOpacity = ToastItem.MaxOpacity;
+            item.EnterOpacity = Constants.MaxRatio;
         });
 
         // 启动计时器驱动进度条扣减

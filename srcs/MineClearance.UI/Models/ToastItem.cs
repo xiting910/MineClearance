@@ -16,16 +16,6 @@ public sealed partial class ToastItem(
 ) : ObservableObject
 {
     /// <summary>
-    /// 最大时间比例
-    /// </summary>
-    public const double MaxProgress = 1.0;
-
-    /// <summary>
-    /// 最大不透明度
-    /// </summary>
-    public const double MaxOpacity = 1.0;
-
-    /// <summary>
     /// 提示文本
     /// </summary>
     [ObservableProperty]
@@ -47,7 +37,7 @@ public sealed partial class ToastItem(
     /// 剩余显示时间比例 (0-1), 驱动底部进度条从满宽缩至零
     /// </summary>
     [ObservableProperty]
-    public partial double Progress { get; set; } = MaxProgress;
+    public partial double Progress { get; set; } = Constants.MaxRatio;
 
     /// <summary>
     /// 是否因鼠标悬停而暂停倒计时
@@ -100,7 +90,7 @@ public sealed partial class ToastItem(
         }
 
         // 计算剩余时间比例, 用于驱动进度条从满宽缩至零
-        Progress = Math.Clamp(_remaining / _totalDuration, 0, MaxProgress);
+        Progress = Math.Clamp(_remaining / _totalDuration, 0, Constants.MaxRatio);
 
         // 剩余时间耗尽时返回 true, 由视图模型移除该条目
         return _remaining <= TimeSpan.Zero;

@@ -37,6 +37,18 @@ public sealed partial class ShellWindow : Window
     }
 
     /// <inheritdoc/>
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+
+        // UI 启动完毕后启动更新流程: 消费上次更新信息并后台检查更新
+        if (DataContext is ShellViewModel viewModel)
+        {
+            viewModel.StartUpdateRoutine();
+        }
+    }
+
+    /// <inheritdoc/>
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
@@ -113,7 +125,7 @@ public sealed partial class ShellWindow : Window
     }
 
     /// <summary>
-    /// 按下 Esc 键时呼出或隐藏设置抽屉
+    /// 按下 Esc 键时由壳视图模型处理: 下载抽屉可见时隐藏它, 否则呼出或隐藏设置抽屉
     /// </summary>
     /// <param name="sender">窗口</param>
     /// <param name="e">键盘事件参数</param>
@@ -123,13 +135,13 @@ public sealed partial class ShellWindow : Window
 
         if (DataContext is ShellViewModel viewModel)
         {
-            viewModel.ToggleSettings();
+            viewModel.HandleEscapeKey();
             e.Handled = true;
         }
     }
 
     /// <summary>
-    /// 关闭前自动保存进行中的游戏: 取消本次关闭, 保存完成后真正关闭, 避免进程退出截断文件写入
+    /// 关闭前自动保存进行中的游戏, 并在必要时执行引导更新
     /// </summary>
     /// <param name="sender">窗口</param>
     /// <param name="e">关闭事件参数</param>

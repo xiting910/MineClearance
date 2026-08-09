@@ -19,6 +19,11 @@ namespace MineClearance.UI.ViewModels;
 public sealed partial class HistoryViewModel : ObservableObject
 {
     /// <summary>
+    /// 空统计行文本, 用于无数据时显示
+    /// </summary>
+    private const string EmptyStatsText = "--";
+
+    /// <summary>
     /// 游戏数据存储库, 用于读取与修改游戏结果记录
     /// </summary>
     private readonly IGameDataRepository _dataRepository;
@@ -501,13 +506,21 @@ public sealed partial class HistoryViewModel : ObservableObject
             DifficultyText: text,
             Games: list.Count,
             Wins: wins.Count,
-            WinRateText: list.Count == 0 ? "--" : $"{wins.Count * 100.0 / list.Count:0.##}%",
-            WinRate: list.Count == 0 ? -1 : wins.Count * 100.0 / list.Count,
-            AvgWinDurationText: avgWinDuration is null ? "--" : FormatTimeSpan(avgWinDuration.Value),
+            WinRateText: list.Count == 0
+                ? EmptyStatsText
+                : $"{wins.Count * Constants.PercentBase / list.Count:0.##}%",
+            WinRate: list.Count == 0 ? -1 : wins.Count * Constants.PercentBase / list.Count,
+            AvgWinDurationText: avgWinDuration is null
+                ? EmptyStatsText
+                : FormatTimeSpan(avgWinDuration.Value),
             AvgWinDuration: avgWinDuration,
-            MinWinDurationText: minWinDuration is null ? "--" : FormatTimeSpan(minWinDuration.Value),
+            MinWinDurationText: minWinDuration is null
+                ? EmptyStatsText
+                : FormatTimeSpan(minWinDuration.Value),
             MinWinDuration: minWinDuration,
-            AvgCompletionText: avgCompletion is null ? "--" : $"{avgCompletion.Value * 100:0.##}%",
+            AvgCompletionText: avgCompletion is null
+                ? EmptyStatsText
+                : $"{avgCompletion.Value * Constants.PercentBase:0.##}%",
             AvgCompletion: avgCompletion ?? -1
         );
     }

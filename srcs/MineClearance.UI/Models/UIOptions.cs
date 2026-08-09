@@ -55,6 +55,20 @@ public sealed class UIOptions(IConfiguration _configuration)
         }
     } = GetMaxToastCountFromConfiguration(_configuration);
 
+    /// <inheritdoc/>
+    public bool ShowDownloadBall
+    {
+        get;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                SaveToFile();
+            }
+        }
+    } = GetShowDownloadBallFromConfiguration(_configuration);
+
     /// <summary>
     /// 从应用程序配置对象中获取主题模式
     /// </summary>
@@ -93,6 +107,17 @@ public sealed class UIOptions(IConfiguration _configuration)
     }
 
     /// <summary>
+    /// 从应用程序配置对象中获取是否显示下载悬浮球
+    /// </summary>
+    /// <param name="configuration">应用程序配置对象</param>
+    /// <returns>是否显示下载悬浮球</returns>
+    private static bool GetShowDownloadBallFromConfiguration(IConfiguration configuration)
+    {
+        var section = configuration.GetSection(nameof(UIOptions));
+        return !bool.TryParse(section[nameof(ShowDownloadBall)], out var show) || show;
+    }
+
+    /// <summary>
     /// 将当前配置保存到文件
     /// </summary>
     private void SaveToFile()
@@ -105,7 +130,8 @@ public sealed class UIOptions(IConfiguration _configuration)
                 {
                     [nameof(Theme)] = Theme.ToString(),
                     [nameof(ToastDurationSeconds)] = ToastDurationSeconds,
-                    [nameof(MaxToastCount)] = MaxToastCount
+                    [nameof(MaxToastCount)] = MaxToastCount,
+                    [nameof(ShowDownloadBall)] = ShowDownloadBall
                 }
             }.ToJsonString(Infrastructure.Constants.JsonSerializerOptions));
         }

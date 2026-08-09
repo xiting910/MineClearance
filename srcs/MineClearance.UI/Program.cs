@@ -35,6 +35,7 @@ file static class Program
             .AddInfrastructure()
             .AddSingleton<UIOptions>()
             .AddSingleton<ToastViewModel>()
+            .AddSingleton<UpdateViewModel>()
             .AddSingleton<MainViewModel>()
             .AddSingleton<ShellViewModel>()
             .AddSingleton<GameViewModel>()

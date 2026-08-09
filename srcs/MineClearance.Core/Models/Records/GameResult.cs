@@ -14,7 +14,7 @@ namespace MineClearance.Core.Models.Records;
 /// <see langword="true"/> 表示玩家获胜, <see langword="false"/> 表示玩家失败
 /// </param>
 /// <param name="Completion">
-/// 完成度, 只在 <paramref name="IsWin"/> 为 <see langword="false"/> 时有效, 范围为 0.0 到 1.0
+/// 完成度, 只在 <paramref name="IsWin"/> 为 <see langword="false"/> 时有效, 范围为 0 到 1.0
 /// </param>
 /// <param name="BoardHeight">
 /// 棋盘高度, 只在 <paramref name="Difficulty"/> 为 <see cref="GameDifficulty.Custom"/> 时有效
@@ -69,7 +69,7 @@ public sealed record GameResult(
     /// <param name="difficulty">游戏难度</param>
     /// <param name="startTime">游戏开始时间</param>
     /// <param name="duration">游戏持续时间</param>
-    /// <param name="completion">完成度, 范围为 0.0 到 1.0</param>
+    /// <param name="completion">完成度, 范围为 0 到 1.0</param>
     /// <returns>失败游戏结果</returns>
     /// <exception cref="ArgumentException">
     /// 当 <paramref name="difficulty"/> 为 <see cref="GameDifficulty.Custom"/> 时抛出
@@ -135,7 +135,7 @@ public sealed record GameResult(
     /// <param name="seed">游戏使用的随机种子</param>
     /// <param name="startTime">游戏开始时间</param>
     /// <param name="duration">游戏持续时间</param>
-    /// <param name="completion">完成度, 范围为 0.0 到 1.0</param>
+    /// <param name="completion">完成度, 范围为 0 到 1.0</param>
     /// <param name="boardHeight">棋盘高度</param>
     /// <param name="boardWidth">棋盘宽度</param>
     /// <param name="mineCount">地雷数量</param>
@@ -209,8 +209,8 @@ public sealed record GameResult(
         }
         else
         {
-            // 失败时, 完成度必须不为 null 且在 0.0 到 Constants.MaxCompletion 之间
-            if (Completion is null or < 0.0 or > Constants.MaxCompletion)
+            // 失败时, 完成度必须不为 null 且在 0 到 Constants.MaxCompletion 之间
+            if (Completion is null or < 0 or > Constants.MaxCompletion)
             {
                 return false;
             }

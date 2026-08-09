@@ -47,7 +47,7 @@ public interface IGame : INotifyPropertyChanged, IDisposable
     int Seed { get; }
 
     /// <summary>
-    /// 获取当前游戏完成度, 范围为 0.0 到 <see cref="Constants.MaxCompletion"/>
+    /// 获取当前游戏完成度, 范围为 0 到 <see cref="Constants.MaxCompletion"/>
     /// </summary>
     /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
     double Completion { get; }

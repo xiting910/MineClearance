@@ -205,17 +205,14 @@ public sealed partial class GameViewModel : ObservableObject
     partial void OnColumnsChanged(int value) => OnPropertyChanged(nameof(BoardPixelWidth));
 
     /// <summary>
-    /// 游戏可暂停时暂停游戏, 返回是否成功暂停
+    /// 游戏可暂停时暂停游戏
     /// </summary>
-    /// <returns><see langword="true"/> 成功暂停, <see langword="false"/> 游戏不可暂停</returns>
-    public bool PauseIfPerformable()
+    public void PauseIfPerformable()
     {
         if (_gameManager.Game is { IsPerformable: true } game)
         {
             game.Pause();
-            return true;
         }
-        return false;
     }
 
     /// <summary>

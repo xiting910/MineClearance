@@ -17,7 +17,8 @@
 - 💾 **自动保存** — 关闭窗口时自动保存进行中的游戏, 下次可从主视图继续游戏
 - 📊 **历史记录** — 按难度分组的统计汇总 (胜率/用时/完成度), 日期/难度/结果多条件筛选与列头排序, 支持删除选中与二次确认清空
 - 🎨 **主题切换** — 跟随系统 / 浅色 / 深色, 即时生效并自动保存
-- ⚙️ **设置抽屉** — 主题 / Toast 时长与数量 / 日志级别即时配置, 关于信息 (游戏视图内呼出自动暂停)
+- ⚙️ **设置抽屉** — 主题 / Toast 时长与数量 / 日志级别 / 下载悬浮球即时配置, 手动检查更新, 关于信息 (游戏视图内呼出自动暂停)
+- 🔄 **自动更新** — 启动时后台检查 GitHub 新版本, 断点续传下载并校验更新包完整性, 下载进度悬浮球与详情抽屉, 退出后引导更新失败自动回滚
 - 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
 - 🧩 **MVVM 模式** — 基于 CommunityToolkit.Mvvm 源代码生成器
 - 📝 **结构化日志** — ILogger + LoggerMessage 源代码生成器，记录游戏关键事件
@@ -118,24 +119,27 @@ MineClearance/
 │       │   ├── ToastItem.cs                        #     Toast 提示条目 (剩余进度/悬停暂停/点击回调)
 │       │   └── UIOptions.cs                        #     UI 配置 (setter 变化自动保存)
 │       ├── Program.cs                              #   应用入口 (DI + Avalonia 启动)
-│       ├── ShellWindow.axaml                       #   主窗口 (关闭自动保存/退出触发引导更新/Esc 设置抽屉)
-│       ├── ShellWindow.axaml.cs                    #   主窗口代码 (自动保存/引导更新/设置抽屉快捷键)
+│       ├── ShellWindow.axaml                       #   主窗口 (关闭自动保存/退出触发引导更新/启动更新流程)
+│       ├── ShellWindow.axaml.cs                    #   主窗口代码 (自动保存/引导更新/Esc 处理抽屉/启动更新流程)
 │       ├── ViewLocator.cs                          #   ViewModel → View 定位器
 │       ├── ViewModels/                             #   视图模型
 │       │   ├── CellViewModel.cs                    #     格子视图模型 (固定格子池)
 │       │   ├── GameViewModel.cs                    #     游戏视图模型 (固定格子池/交互分发)
 │       │   ├── HistoryViewModel.cs                 #     历史记录视图模型 (统计/筛选/排序/删除)
 │       │   ├── MainViewModel.cs                    #     主视图模型 (难度选择/参数输入/导航)
-│       │   ├── SettingsViewModel.cs                #     设置视图模型 (关闭请求事件)
-│       │   ├── ShellViewModel.cs                   #     壳视图模型 (视图切换/导航/设置抽屉)
-│       │   └── ToastViewModel.cs                   #     Toast 提示视图模型 (多条目集合/满员顶掉最早)
+│       │   ├── SettingsViewModel.cs                #     设置视图模型 (悬浮球开关/手动检查更新/关闭请求事件)
+│       │   ├── ShellViewModel.cs                   #     壳视图模型 (视图切换/导航/抽屉动画/共用遮布)
+│       │   ├── ToastViewModel.cs                   #     Toast 提示视图模型 (多条目集合/满员顶掉最早)
+│       │   └── UpdateViewModel.cs                  #     更新视图模型 (启动更新流程/检查更新/下载悬浮球与抽屉)
 │       └── Views/                                  #   视图
+│           ├── DownloadBallView.axaml              #     下载进度悬浮球视图 (点击呼出下载抽屉)
+│           ├── DownloadDrawerView.axaml            #     下载详情抽屉视图 (进度/详情/异常/取消)
 │           ├── GameView.axaml                      #     游戏视图
 │           ├── HistoryView.axaml                   #     历史记录视图
 │           ├── MainView.axaml                      #     主视图
 │           ├── SettingsView.axaml                  #     设置抽屉内容视图
-│           ├── ShellView.axaml                     #     壳视图 (视图切换 + 设置抽屉 + Toast 覆盖层)
-│           └── ToastView.axaml                     #     Toast 视图 (多条目堆叠/入场动画)
+│           ├── ShellView.axaml                     #     壳视图 (视图切换 + 抽屉 + 悬浮球 + Toast 覆盖层)
+│           ├── ToastView.axaml                     #     Toast 视图 (多条目堆叠/入场动画)
 └── tests/
     ├── MineClearance.Core.Tests/                   # Core 层单元测试
     ├── MineClearance.Infrastructure.Tests/         # Infrastructure 层单元测试

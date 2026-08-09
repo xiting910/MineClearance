@@ -4,6 +4,8 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using MineClearance.UI.Models;
 using System;
+using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace MineClearance.UI.ViewModels;
 
@@ -33,14 +35,19 @@ public sealed partial class ShellViewModel : ObservableObject
     public ToastViewModel Toast { get; }
 
     /// <summary>
+    /// 更新视图模型, 负责更新流程与下载悬浮球/下载详情抽屉
+    /// </summary>
+    public UpdateViewModel Update { get; }
+
+    /// <summary>
     /// 游戏视图透明度, 未显示时为 0 (透明常驻布局以便预热棋盘控件), 显示时为 1
     /// </summary>
-    public double GameViewOpacity => IsGameViewVisible ? 1.0 : 0.0;
+    public double GameViewOpacity => IsGameViewVisible ? Constants.MaxRatio : 0;
 
     /// <summary>
     /// 历史记录视图透明度, 未显示时为 0 (透明常驻布局以便预热表格控件), 显示时为 1
     /// </summary>
-    public double HistoryViewOpacity => IsHistoryViewVisible ? 1.0 : 0.0;
+    public double HistoryViewOpacity => IsHistoryViewVisible ? Constants.MaxRatio : 0;
 
     /// <summary>
     /// 当前可见的视图
@@ -79,14 +86,60 @@ public sealed partial class ShellViewModel : ObservableObject
     public partial bool IsSettingsOpen { get; set; }
 
     /// <summary>
+    /// 设置抽屉是否实际可见, 关闭动画结束后才置为 false
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsSettingsVisible { get; set; }
+
+    /// <summary>
+    /// 设置抽屉透明度, 驱动抽屉淡入淡出
+    /// </summary>
+    [ObservableProperty]
+    public partial double SettingsOpacity { get; set; }
+
+    /// <summary>
+    /// 设置抽屉水平偏移, 关闭时滑出到屏幕左侧
+    /// </summary>
+    [ObservableProperty]
+    public partial double SettingsSlideOffset { get; set; } = -Constants.DrawerWidth;
+
+    /// <summary>
+    /// 设置抽屉当前宽度, 可由用户拖动右边界调整, 不保存
+    /// </summary>
+    [ObservableProperty]
+    public partial double SettingsDrawerWidth { get; set; } = Constants.DrawerWidth;
+
+    /// <summary>
+    /// 共用遮布是否可见, 任一抽屉实际可见时显示
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsMaskVisible { get; set; }
+
+    /// <summary>
+    /// 共用遮布透明度, 驱动遮布淡入淡出
+    /// </summary>
+    [ObservableProperty]
+    public partial double MaskOpacity { get; set; }
+
+    /// <summary>
     /// 请求退出程序的事件, 由视图层关闭主窗口
     /// </summary>
     public event Action? ExitRequested;
 
     /// <summary>
-    /// 是否因打开设置抽屉而暂停了游戏, 关闭抽屉时据此恢复
+    /// 因打开抽屉而暂停游戏的计数, 任一抽屉打开时累加, 全部关闭归零时恢复
     /// </summary>
-    private bool _isGamePausedByDrawer;
+    private int _gamePauseCount;
+
+    /// <summary>
+    /// 首次因抽屉暂停前游戏是否已处于暂停状态, 关闭抽屉时据此避免取消用户原有的暂停
+    /// </summary>
+    private bool _wasPausedBeforeDrawer;
+
+    /// <summary>
+    /// 设置抽屉关闭动画的版本号, 防止过期的延迟隐藏任务误关重新打开的抽屉
+    /// </summary>
+    private int _closeSettingsVersion;
 
     /// <summary>
     /// 创建壳视图模型
@@ -95,16 +148,19 @@ public sealed partial class ShellViewModel : ObservableObject
     /// <param name="game">游戏视图模型</param>
     /// <param name="history">历史记录视图模型</param>
     /// <param name="toast">全局短暂提示视图模型</param>
+    /// <param name="update">更新视图模型</param>
     public ShellViewModel(
         MainViewModel main,
         GameViewModel game,
         HistoryViewModel history,
-        ToastViewModel toast)
+        ToastViewModel toast,
+        UpdateViewModel update)
     {
         Main = main;
         Game = game;
         History = history;
         Toast = toast;
+        Update = update;
         CurrentView = main;
 
         // 订阅主视图的导航请求
@@ -118,6 +174,9 @@ public sealed partial class ShellViewModel : ObservableObject
 
         // 订阅历史记录视图返回主视图的请求
         history.MainViewRequested += ShowMainView;
+
+        // 订阅下载抽屉的打开/关闭, 同步共用遮布状态
+        update.PropertyChanged += OnUpdatePropertyChanged;
     }
 
     /// <summary>
@@ -191,46 +250,139 @@ public sealed partial class ShellViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 打开设置抽屉: 游戏视图打开时自动暂停游戏, 并记录暂停来源以便关闭时恢复
+    /// 打开设置抽屉: 游戏视图打开时自动暂停游戏, 并记录暂停来源以便关闭时恢复, 抽屉滑入淡入
     /// </summary>
     private void OpenSettings()
     {
-        _isGamePausedByDrawer = IsGameViewVisible && Game.PauseIfPerformable();
+        PauseGameForDrawer();
 
         Settings = App.Services.GetRequiredService<SettingsViewModel>();
         Settings.CloseRequested += CloseSettings;
 
         IsSettingsOpen = true;
+        IsSettingsVisible = true;
+        SettingsOpacity = Constants.MaxRatio;
+        SettingsSlideOffset = 0;
+        RefreshMask();
     }
 
     /// <summary>
-    /// 关闭设置抽屉, 并恢复因打开抽屉而暂停的游戏
+    /// 任一抽屉打开时暂停游戏: 计数从 0 到 1 时记录原始暂停状态并真正暂停, 之后重复打开只累加计数
     /// </summary>
-    public void CloseSettings()
+    private void PauseGameForDrawer()
     {
-        IsSettingsOpen = false;
-        Settings?.CloseRequested -= CloseSettings;
-        Settings = null;
-
-        if (_isGamePausedByDrawer)
+        if (!IsGameViewVisible) { return; }
+        if (_gamePauseCount++ == 0)
         {
-            Game.ResumeIfPaused();
-            _isGamePausedByDrawer = false;
+            _wasPausedBeforeDrawer = Game.IsPaused;
+            Game.PauseIfPerformable();
         }
     }
 
     /// <summary>
-    /// 呼出或隐藏设置抽屉, 供 Esc 键调用
+    /// 任一抽屉关闭时恢复游戏: 所有抽屉都关闭后才真正恢复, 游戏原本就暂停时保持暂停
     /// </summary>
-    public void ToggleSettings()
+    private void ResumeGameForDrawer()
     {
-        if (IsSettingsOpen)
+        if (_gamePauseCount > 0 && --_gamePauseCount == 0 && !_wasPausedBeforeDrawer)
+        {
+            Game.ResumeIfPaused();
+        }
+    }
+
+    /// <summary>
+    /// 刷新共用遮布: 任一抽屉打开时淡入, 全部关闭后等动画结束淡出隐藏
+    /// </summary>
+    private void RefreshMask()
+    {
+        IsMaskVisible = IsSettingsVisible || Update.IsDrawerVisible;
+        MaskOpacity = IsSettingsOpen || Update.IsDrawerOpen ? Constants.MaxRatio : 0;
+    }
+
+    /// <summary>
+    /// 设置抽屉滑出动画结束后隐藏抽屉, 期间重新打开时跳过
+    /// </summary>
+    private async Task HideSettingsAfterAnimationAsync()
+    {
+        var version = ++_closeSettingsVersion;
+        await Task.Delay(Constants.DrawerAnimationDurationMilliseconds);
+
+        // 版本不匹配或抽屉已重新打开时不隐藏
+        if (version != _closeSettingsVersion || IsSettingsOpen) { return; }
+        IsSettingsVisible = false;
+        Settings?.CloseRequested -= CloseSettings;
+        Settings = null;
+        RefreshMask();
+    }
+
+    /// <summary>
+    /// 关闭设置抽屉: 抽屉滑出淡出, 动画结束后隐藏, 并恢复因打开抽屉而暂停的游戏
+    /// </summary>
+    public void CloseSettings()
+    {
+        // 未打开时忽略, 防止动画延迟期间的重复调用
+        if (!IsSettingsOpen) { return; }
+
+        IsSettingsOpen = false;
+        SettingsOpacity = 0;
+        SettingsSlideOffset = -SettingsDrawerWidth;
+        RefreshMask();
+
+        ResumeGameForDrawer();
+
+        _ = HideSettingsAfterAnimationAsync();
+    }
+
+    /// <summary>
+    /// 处理 Esc 键: 下载抽屉可见时隐藏它, 否则交给设置抽屉的开关
+    /// </summary>
+    public void HandleEscapeKey()
+    {
+        if (Update.IsDrawerVisible)
+        {
+            Update.CloseDrawer();
+        }
+        else if (IsSettingsOpen)
         {
             CloseSettings();
         }
         else
         {
             OpenSettings();
+        }
+    }
+
+    /// <summary>
+    /// 启动更新流程, 由窗口首次打开时调用
+    /// </summary>
+    public void StartUpdateRoutine()
+    {
+        Update.StartUpdateRoutine();
+    }
+
+    /// <summary>
+    /// 更新视图模型属性变化时同步共用遮布状态, 下载抽屉打开时暂停游戏
+    /// </summary>
+    /// <param name="sender">更新视图模型</param>
+    /// <param name="e">属性变化事件参数</param>
+    private void OnUpdatePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(UpdateViewModel.IsDrawerOpen))
+        {
+            // 下载抽屉打开时暂停游戏, 关闭时恢复
+            if (Update.IsDrawerOpen)
+            {
+                PauseGameForDrawer();
+            }
+            else
+            {
+                ResumeGameForDrawer();
+            }
+            RefreshMask();
+        }
+        else if (e.PropertyName is nameof(UpdateViewModel.IsDrawerVisible))
+        {
+            RefreshMask();
         }
     }
 }

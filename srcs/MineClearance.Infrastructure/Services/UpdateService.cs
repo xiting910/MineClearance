@@ -232,7 +232,6 @@ internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IU
                     ParallelDownload = true,
                     ChunkCount = 4,
                     MaxTryAgainOnFailure = 3,
-                    HttpClientTimeout = RequestTimeout,
                     EnableAutoResumeDownload = true,
                     ClearPackageOnCompletionWithFailure = false,
                     FileExistPolicy = FileExistPolicy.Delete,
@@ -262,6 +261,15 @@ internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IU
                     PropertyChanged?.Invoke(this, new(nameof(State)));
                     LogDownloadCancelled();
                     return;
+                }
+
+                // 检查下载完成后更新包的完整性: 文件大小与服务器资产一致, 且版本标识匹配
+                if (!IsUpdatePackageComplete())
+                {
+                    throw new InvalidOperationException(
+                        $"Downloaded update package is incomplete or corrupted:" +
+                        Constants.UpdatePackageFilePath
+                    );
                 }
 
                 _ = Interlocked.Exchange(ref _state, completedState);

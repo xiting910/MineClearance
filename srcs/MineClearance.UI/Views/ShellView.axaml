@@ -22,14 +22,50 @@
       <views:HistoryView DataContext="{Binding History}"/>
     </Panel>
 
-    <!-- 设置抽屉: 半透明遮罩, 点击收起抽屉 -->
-    <Border IsVisible="{Binding IsSettingsOpen}" Background="#66000000" PointerPressed="OnSettingsMaskPressed"/>
-
-    <!-- 设置抽屉: 左侧面板 -->
-    <Border IsVisible="{Binding IsSettingsOpen}" Background="{DynamicResource WindowBackgroundBrush}"
-            HorizontalAlignment="Left" Width="400">
-      <ContentControl Content="{Binding Settings}"/>
+    <!-- 共用遮布: 设置抽屉或下载抽屉打开时淡入, 点击收起当前抽屉 -->
+    <Border IsVisible="{Binding IsMaskVisible}" Opacity="{Binding MaskOpacity}"
+            Background="#66000000" PointerPressed="OnMaskPressed">
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+        </Transitions>
+      </Border.Transitions>
     </Border>
+
+    <!-- 设置抽屉: 左侧面板, 打开滑入淡入, 关闭滑出淡出, 可拖动右边界调整宽度 -->
+    <Border IsVisible="{Binding IsSettingsVisible}" Opacity="{Binding SettingsOpacity}"
+            Background="{DynamicResource WindowBackgroundBrush}"
+            HorizontalAlignment="Left" Width="{Binding SettingsDrawerWidth}">
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+        </Transitions>
+      </Border.Transitions>
+      <Border.RenderTransform>
+        <TranslateTransform X="{Binding SettingsSlideOffset}">
+          <TranslateTransform.Transitions>
+            <Transitions>
+              <DoubleTransition Property="X" Duration="0:0:0.2" Easing="CubicEaseOut"/>
+            </Transitions>
+          </TranslateTransform.Transitions>
+        </TranslateTransform>
+      </Border.RenderTransform>
+      <Grid>
+        <ContentControl Content="{Binding Settings}"/>
+        <!-- 右边界拖动手柄: 拖动调整抽屉宽度, 不保存 -->
+        <Border Width="6" HorizontalAlignment="Right" VerticalAlignment="Stretch" Background="Transparent"
+                Cursor="SizeWestEast"
+                PointerPressed="OnSettingsResizePressed"
+                PointerMoved="OnSettingsResizeMoved"
+                PointerReleased="OnSettingsResizeReleased"/>
+      </Grid>
+    </Border>
+
+    <!-- 下载进度悬浮球: 左下角, 下载时出现 -->
+    <views:DownloadBallView DataContext="{Binding Update}"/>
+
+    <!-- 下载详情抽屉: 左侧面板, 层级位于设置抽屉之上 -->
+    <views:DownloadDrawerView DataContext="{Binding Update}"/>
 
     <!-- 全局 Toast 通知 -->
     <views:ToastView DataContext="{Binding Toast}"/>

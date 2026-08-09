@@ -27,8 +27,19 @@
 - Infrastructure 层: UpdateService.Private 私有成员拆分 (平台更新包名/HttpClient/资产查找/版本校验辅助方法), UpdateService.Logging 新增强类型日志, IUpdateService 继承 IDisposable, 新增下载临时文件后缀常量
 - UI 层: ToastItem 单条提示模型 (剩余时间进度/入场动画/悬停暂停/点击回调), ToastViewModel 重构为多条目集合 (满员顶掉最早, 每条独立倒计时, 集合为空停止计时器)
 - UI 层: Toast 同时显示最大条数设置 (UIOptions MaxToastCount 自动保存, 设置抽屉 1-5 配置项, 默认 2), 新增 Toast 刷新间隔/入场偏移常量
+- UI 层: UpdateViewModel 更新视图模型 (启动更新流程消费上次更新信息并后台检查, 手动检查更新各状态 Toast 反馈, 下载悬浮球与详情抽屉状态驱动, 高频进度事件合并刷新)
+- UI 层: DownloadBallView 下载进度悬浮球 (左下角显示, 实心填充随进度增长, 点击呼出或关闭下载抽屉, 配置可关闭且关闭时下载中自动弹出抽屉兜底)
+- UI 层: DownloadDrawerView 下载详情抽屉 (版本/进度条/已下载/速度/状态文本, 取消按钮, 失败异常信息区, 右边界可拖动调整宽度)
+- UI 层: 下载悬浮球显示开关 (UIOptions ShowDownloadBall 自动保存默认开启, 设置抽屉配置项) 与设置抽屉手动检查更新按钮
+- UI 层: 设置抽屉与下载抽屉滑入滑出淡入淡出动画 (共用遮布点击关闭当前抽屉, 关闭动画版本号防过期任务误关, 游戏暂停计数机制支持双抽屉叠加恢复)
 
 ### Changed
+
+- UI 层: ShellWindow 首次打开时启动更新流程, Esc 键优先关闭下载抽屉, Toast 增加手型光标
+- UI 层: 常量抽取 (MaxRatio/PercentBase 统一比例与百分比转换, 新增 DrawerWidth/DownloadBallSize/抽屉动画时长, ToastItem MaxProgress/MaxOpacity 移除)
+- UI 层: GameViewModel.PauseIfPerformable 改为 void, 抽屉暂停/恢复游戏的计数逻辑移入 ShellViewModel
+- Infrastructure 层: 下载完成后校验更新包完整性 (文件大小与服务器资产一致且版本标识匹配), 移除下载配置 HttpClientTimeout
+- Core 层: 完成度文档与字面量 0.0 统一为 0
 
 - Infrastructure 层: FileLoggerOptions 移至 Models 目录并调整命名空间为 MineClearance.Infrastructure.Models
 - Infrastructure 层: 常量重命名 (DataDirectory / LogDirectory / SettingsDirectory → 加 Name 后缀, SettingFileSuffix → JsonFileSuffix), 日志轮转路径比较器提取为 Constants.PathComparer
