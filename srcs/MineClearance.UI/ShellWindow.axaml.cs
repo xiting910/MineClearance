@@ -102,13 +102,19 @@ public sealed partial class ShellWindow : Window
     }
 
     /// <summary>
-    /// 窗口尺寸变化时把位置钳制回工作区内, 防止最小尺寸增大导致窗口向右下扩张超出屏幕
+    /// 窗口尺寸变化时把位置钳制回工作区内, 并同步钳制各抽屉宽度防止超出窗口范围
     /// </summary>
     /// <param name="sender">窗口</param>
     /// <param name="e">尺寸变化事件参数</param>
     private void OnSizeChanged(object? sender, SizeChangedEventArgs e)
     {
         AdjustPositionToWorkingArea();
+
+        // 壳视图宽度变化时钳制各抽屉宽度, 防止抽屉超出窗口范围
+        if (DataContext is ShellViewModel viewModel)
+        {
+            viewModel.ClampDrawerWidths(e.NewSize.Width);
+        }
     }
 
     /// <summary>

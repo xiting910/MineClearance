@@ -334,6 +334,22 @@ public sealed partial class ShellViewModel : ObservableObject
     }
 
     /// <summary>
+    /// 壳视图可用宽度变化时钳制各抽屉当前宽度, 防止抽屉超出壳视图范围 (窗口变窄时压缩, 变宽时保持用户拖动设定的宽度)
+    /// </summary>
+    /// <param name="availableWidth">壳视图当前可用宽度</param>
+    public void ClampDrawerWidths(double availableWidth)
+    {
+        if (SettingsDrawerWidth > availableWidth)
+        {
+            SettingsDrawerWidth = availableWidth;
+        }
+        if (Update.DrawerWidth > availableWidth)
+        {
+            Update.DrawerWidth = availableWidth;
+        }
+    }
+
+    /// <summary>
     /// 处理 Esc 键: 下载抽屉可见时隐藏它, 否则交给设置抽屉的开关
     /// </summary>
     public void HandleEscapeKey()

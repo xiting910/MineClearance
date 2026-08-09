@@ -50,6 +50,10 @@
 - 工程化: Directory.Build.props 移除显式 AssemblyVersion / FileVersion (跟随 Version), ReBuild.bat 重命名为 RePublish.bat
 - UI 层: ToastView 由单条提示改为多条目堆叠展示 (ItemsControl, 新提示淡入并从下方滑入)
 
+### Fixed
+
+- UI 层: 窗口尺寸变化时钳制设置/下载抽屉宽度, 防止抽屉超出窗口范围 (窗口变窄时压缩抽屉, 变宽时保持用户拖动设定的宽度)
+
 ---
 
 ## [1.0.0] - 2026-08-09
