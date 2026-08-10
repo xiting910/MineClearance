@@ -1,7 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using MineClearance.Core.Models.Records;
 using MineClearance.UI.ViewModels;
+using System;
 
 namespace MineClearance.UI.Views;
 
@@ -31,6 +33,20 @@ public sealed partial class GameView : UserControl
     public GameView()
     {
         InitializeComponent();
+    }
+
+    /// <summary>
+    /// 数据上下文变化时订阅首点索引复制事件
+    /// </summary>
+    /// <param name="e">数据上下文变化事件参数</param>
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+
+        if (DataContext is GameViewModel viewModel)
+        {
+            viewModel.FirstClickIndexRequested += OnFirstClickIndexRequested;
+        }
     }
 
     /// <summary>
@@ -102,6 +118,25 @@ public sealed partial class GameView : UserControl
     {
         _isLeftPressed = false;
         _isRightPressed = false;
+    }
+
+    /// <summary>
+    /// 首点索引复制请求: 将索引文本写入系统剪贴板, 按写入结果提示
+    /// </summary>
+    /// <param name="indexText">首点格子索引文本</param>
+    private async void OnFirstClickIndexRequested(string indexText)
+    {
+        if (DataContext is not GameViewModel viewModel) { return; }
+
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard is null)
+        {
+            viewModel.Show("剪贴板不可用");
+            return;
+        }
+
+        await clipboard.SetTextAsync(indexText);
+        viewModel.Show($"📋 首点格子索引 {indexText} 已复制到剪贴板");
     }
 
     /// <summary>

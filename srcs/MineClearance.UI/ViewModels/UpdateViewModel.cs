@@ -199,73 +199,12 @@ public sealed partial class UpdateViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 检查更新, 手动检查时已是最新也提示, 启动检查时静默
+    /// 取消当前下载, 取消后状态机自动关闭抽屉并提示
     /// </summary>
-    /// <param name="manual">是否由用户手动触发</param>
-    public async Task CheckForUpdatesAsync(bool manual)
+    [RelayCommand]
+    private void CancelDownload()
     {
-        var state = _updateService.State;
-
-        // 正在检查中: 手动触发时提示
-        if (state is UpdateState.Checking)
-        {
-            if (manual) { _toast.Show("已经有更新检查在后台进行"); }
-            return;
-        }
-
-        // 正在下载中: 手动触发时提示
-        if (state is UpdateState.Downloading)
-        {
-            if (manual) { _toast.Show("正在下载更新, 请稍候再检查"); }
-            return;
-        }
-
-        // 下载失败: 手动触发时提示, 点击可重新打开抽屉查看异常并重试
-        if (state is UpdateState.DownloadFailed)
-        {
-            if (manual)
-            {
-                _toast.Show("上次下载失败, 点击查看详情", () => IsDrawerOpen = true);
-            }
-            return;
-        }
-
-        // 下载完成: 手动触发时提示关闭应用后自动更新
-        if (state is UpdateState.DownloadCompleted)
-        {
-            if (manual) { _toast.Show("更新包已下载, 关闭应用后将自动更新"); }
-            return;
-        }
-
-        // 发起检查请求
-        await _updateService.CheckNewestAsync(
-            AppMetadata.Get(AppMetadata.AuthorKey),
-            AppMetadata.Get(AppMetadata.ProductKey),
-            AppMetadata.Get(AppMetadata.VersionKey),
-            App.ExitCts.Token
-        );
-
-        // 按检查结果反馈
-        switch (_updateService.State)
-        {
-            // 已是最新: 仅手动检查时提示
-            case UpdateState.UpToDate:
-                if (manual) { _toast.Show("已是最新版本"); }
-                break;
-
-            // 发现新版本: 提示并允许点击开始下载
-            case UpdateState.NeedUpdate:
-                _toast.Show(
-                    $"发现新版本 v{_updateService.LatestVersion}, 点击下载更新",
-                    () => _ = StartDownloadAsync()
-                );
-                break;
-
-            // 检查失败: 提示异常信息
-            case UpdateState.Idle when _updateService.Exception is { } exception:
-                _toast.Show($"检查更新失败: {exception.Message}");
-                break;
-        }
+        _updateService.CancelDownload();
     }
 
     /// <summary>
@@ -345,66 +284,73 @@ public sealed partial class UpdateViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 取消当前下载, 取消后状态机自动关闭抽屉并提示
+    /// 检查更新, 手动检查时已是最新也提示, 启动检查时静默
     /// </summary>
-    [RelayCommand]
-    private void CancelDownload()
+    /// <param name="manual">是否由用户手动触发</param>
+    public async Task CheckForUpdatesAsync(bool manual)
     {
-        _updateService.CancelDownload();
-    }
+        var state = _updateService.State;
 
-    /// <summary>
-    /// 抽屉滑出动画结束后隐藏抽屉, 期间重新打开时跳过
-    /// </summary>
-    private async Task HideDrawerAfterAnimationAsync()
-    {
-        var version = ++_closeDrawerVersion;
-        await Task.Delay(Constants.DrawerAnimationDurationMilliseconds);
-
-        // 版本不匹配或抽屉已重新打开时不隐藏
-        if (version != _closeDrawerVersion || IsDrawerOpen) { return; }
-        IsDrawerVisible = false;
-    }
-
-    /// <summary>
-    /// 启动更新流程: 读取上次更新信息并提示, 然后后台检查更新
-    /// </summary>
-    private async Task RunStartupAsync()
-    {
-        // 首次启动提示: 介绍自动更新功能, 展示后自动关闭该配置
-        if (_uiOptions.ShowFirstLaunchTip)
+        // 正在检查中: 手动触发时提示
+        if (state is UpdateState.Checking)
         {
-            _toast.Show(FirstLaunchTipText);
-            _uiOptions.ShowFirstLaunchTip = false;
+            if (manual) { _toast.Show("已经有更新检查在后台进行"); }
+            return;
         }
 
-        // 读取上次更新信息并清理, 仅在有结果时提示, 失败时可点击打开日志目录查看
-        var info = _updateService.GetLastUpdateInfoAndCleanUp();
-
-        // 上次更新有结果时提示, 失败时可点击打开日志目录查看
-        if (info is not null)
+        // 正在下载中: 手动触发时提示
+        if (state is UpdateState.Downloading)
         {
-            if (info.IsSuccess)
-            {
-                _toast.Show($"更新成功: v{info.OriginalVersion} -> v{info.NewVersion}");
-            }
-            else
-            {
-                _toast.Show("上次更新失败, 点击查看更新日志", OpenUpdateLogFolder);
-            }
+            if (manual) { _toast.Show("正在下载更新, 请稍候再检查"); }
+            return;
         }
 
-        // 后台检查更新, 启动检查不提示已是最新
-        await CheckForUpdatesAsync(manual: false);
-    }
+        // 下载失败: 手动触发时提示, 点击可重新打开抽屉查看异常并重试
+        if (state is UpdateState.DownloadFailed)
+        {
+            if (manual)
+            {
+                _toast.Show("上次下载失败, 点击查看详情", () => IsDrawerOpen = true);
+            }
+            return;
+        }
 
-    /// <summary>
-    /// 开始下载更新, 仅在需要更新或下载失败状态下生效
-    /// </summary>
-    private async Task StartDownloadAsync()
-    {
-        if (_updateService.State is not (UpdateState.NeedUpdate or UpdateState.DownloadFailed)) { return; }
-        await _updateService.DownloadAsync(App.ExitCts.Token);
+        // 下载完成: 手动触发时提示关闭应用后自动更新
+        if (state is UpdateState.DownloadCompleted)
+        {
+            if (manual) { _toast.Show("更新包已下载, 关闭应用后将自动更新"); }
+            return;
+        }
+
+        // 发起检查请求
+        await _updateService.CheckNewestAsync(
+            AppMetadata.Get(AppMetadata.AuthorKey),
+            AppMetadata.Get(AppMetadata.ProductKey),
+            AppMetadata.Get(AppMetadata.VersionKey),
+            App.ExitCts.Token
+        );
+
+        // 按检查结果反馈
+        switch (_updateService.State)
+        {
+            // 已是最新: 仅手动检查时提示
+            case UpdateState.UpToDate:
+                if (manual) { _toast.Show("已是最新版本"); }
+                break;
+
+            // 发现新版本: 提示并允许点击开始下载
+            case UpdateState.NeedUpdate:
+                _toast.Show(
+                    $"发现新版本 v{_updateService.LatestVersion}, 点击下载更新",
+                    () => _ = StartDownloadAsync()
+                );
+                break;
+
+            // 检查失败: 提示异常信息
+            case UpdateState.Idle when _updateService.Exception is { } exception:
+                _toast.Show($"检查更新失败: {exception.Message}");
+                break;
+        }
     }
 
     /// <summary>
@@ -463,6 +409,60 @@ public sealed partial class UpdateViewModel : ObservableObject
 
         // 每次刷新统一更新悬浮球可见性, 取消/完成/失败后自动隐藏
         RefreshBallVisibility();
+    }
+
+    /// <summary>
+    /// 启动更新流程: 读取上次更新信息并提示, 然后后台检查更新
+    /// </summary>
+    private async Task RunStartupAsync()
+    {
+        // 首次启动提示: 介绍自动更新功能, 展示后自动关闭该配置
+        if (_uiOptions.ShowFirstLaunchTip)
+        {
+            _toast.Show(FirstLaunchTipText);
+            _uiOptions.ShowFirstLaunchTip = false;
+        }
+
+        // 读取上次更新信息并清理, 仅在有结果时提示, 失败时可点击打开日志目录查看
+        var info = _updateService.GetLastUpdateInfoAndCleanUp();
+
+        // 上次更新有结果时提示, 失败时可点击打开日志目录查看
+        if (info is not null)
+        {
+            if (info.IsSuccess)
+            {
+                _toast.Show($"更新成功: v{info.OriginalVersion} -> v{info.NewVersion}");
+            }
+            else
+            {
+                _toast.Show("上次更新失败, 点击查看更新日志", OpenUpdateLogFolder);
+            }
+        }
+
+        // 后台检查更新, 启动检查不提示已是最新
+        await CheckForUpdatesAsync(manual: false);
+    }
+
+    /// <summary>
+    /// 开始下载更新, 仅在需要更新或下载失败状态下生效
+    /// </summary>
+    private async Task StartDownloadAsync()
+    {
+        if (_updateService.State is not (UpdateState.NeedUpdate or UpdateState.DownloadFailed)) { return; }
+        await _updateService.DownloadAsync(App.ExitCts.Token);
+    }
+
+    /// <summary>
+    /// 抽屉滑出动画结束后隐藏抽屉, 期间重新打开时跳过
+    /// </summary>
+    private async Task HideDrawerAfterAnimationAsync()
+    {
+        var version = ++_closeDrawerVersion;
+        await Task.Delay(Constants.DrawerAnimationDurationMilliseconds);
+
+        // 版本不匹配或抽屉已重新打开时不隐藏
+        if (version != _closeDrawerVersion || IsDrawerOpen) { return; }
+        IsDrawerVisible = false;
     }
 
     /// <summary>

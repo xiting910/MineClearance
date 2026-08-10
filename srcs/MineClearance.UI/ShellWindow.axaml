@@ -8,7 +8,8 @@
         Closing="OnClosing"
         SizeChanged="OnSizeChanged"
         PositionChanged="OnPositionChanged"
-        KeyDown="OnKeyDown">
+        KeyDown="OnKeyDown"
+        KeyUp="OnKeyUp">
 
   <views:ShellView/>
 

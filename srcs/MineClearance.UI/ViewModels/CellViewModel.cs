@@ -45,21 +45,6 @@ public sealed partial class CellViewModel : ObservableObject
     private Cell _cell;
 
     /// <summary>
-    /// 格子位置
-    /// </summary>
-    public Position Position { get; }
-
-    /// <summary>
-    /// 格子水平像素坐标, 供 Canvas 绝对定位, 由最大棋盘位置计算且固定不变
-    /// </summary>
-    public double X { get; }
-
-    /// <summary>
-    /// 格子垂直像素坐标, 供 Canvas 绝对定位, 由最大棋盘位置计算且固定不变
-    /// </summary>
-    public double Y { get; }
-
-    /// <summary>
     /// 格子是否在当前棋盘内可见, 低难度时超出棋盘的行列格子隐藏
     /// </summary>
     [ObservableProperty]
@@ -84,21 +69,50 @@ public sealed partial class CellViewModel : ObservableObject
     public partial IBrush Foreground { get; set; }
 
     /// <summary>
+    /// 格子索引文本, 热键按下时显示, 由游戏视图模型按当前棋盘填充
+    /// </summary>
+    [ObservableProperty]
+    public partial string IndexText { get; set; }
+
+    /// <summary>
+    /// 是否显示格子索引, 等待开始时按住热键为 true
+    /// </summary>
+    [ObservableProperty]
+    public partial bool ShowIndex { get; set; }
+
+    /// <summary>
+    /// 格子位置
+    /// </summary>
+    public Position Position { get; }
+
+    /// <summary>
+    /// 格子水平像素坐标, 供 Canvas 绝对定位, 由最大棋盘位置计算且固定不变
+    /// </summary>
+    public double X { get; }
+
+    /// <summary>
+    /// 格子垂直像素坐标, 供 Canvas 绝对定位, 由最大棋盘位置计算且固定不变
+    /// </summary>
+    public double Y { get; }
+
+    /// <summary>
     /// 创建格子视图模型
     /// </summary>
-    /// <param name="position">格子位置</param>
     /// <param name="cell">被包装的格子</param>
-    public CellViewModel(Position position, Cell cell)
+    /// <param name="position">格子位置</param>
+    public CellViewModel(Cell cell, Position position)
     {
         _cell = cell;
         _cell.PropertyChanged += OnCellPropertyChanged;
-        Position = position;
-        X = position.Col * Constants.CellSize;
-        Y = position.Row * Constants.CellSize;
         IsVisible = false;
         DisplayText = string.Empty;
         Background = UnopenedBrush;
         Foreground = TextBrush;
+        IndexText = string.Empty;
+        ShowIndex = false;
+        Position = position;
+        X = position.Col * Constants.CellSize;
+        Y = position.Row * Constants.CellSize;
         UpdateDisplay();
     }
 
@@ -113,19 +127,6 @@ public sealed partial class CellViewModel : ObservableObject
             _cell.PropertyChanged -= OnCellPropertyChanged;
             _cell = cell;
             _cell.PropertyChanged += OnCellPropertyChanged;
-            UpdateDisplay();
-        }
-    }
-
-    /// <summary>
-    /// 格子类型变化时刷新显示
-    /// </summary>
-    /// <param name="sender">格子</param>
-    /// <param name="e">属性变化事件参数</param>
-    private void OnCellPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(Cell.Type))
-        {
             UpdateDisplay();
         }
     }
@@ -190,6 +191,19 @@ public sealed partial class CellViewModel : ObservableObject
                 Background = HitMineBrush;
                 Foreground = TextBrush;
                 break;
+        }
+    }
+
+    /// <summary>
+    /// 格子类型变化时刷新显示
+    /// </summary>
+    /// <param name="sender">格子</param>
+    /// <param name="e">属性变化事件参数</param>
+    private void OnCellPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(Cell.Type))
+        {
+            UpdateDisplay();
         }
     }
 }

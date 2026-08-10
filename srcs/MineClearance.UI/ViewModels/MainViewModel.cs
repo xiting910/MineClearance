@@ -26,16 +26,6 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly IGameManager _gameManager;
 
     /// <summary>
-    /// 参数输入框区域的悬浮提示, 非自定义难度时为提示文本, 自定义难度时为 <see langword="null"/> 不显示
-    /// </summary>
-    public string? ParameterInputTip => IsCustomDifficulty ? null : "注意：非自定义难度不允许输入参数";
-
-    /// <summary>
-    /// 可选择的难度列表
-    /// </summary>
-    public IReadOnlyList<GameDifficulty> Difficulties { get; } = Enum.GetValues<GameDifficulty>();
-
-    /// <summary>
     /// 当前选中的难度
     /// </summary>
     [ObservableProperty]
@@ -84,14 +74,24 @@ public sealed partial class MainViewModel : ObservableObject
     public partial bool HasSaveData { get; set; }
 
     /// <summary>
-    /// 请求导航至指定目标的事件, 由壳视图模型处理
+    /// 可选择的难度列表
     /// </summary>
-    public event Action<NavigationTarget>? NavigationRequested;
+    public IReadOnlyList<GameDifficulty> Difficulties { get; } = Enum.GetValues<GameDifficulty>();
+
+    /// <summary>
+    /// 参数输入框区域的悬浮提示, 非自定义难度时为提示文本, 自定义难度时为 <see langword="null"/> 不显示
+    /// </summary>
+    public string? ParameterInputTip => IsCustomDifficulty ? null : "注意：非自定义难度不允许输入参数";
 
     /// <summary>
     /// 请求退出程序的事件, 由视图层关闭主窗口
     /// </summary>
     public event Action? ExitRequested;
+
+    /// <summary>
+    /// 请求导航至指定目标的事件, 由壳视图模型处理
+    /// </summary>
+    public event Action<NavigationTarget>? NavigationRequested;
 
     /// <summary>
     /// 初始化主视图模型
@@ -168,58 +168,6 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 更新地雷数量上限并钳制当前值
-    /// </summary>
-    private void UpdateMaxMineCount()
-    {
-        MaxMineCount = Math.Max(0, ((Height ?? 0) * (Width ?? 0)) - 1);
-        if (MineCount > MaxMineCount)
-        {
-            MineCount = MaxMineCount;
-        }
-    }
-
-    /// <summary>
-    /// 刷新存档状态, 由壳视图模型在切换到主视图时调用
-    /// </summary>
-    public void RefreshSaveDataState()
-    {
-        HasSaveData = _dataRepository.SaveData is not null;
-    }
-
-    /// <summary>
-    /// 开始新游戏: 先清空存档, 预设难度走指定难度分支, 自定义难度以输入框中的参数开始游戏
-    /// </summary>
-    [RelayCommand]
-    private async Task StartNewGameAsync()
-    {
-        // 获取当前选中的难度, 空值不处理, 由绑定控件保证不会出现空值
-        var difficulty = SelectedDifficulty;
-        if (difficulty is null) { return; }
-
-        // 根据难度分支开始新游戏
-        if (difficulty is GameDifficulty.Custom)
-        {
-            // 自定义难度: 以输入框中的棋盘参数构建配置
-            var config = new GameConfig(Height ?? 0, Width ?? 0, MineCount ?? 0);
-
-            // 验证配置有效性, 无效则不开始游戏
-            if (!config.IsValid()) { return; }
-
-            // 自定义难度允许玩家指定随机种子, 若输入框为空则随机生成
-            _gameManager.StartNewGame(config, int.TryParse(SeedText.Trim(), out var parsed) ? parsed : null);
-        }
-        else
-        {
-            // 预设难度: 直接以指定难度开始游戏
-            _gameManager.StartNewGame(difficulty.Value);
-        }
-
-        // 切换至游戏视图
-        NavigationRequested?.Invoke(NavigationTarget.GameView);
-    }
-
-    /// <summary>
     /// 从存档恢复游戏并切换至游戏视图
     /// </summary>
     [RelayCommand]
@@ -256,5 +204,57 @@ public sealed partial class MainViewModel : ObservableObject
     private void Exit()
     {
         ExitRequested?.Invoke();
+    }
+
+    /// <summary>
+    /// 开始新游戏: 先清空存档, 预设难度走指定难度分支, 自定义难度以输入框中的参数开始游戏
+    /// </summary>
+    [RelayCommand]
+    private async Task StartNewGameAsync()
+    {
+        // 获取当前选中的难度, 空值不处理, 由绑定控件保证不会出现空值
+        var difficulty = SelectedDifficulty;
+        if (difficulty is null) { return; }
+
+        // 根据难度分支开始新游戏
+        if (difficulty is GameDifficulty.Custom)
+        {
+            // 自定义难度: 以输入框中的棋盘参数构建配置
+            var config = new GameConfig(Height ?? 0, Width ?? 0, MineCount ?? 0);
+
+            // 验证配置有效性, 无效则不开始游戏
+            if (!config.IsValid()) { return; }
+
+            // 自定义难度允许玩家指定随机种子, 若输入框为空则随机生成
+            _gameManager.StartNewGame(config, int.TryParse(SeedText.Trim(), out var parsed) ? parsed : null);
+        }
+        else
+        {
+            // 预设难度: 直接以指定难度开始游戏
+            _gameManager.StartNewGame(difficulty.Value);
+        }
+
+        // 切换至游戏视图
+        NavigationRequested?.Invoke(NavigationTarget.GameView);
+    }
+
+    /// <summary>
+    /// 刷新存档状态, 由壳视图模型在切换到主视图时调用
+    /// </summary>
+    public void RefreshSaveDataState()
+    {
+        HasSaveData = _dataRepository.SaveData is not null;
+    }
+
+    /// <summary>
+    /// 更新地雷数量上限并钳制当前值
+    /// </summary>
+    private void UpdateMaxMineCount()
+    {
+        MaxMineCount = Math.Max(0, ((Height ?? 0) * (Width ?? 0)) - 1);
+        if (MineCount > MaxMineCount)
+        {
+            MineCount = MaxMineCount;
+        }
     }
 }

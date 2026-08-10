@@ -136,6 +136,10 @@
                   <TextBlock Text="{Binding DisplayText}" Foreground="{Binding Foreground}"
                              FontWeight="Bold" FontSize="15" IsHitTestVisible="False"
                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                  <!-- 索引叠加层, 等待开始时按住热键显示, 不拦截指针保持点击行为不变 -->
+                  <TextBlock Text="{Binding IndexText}" IsVisible="{Binding ShowIndex}" IsHitTestVisible="False"
+                             FontSize="11" Foreground="#4B5563" FontWeight="Bold"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Grid>
               </DataTemplate>
             </ItemsControl.ItemTemplate>

@@ -1,3 +1,4 @@
+using Avalonia.Input;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
@@ -8,10 +9,7 @@ namespace MineClearance.UI.Models;
 /// <summary>
 /// UI 配置实现类, 属性变化时自动保存到文件
 /// </summary>
-/// <param name="_configuration">应用程序配置对象</param>
-#pragma warning disable CA1707
-public sealed class UIOptions(IConfiguration _configuration)
-#pragma warning restore CA1707
+public sealed class UIOptions
 {
     /// <summary>
     /// 主题模式
@@ -27,7 +25,7 @@ public sealed class UIOptions(IConfiguration _configuration)
                 SaveToFile();
             }
         }
-    } = GetThemeFromConfiguration(_configuration);
+    }
 
     /// <summary>
     /// Toast 提示显示时间 (秒)
@@ -43,7 +41,7 @@ public sealed class UIOptions(IConfiguration _configuration)
                 SaveToFile();
             }
         }
-    } = GetToastDurationFromConfiguration(_configuration);
+    }
 
     /// <summary>
     /// Toast 同时显示的最大条数
@@ -59,7 +57,7 @@ public sealed class UIOptions(IConfiguration _configuration)
                 SaveToFile();
             }
         }
-    } = GetMaxToastCountFromConfiguration(_configuration);
+    }
 
     /// <summary>
     /// 是否显示下载悬浮球
@@ -75,7 +73,7 @@ public sealed class UIOptions(IConfiguration _configuration)
                 SaveToFile();
             }
         }
-    } = GetShowDownloadBallFromConfiguration(_configuration);
+    }
 
     /// <summary>
     /// 是否显示首次启动提示, 仅在首次启动时显示, 显示后自动设置为 false
@@ -91,65 +89,60 @@ public sealed class UIOptions(IConfiguration _configuration)
                 SaveToFile();
             }
         }
-    } = GetShowFirstLaunchTipFromConfiguration(_configuration);
-
-    /// <summary>
-    /// 从应用程序配置对象中获取主题模式
-    /// </summary>
-    /// <param name="configuration">应用程序配置对象</param>
-    /// <returns>主题模式</returns>
-    private static ThemeMode GetThemeFromConfiguration(IConfiguration configuration)
-    {
-        var section = configuration.GetSection(nameof(UIOptions));
-        return Enum.TryParse(section[nameof(Theme)], out ThemeMode theme) ? theme : ThemeMode.System;
     }
 
     /// <summary>
-    /// 从应用程序配置对象中获取 Toast 提示显示时间
+    /// 在首次点击格子打开时是否复制格子索引
+    /// </summary>
+    public bool CopyIndexOnFirstClick
+    {
+        get;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                SaveToFile();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 在等待游戏开始时显示格子索引的热键
+    /// </summary>
+    public Key ShowIndexHotKey
+    {
+        get;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                SaveToFile();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 构造函数, 从应用程序配置对象中获取 UI 配置
     /// </summary>
     /// <param name="configuration">应用程序配置对象</param>
-    /// <returns>Toast 提示显示时间</returns>
-    private static double GetToastDurationFromConfiguration(IConfiguration configuration)
+    public UIOptions(IConfiguration configuration)
     {
         var section = configuration.GetSection(nameof(UIOptions));
-        return double.TryParse(section[nameof(ToastDurationSeconds)], out var seconds)
+
+        Theme = Enum.TryParse(section[nameof(Theme)], out ThemeMode theme) ? theme : ThemeMode.System;
+        ToastDurationSeconds = double.TryParse(section[nameof(ToastDurationSeconds)], out var seconds)
             ? Math.Clamp(seconds, Constants.MinToastDurationSeconds, Constants.MaxToastDurationSeconds)
             : Constants.DefaultToastDurationSeconds;
-    }
-
-    /// <summary>
-    /// 从应用程序配置对象中获取 Toast 同时显示的最大条数
-    /// </summary>
-    /// <param name="configuration">应用程序配置对象</param>
-    /// <returns>Toast 同时显示的最大条数</returns>
-    private static int GetMaxToastCountFromConfiguration(IConfiguration configuration)
-    {
-        var section = configuration.GetSection(nameof(UIOptions));
-        return int.TryParse(section[nameof(MaxToastCount)], out var count)
+        MaxToastCount = int.TryParse(section[nameof(MaxToastCount)], out var count)
             ? Math.Clamp(count, Constants.MinMaxToastCount, Constants.MaxMaxToastCount)
             : Constants.DefaultMaxToastCount;
-    }
-
-    /// <summary>
-    /// 从应用程序配置对象中获取是否显示下载悬浮球
-    /// </summary>
-    /// <param name="configuration">应用程序配置对象</param>
-    /// <returns>是否显示下载悬浮球</returns>
-    private static bool GetShowDownloadBallFromConfiguration(IConfiguration configuration)
-    {
-        var section = configuration.GetSection(nameof(UIOptions));
-        return !bool.TryParse(section[nameof(ShowDownloadBall)], out var show) || show;
-    }
-
-    /// <summary>
-    /// 从应用程序配置对象中获取是否显示首次启动提示
-    /// </summary>
-    /// <param name="configuration">应用程序配置对象</param>
-    /// <returns>是否显示首次启动提示</returns>
-    private static bool GetShowFirstLaunchTipFromConfiguration(IConfiguration configuration)
-    {
-        var section = configuration.GetSection(nameof(UIOptions));
-        return !bool.TryParse(section[nameof(ShowFirstLaunchTip)], out var show) || show;
+        ShowDownloadBall = !bool.TryParse(section[nameof(ShowDownloadBall)], out var show) || show;
+        ShowFirstLaunchTip = !bool.TryParse(section[nameof(ShowFirstLaunchTip)], out var showTip) || showTip;
+        CopyIndexOnFirstClick = bool.TryParse(section[nameof(CopyIndexOnFirstClick)], out var copy) && copy;
+        ShowIndexHotKey = Enum.TryParse(section[nameof(ShowIndexHotKey)], out Key hotKey)
+            && hotKey.IsValidHotKey() ? hotKey : Key.None;
     }
 
     /// <summary>
@@ -167,7 +160,9 @@ public sealed class UIOptions(IConfiguration _configuration)
                     [nameof(ToastDurationSeconds)] = ToastDurationSeconds,
                     [nameof(MaxToastCount)] = MaxToastCount,
                     [nameof(ShowDownloadBall)] = ShowDownloadBall,
-                    [nameof(ShowFirstLaunchTip)] = ShowFirstLaunchTip
+                    [nameof(ShowFirstLaunchTip)] = ShowFirstLaunchTip,
+                    [nameof(CopyIndexOnFirstClick)] = CopyIndexOnFirstClick,
+                    [nameof(ShowIndexHotKey)] = ShowIndexHotKey.ToString()
                 }
             }.ToJsonString(Infrastructure.Constants.JsonSerializerOptions));
         }

@@ -64,22 +64,6 @@ public sealed partial class HistoryViewModel : ObservableObject
     private bool _isClearConfirmed;
 
     /// <summary>
-    /// 难度筛选选项列表, 支持多选, 不选任何项表示全部难度
-    /// </summary>
-    public IReadOnlyList<DifficultyFilterOption> DifficultyFilters { get; } =
-        [.. Enum.GetValues<GameDifficulty>().Select(static d => new DifficultyFilterOption(d))];
-
-    /// <summary>
-    /// 结果筛选选项列表
-    /// </summary>
-    public IReadOnlyList<ResultFilterOption> ResultFilters { get; } =
-    [
-        new(null, "全部"),
-        new(true, "胜利"),
-        new(false, "失败")
-    ];
-
-    /// <summary>
     /// 总览信息行文本, 显示总游戏数与胜利局数
     /// </summary>
     [ObservableProperty]
@@ -126,6 +110,22 @@ public sealed partial class HistoryViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     public partial string ClearAllButtonText { get; set; } = "清空历史";
+
+    /// <summary>
+    /// 难度筛选选项列表, 支持多选, 不选任何项表示全部难度
+    /// </summary>
+    public IReadOnlyList<DifficultyFilterOption> DifficultyFilters { get; } =
+        [.. Enum.GetValues<GameDifficulty>().Select(static d => new DifficultyFilterOption(d))];
+
+    /// <summary>
+    /// 结果筛选选项列表
+    /// </summary>
+    public IReadOnlyList<ResultFilterOption> ResultFilters { get; } =
+    [
+        new(null, "全部"),
+        new(true, "胜利"),
+        new(false, "失败")
+    ];
 
     /// <summary>
     /// 统计表格难度列头排序箭头 (▲/▼/空)
@@ -190,19 +190,6 @@ public sealed partial class HistoryViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 难度选项选中状态变化时重新应用筛选
-    /// </summary>
-    /// <param name="sender">难度筛选选项</param>
-    /// <param name="e">属性变化事件参数</param>
-    private void OnDifficultyFilterOptionChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(DifficultyFilterOption.IsSelected))
-        {
-            ApplyFilters();
-        }
-    }
-
-    /// <summary>
     /// 起始日期变化时重新应用筛选
     /// </summary>
     /// <param name="value">新的起始日期</param>
@@ -227,6 +214,84 @@ public sealed partial class HistoryViewModel : ObservableObject
     partial void OnSelectedResultFilterChanged(ResultFilterOption? value)
     {
         ApplyFilters();
+    }
+
+    /// <summary>
+    /// 返回主视图
+    /// </summary>
+    [RelayCommand]
+    private void BackToMain()
+    {
+        MainViewRequested?.Invoke();
+    }
+
+    /// <summary>
+    /// 清除筛选, 恢复显示全部记录
+    /// </summary>
+    [RelayCommand]
+    private void ClearFilters()
+    {
+        foreach (var option in DifficultyFilters)
+        {
+            option.IsSelected = false;
+        }
+        FromDate = null;
+        ToDate = null;
+        SelectedResultFilter = ResultFilters[0];
+    }
+
+    /// <summary>
+    /// 删除选中的记录, 不做确认弹窗, 删除后刷新并提示
+    /// </summary>
+    [RelayCommand]
+    private async Task DeleteSelectedAsync()
+    {
+        if (SelectedRows is not { Count: > 0 } rows) { return; }
+
+        // 收集选中的游戏结果并逐个删除
+        var results = rows.Select(static row => row.Result).ToArray();
+        var failed = 0;
+        foreach (var result in results)
+        {
+            if (!await _dataRepository.DeleteGameResultAsync(result, App.ExitCts.Token).ConfigureAwait(false))
+            {
+                failed++;
+            }
+        }
+
+        Refresh();
+        _toast.Show(failed == 0 ? $"已删除 {results.Length} 条记录" : $"{failed} 条记录删除失败");
+    }
+
+    /// <summary>
+    /// 清空历史: 首次点击进入确认状态, 3 秒内再次点击才执行
+    /// </summary>
+    [RelayCommand(AllowConcurrentExecutions = true)]
+    private async Task ClearAllAsync()
+    {
+        // 第一次点击: 进入确认状态并显示提示文本, 3 秒后自动恢复
+        if (!_isClearConfirmed)
+        {
+            _isClearConfirmed = true;
+            ClearAllButtonText = "确认清空";
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(3), App.ExitCts.Token);
+            }
+            finally
+            {
+                _isClearConfirmed = false;
+                ClearAllButtonText = "清空历史";
+            }
+            return;
+        }
+
+        // 第二次点击: 执行清空
+        _isClearConfirmed = false;
+        ClearAllButtonText = "清空历史";
+        var ok = await _dataRepository.ClearGameResultsAsync(App.ExitCts.Token).ConfigureAwait(false);
+        Refresh();
+        _toast.Show(ok ? "历史记录已清空" : "清空历史失败");
     }
 
     /// <summary>
@@ -269,87 +334,6 @@ public sealed partial class HistoryViewModel : ObservableObject
     public void Show(string message)
     {
         _toast.Show(message);
-    }
-
-    /// <summary>
-    /// 返回主视图
-    /// </summary>
-    [RelayCommand]
-    private void BackToMain()
-    {
-        MainViewRequested?.Invoke();
-    }
-
-    /// <summary>
-    /// 删除选中的记录, 不做确认弹窗, 删除后刷新并提示
-    /// </summary>
-    [RelayCommand]
-    private async Task DeleteSelectedAsync()
-    {
-        if (SelectedRows is not { Count: > 0 } rows) { return; }
-
-        // 收集选中的游戏结果并逐个删除
-        var results = rows.Select(static row => row.Result).ToArray();
-        var failed = 0;
-        foreach (var result in results)
-        {
-            if (!await _dataRepository.DeleteGameResultAsync(result, App.ExitCts.Token).ConfigureAwait(false))
-            {
-                failed++;
-            }
-        }
-
-        Refresh();
-        _toast.Show(failed == 0 ? $"已删除 {results.Length} 条记录" : $"{failed} 条记录删除失败");
-    }
-
-    /// <summary>
-    /// 清空历史: 首次点击进入确认状态, 3 秒内再次点击才执行
-    /// </summary>
-    /// <remarks>
-    /// 允许并发执行, 否则首次点击后命令执行期间按钮会被 AsyncRelayCommand 禁用, 无法完成二次确认
-    /// </remarks>
-    [RelayCommand(AllowConcurrentExecutions = true)]
-    private async Task ClearAllAsync()
-    {
-        // 第一次点击: 进入确认状态并显示提示文本, 3 秒后自动恢复
-        if (!_isClearConfirmed)
-        {
-            _isClearConfirmed = true;
-            ClearAllButtonText = "确认清空";
-            try
-            {
-                await Task.Delay(TimeSpan.FromSeconds(3), App.ExitCts.Token);
-            }
-            finally
-            {
-                _isClearConfirmed = false;
-                ClearAllButtonText = "清空历史";
-            }
-            return;
-        }
-
-        // 第二次点击: 执行清空
-        _isClearConfirmed = false;
-        ClearAllButtonText = "清空历史";
-        var ok = await _dataRepository.ClearGameResultsAsync(App.ExitCts.Token).ConfigureAwait(false);
-        Refresh();
-        _toast.Show(ok ? "历史记录已清空" : "清空历史失败");
-    }
-
-    /// <summary>
-    /// 清除筛选, 恢复显示全部记录
-    /// </summary>
-    [RelayCommand]
-    private void ClearFilters()
-    {
-        foreach (var option in DifficultyFilters)
-        {
-            option.IsSelected = false;
-        }
-        FromDate = null;
-        ToDate = null;
-        SelectedResultFilter = ResultFilters[0];
     }
 
     /// <summary>
@@ -451,6 +435,19 @@ public sealed partial class HistoryViewModel : ObservableObject
     private string GetStatsArrow(string key)
     {
         return _statsSortKey == key ? (_statsSortDescending ? "▼" : "▲") : string.Empty;
+    }
+
+    /// <summary>
+    /// 难度选项选中状态变化时重新应用筛选
+    /// </summary>
+    /// <param name="sender">难度筛选选项</param>
+    /// <param name="e">属性变化事件参数</param>
+    private void OnDifficultyFilterOptionChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(DifficultyFilterOption.IsSelected))
+        {
+            ApplyFilters();
+        }
     }
 
     /// <summary>

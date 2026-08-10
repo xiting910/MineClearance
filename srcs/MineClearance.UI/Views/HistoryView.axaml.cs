@@ -74,7 +74,6 @@ public sealed partial class HistoryView : UserControl
         if (e.Row.DataContext is not GameResultRow row) { return; }
         if (DataContext is not HistoryViewModel viewModel) { return; }
 
-        // 剪贴板不可用时提示, 否则写入并提示
         var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
         if (clipboard is null)
         {

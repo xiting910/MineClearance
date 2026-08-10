@@ -1,3 +1,4 @@
+using Avalonia.Input;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -6,6 +7,7 @@ using MineClearance.Core.Enums;
 using MineClearance.Core.Interfaces;
 using MineClearance.Core.Models;
 using MineClearance.Core.Models.Records;
+using MineClearance.UI.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -38,6 +40,16 @@ public sealed partial class GameViewModel : ObservableObject
     /// 界面状态刷新计时器, 定时触发游戏计时刷新
     /// </summary>
     private readonly DispatcherTimer _refreshTimer;
+
+    /// <summary>
+    /// UI 配置, 提供显示索引热键与首点复制索引开关
+    /// </summary>
+    private readonly UIOptions _uiOptions;
+
+    /// <summary>
+    /// 当前已订阅属性变化的棋盘, 棋盘替换时先退订旧棋盘
+    /// </summary>
+    private IGameBoardDictionary? _subscribedBoard;
 
     /// <summary>
     /// 固定大小的格子视图模型池, 按最大棋盘行列排列只创建一次, 通过可见性复用
@@ -136,6 +148,12 @@ public sealed partial class GameViewModel : ObservableObject
     public partial string PauseButtonText { get; set; } = "暂停";
 
     /// <summary>
+    /// 是否正在显示所有格子索引, 等待开始时按住热键为 true
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsShowingIndexes { get; set; }
+
+    /// <summary>
     /// 棋盘像素宽度, 由当前列数与格子大小计算, 棋盘容器按当前棋盘自适应尺寸
     /// </summary>
     public double BoardPixelWidth => Columns * Constants.CellSize;
@@ -146,19 +164,31 @@ public sealed partial class GameViewModel : ObservableObject
     public double BoardPixelHeight => Rows * Constants.CellSize;
 
     /// <summary>
+    /// 显示索引热键, Key.None 表示未设置, 由窗口在等待开始时按此键切换索引显示
+    /// </summary>
+    public Key ShowIndexHotKey => _uiOptions.ShowIndexHotKey;
+
+    /// <summary>
     /// 请求返回主视图的事件, 由壳视图模型处理
     /// </summary>
     public event Action? MainViewRequested;
+
+    /// <summary>
+    /// 首次点击格子时请求复制索引的事件, 携带索引文本, 由视图写入剪贴板
+    /// </summary>
+    public event Action<string>? FirstClickIndexRequested;
 
     /// <summary>
     /// 创建游戏视图模型
     /// </summary>
     /// <param name="gameManager">游戏管理器</param>
     /// <param name="toastViewModel">全局短暂提示视图模型</param>
-    public GameViewModel(IGameManager gameManager, ToastViewModel toastViewModel)
+    /// <param name="uiOptions">UI 配置</param>
+    public GameViewModel(IGameManager gameManager, ToastViewModel toastViewModel, UIOptions uiOptions)
     {
         _gameManager = gameManager;
         _toast = toastViewModel;
+        _uiOptions = uiOptions;
 
         // 构建固定大小的格子视图模型池, 只创建一次, 此后所有游戏复用
         BuildCellPool();
@@ -205,76 +235,14 @@ public sealed partial class GameViewModel : ObservableObject
     partial void OnColumnsChanged(int value) => OnPropertyChanged(nameof(BoardPixelWidth));
 
     /// <summary>
-    /// 游戏可暂停时暂停游戏
+    /// 索引显示状态变化时同步所有格子的索引可见性
     /// </summary>
-    public void PauseIfPerformable()
+    /// <param name="value">新的显示状态</param>
+    partial void OnIsShowingIndexesChanged(bool value)
     {
-        if (_gameManager.Game is { IsPerformable: true } game)
+        foreach (var cell in Cells)
         {
-            game.Pause();
-        }
-    }
-
-    /// <summary>
-    /// 取消暂停恢复游戏
-    /// </summary>
-    public void ResumeIfPaused()
-    {
-        if (_gameManager.Game is { Status: GameStatus.Paused } game)
-        {
-            game.CancelPause();
-        }
-    }
-
-    /// <summary>
-    /// 左键单击处理: 按格子类型分发, 未打开格子打开 (踩雷时记录位置), 数字格子展开周围
-    /// </summary>
-    /// <param name="position">格子位置</param>
-    public void LeftClickAt(Position position)
-    {
-        var game = _gameManager.Game;
-        if (game is not { IsPerformable: true }) { return; }
-
-        switch (game.Board?[position].Type)
-        {
-            case null or CellType.Unopened:
-                game.OpenCell(position);
-                break;
-
-            case CellType.Number or CellType.WarningNumber:
-                game.OpenAdjacentCells(position);
-                break;
-        }
-    }
-
-    /// <summary>
-    /// 在指定位置三态循环标记: 未打开 → 旗 → 问号 → 取消标记, 仅在游戏进行中时有效
-    /// </summary>
-    /// <param name="position">格子位置</param>
-    public void CycleMarkAt(Position position)
-    {
-        if (_gameManager.Game is not { Status: GameStatus.InProgress } game || game.Board is not { } board)
-        {
-            return;
-        }
-
-        switch (board[position].Type)
-        {
-            case CellType.Unopened: game.FlagCell(position); break;
-            case CellType.Flagged: game.QuestionCell(position); break;
-            case CellType.Question: game.UnmarkCell(position); break;
-        }
-    }
-
-    /// <summary>
-    /// 标记数字格周围所有未打开格子为旗, 仅对数字格有效且在游戏进行中时
-    /// </summary>
-    /// <param name="position">数字格位置</param>
-    public void FlagAdjacentAt(Position position)
-    {
-        if (_gameManager.Game is { Status: GameStatus.InProgress } game && game.Board?[position].Type is CellType.Number)
-        {
-            game.FlagAdjacentCells(position);
+            cell.ShowIndex = value;
         }
     }
 
@@ -323,6 +291,16 @@ public sealed partial class GameViewModel : ObservableObject
     }
 
     /// <summary>
+    /// 强制返回主视图, 不保存进度也不提示
+    /// </summary>
+    [RelayCommand]
+    private void ExitWithoutSave()
+    {
+        _gameManager.ExitWithoutSaving();
+        MainViewRequested?.Invoke();
+    }
+
+    /// <summary>
     /// 返回主视图: 进行中 (含暂停) 的游戏保存进度并提示, 等待开始或已结束的游戏直接退出
     /// </summary>
     [RelayCommand]
@@ -343,13 +321,91 @@ public sealed partial class GameViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 强制返回主视图, 不保存进度也不提示
+    /// 游戏可暂停时暂停游戏
     /// </summary>
-    [RelayCommand]
-    private void ExitWithoutSave()
+    public void PauseIfPerformable()
     {
-        _gameManager.ExitWithoutSaving();
-        MainViewRequested?.Invoke();
+        if (_gameManager.Game is { IsPerformable: true } game)
+        {
+            game.Pause();
+        }
+    }
+
+    /// <summary>
+    /// 取消暂停恢复游戏
+    /// </summary>
+    public void ResumeIfPaused()
+    {
+        if (_gameManager.Game is { Status: GameStatus.Paused } game)
+        {
+            game.CancelPause();
+        }
+    }
+
+    /// <summary>
+    /// 左键单击处理: 按格子类型分发, 未打开格子打开 (踩雷时记录位置), 数字格子展开周围
+    /// </summary>
+    /// <param name="position">格子位置</param>
+    public void LeftClickAt(Position position)
+    {
+        var game = _gameManager.Game;
+        if (game is not { IsPerformable: true }) { return; }
+
+        var isFirstClick = game.Status is GameStatus.WaitingStarted;
+        switch (game.Board?[position].Type)
+        {
+            case null or CellType.Unopened:
+                game.OpenCell(position);
+                if (isFirstClick && _uiOptions.CopyIndexOnFirstClick)
+                {
+                    FirstClickIndexRequested?.Invoke(position.ToIndex(Columns).ToString());
+                }
+                break;
+
+            case CellType.Number or CellType.WarningNumber:
+                game.OpenAdjacentCells(position);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 在指定位置三态循环标记: 未打开 → 旗 → 问号 → 取消标记, 仅在游戏进行中时有效
+    /// </summary>
+    /// <param name="position">格子位置</param>
+    public void CycleMarkAt(Position position)
+    {
+        if (_gameManager.Game is not { Status: GameStatus.InProgress } game || game.Board is not { } board)
+        {
+            return;
+        }
+
+        switch (board[position].Type)
+        {
+            case CellType.Unopened: game.FlagCell(position); break;
+            case CellType.Flagged: game.QuestionCell(position); break;
+            case CellType.Question: game.UnmarkCell(position); break;
+        }
+    }
+
+    /// <summary>
+    /// 标记数字格周围所有未打开格子为旗, 仅对数字格有效且在游戏进行中时
+    /// </summary>
+    /// <param name="position">数字格位置</param>
+    public void FlagAdjacentAt(Position position)
+    {
+        if (_gameManager.Game is { Status: GameStatus.InProgress } game && game.Board?[position].Type is CellType.Number)
+        {
+            game.FlagAdjacentCells(position);
+        }
+    }
+
+    /// <summary>
+    /// 显示 Toast 提示, 由视图在剪贴板写入完成后按结果调用
+    /// </summary>
+    /// <param name="message">提示文本</param>
+    public void Show(string message)
+    {
+        _toast.Show(message);
     }
 
     /// <summary>
@@ -358,7 +414,7 @@ public sealed partial class GameViewModel : ObservableObject
     private void BuildCellPool()
     {
         Cells = [.. Position.GetAllPositions(Core.Constants.MaxBoardHeight, Core.Constants.MaxBoardWidth)
-            .Select(position => new CellViewModel(position, PlaceholderCell))];
+            .Select(position => new CellViewModel(PlaceholderCell, position))];
     }
 
     /// <summary>
@@ -386,7 +442,8 @@ public sealed partial class GameViewModel : ObservableObject
     /// <param name="game">游戏实例</param>
     private void UnbindGame(IGame? game)
     {
-        game?.Board?.PropertyChanged -= OnBoardPropertyChanged;
+        _subscribedBoard?.PropertyChanged -= OnBoardPropertyChanged;
+        _subscribedBoard = null;
         game?.PropertyChanged -= OnGamePropertyChanged;
     }
 
@@ -402,9 +459,15 @@ public sealed partial class GameViewModel : ObservableObject
             var cellViewModel = Cells[pos.ToIndex(Core.Constants.MaxBoardWidth)];
             var isInBoard = pos.IsInBounds(Rows, Columns);
             cellViewModel.IsVisible = isInBoard;
+            cellViewModel.IndexText = isInBoard ? pos.ToIndex(Columns).ToString() : string.Empty;
             cellViewModel.UpdateCell(isInBoard ? board?[pos] ?? PlaceholderCell : PlaceholderCell);
         }
-        board?.PropertyChanged += OnBoardPropertyChanged;
+        if (!ReferenceEquals(_subscribedBoard, board))
+        {
+            _subscribedBoard?.PropertyChanged -= OnBoardPropertyChanged;
+            _subscribedBoard = board;
+            _subscribedBoard?.PropertyChanged += OnBoardPropertyChanged;
+        }
         UpdateStatus();
     }
 
@@ -422,6 +485,7 @@ public sealed partial class GameViewModel : ObservableObject
             IsWin = false;
             RemainingMines = 0;
             OpenedCount = 0;
+            IsShowingIndexes = false;
             return;
         }
 
@@ -434,6 +498,12 @@ public sealed partial class GameViewModel : ObservableObject
         CompletionText = $"{game.Completion * 100:0.##}%";
         RemainingMines = game.Config.MineCount - (game.Board?.FlagCount ?? 0);
         OpenedCount = game.Board?.OpenedCount ?? 0;
+
+        // 游戏开始 (等待状态结束) 后强制隐藏索引, 即使热键仍被按住
+        if (!IsWaitingStarted)
+        {
+            IsShowingIndexes = false;
+        }
 
         // 游戏结束时通过 Toast 提示结果
         if (IsGameEnded)

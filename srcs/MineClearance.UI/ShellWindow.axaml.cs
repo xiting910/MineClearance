@@ -131,18 +131,48 @@ public sealed partial class ShellWindow : Window
     }
 
     /// <summary>
-    /// 按下 Esc 键时由壳视图模型处理: 下载抽屉可见时隐藏它, 否则呼出或隐藏设置抽屉
+    /// 按下 Esc 键时由壳视图模型处理: 下载抽屉可见时隐藏它, 否则呼出或隐藏设置抽屉; 等待开始时按下热键显示所有格子索引
     /// </summary>
     /// <param name="sender">窗口</param>
     /// <param name="e">键盘事件参数</param>
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.Key is not Key.Escape || e.Handled) { return; }
+        // 已处理的事件或非壳视图模型直接忽略
+        if (e.Handled || DataContext is not ShellViewModel viewModel) { return; }
 
-        if (DataContext is ShellViewModel viewModel)
+        // Esc 键: 转发给壳视图模型处理, 由壳视图模型决定隐藏哪个抽屉或呼出设置抽屉
+        if (e.Key is Key.Escape)
         {
             viewModel.HandleEscapeKey();
             e.Handled = true;
+            return;
+        }
+
+        // 等待开始时按下热键显示所有格子索引, 由游戏视图模型处理
+        if (viewModel.IsGameViewVisible
+            && viewModel.Game.IsWaitingStarted
+            && viewModel.Game.ShowIndexHotKey is not Key.None
+            && e.Key == viewModel.Game.ShowIndexHotKey)
+        {
+            viewModel.Game.IsShowingIndexes = true;
+            e.Handled = true;
+        }
+    }
+
+    /// <summary>
+    /// 松开热键时隐藏所有格子索引
+    /// </summary>
+    /// <param name="sender">窗口</param>
+    /// <param name="e">键盘事件参数</param>
+    private void OnKeyUp(object? sender, KeyEventArgs e)
+    {
+        if (e.Handled) { return; }
+
+        if (DataContext is ShellViewModel { IsGameViewVisible: true } shellViewModel
+            && shellViewModel.Game.ShowIndexHotKey is not Key.None
+            && e.Key == shellViewModel.Game.ShowIndexHotKey)
+        {
+            shellViewModel.Game.IsShowingIndexes = false;
         }
     }
 

@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Input;
 using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -47,16 +48,6 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly UpdateViewModel _update;
 
     /// <summary>
-    /// 可选择的主题模式列表
-    /// </summary>
-    public IReadOnlyList<ThemeMode> Themes { get; } = Enum.GetValues<ThemeMode>();
-
-    /// <summary>
-    /// 可选择的日志级别列表
-    /// </summary>
-    public IReadOnlyList<LogLevel> Levels { get; } = Enum.GetValues<LogLevel>();
-
-    /// <summary>
     /// 主题模式
     /// </summary>
     [ObservableProperty]
@@ -87,6 +78,34 @@ public sealed partial class SettingsViewModel : ObservableObject
     public partial LogLevel Level { get; set; }
 
     /// <summary>
+    /// 首次点击格子时是否复制索引到剪贴板
+    /// </summary>
+    [ObservableProperty]
+    public partial bool CopyIndexOnFirstClick { get; set; }
+
+    /// <summary>
+    /// 显示索引快捷键, Key.None 表示未设置
+    /// </summary>
+    [ObservableProperty]
+    public partial Key ShowIndexHotKey { get; set; }
+
+    /// <summary>
+    /// 是否正在录制快捷键
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsListeningHotkey { get; set; }
+
+    /// <summary>
+    /// 可选择的主题模式列表
+    /// </summary>
+    public IReadOnlyList<ThemeMode> Themes { get; } = Enum.GetValues<ThemeMode>();
+
+    /// <summary>
+    /// 可选择的日志级别列表
+    /// </summary>
+    public IReadOnlyList<LogLevel> Levels { get; } = Enum.GetValues<LogLevel>();
+
+    /// <summary>
     /// 产品
     /// </summary>
     public string Product { get; }
@@ -110,6 +129,20 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// GitHub 仓库地址
     /// </summary>
     public string GitHubUrl { get; }
+
+    /// <summary>
+    /// 热键按钮文本, 录制中为 &gt;键名&lt; 或 &gt;&lt;, 否则为键名或空
+    /// </summary>
+    public string HotkeyButtonText => IsListeningHotkey
+        ? $">{ShowIndexHotKeyText}<"
+        : ShowIndexHotKeyText;
+
+    /// <summary>
+    /// 快捷键显示文本, 未设置时为空字符串
+    /// </summary>
+    private string ShowIndexHotKeyText => ShowIndexHotKey is Key.None
+        ? string.Empty
+        : ShowIndexHotKey.ToString();
 
     /// <summary>
     /// 请求关闭设置抽屉的事件, 由壳视图模型处理
@@ -138,6 +171,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         ToastDurationSeconds = uiOptions.ToastDurationSeconds;
         MaxToastCount = uiOptions.MaxToastCount;
         ShowDownloadBall = uiOptions.ShowDownloadBall;
+        CopyIndexOnFirstClick = uiOptions.CopyIndexOnFirstClick;
+        ShowIndexHotKey = uiOptions.ShowIndexHotKey;
         Level = loggerOptions.Level;
 
         Product = AppMetadata.Get(nameof(Product));
@@ -203,12 +238,31 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 手动检查更新, 由设置抽屉的检查更新按钮触发
+    /// 首点复制索引开关变化时同步配置
     /// </summary>
-    [RelayCommand]
-    private Task CheckForUpdatesAsync()
+    /// <param name="value">新的开关状态</param>
+    partial void OnCopyIndexOnFirstClickChanged(bool value)
     {
-        return _update.CheckForUpdatesAsync(manual: true);
+        _uiOptions.CopyIndexOnFirstClick = value;
+    }
+
+    /// <summary>
+    /// 显示索引快捷键变化时同步配置并刷新按钮文本
+    /// </summary>
+    /// <param name="value">新的快捷键</param>
+    partial void OnShowIndexHotKeyChanged(Key value)
+    {
+        _uiOptions.ShowIndexHotKey = value;
+        OnPropertyChanged(nameof(HotkeyButtonText));
+    }
+
+    /// <summary>
+    /// 录制状态变化时刷新按钮文本
+    /// </summary>
+    /// <param name="value">新的录制状态</param>
+    partial void OnIsListeningHotkeyChanged(bool value)
+    {
+        OnPropertyChanged(nameof(HotkeyButtonText));
     }
 
     /// <summary>
@@ -241,6 +295,24 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
+    /// 进入快捷键录制状态, 由设置抽屉的热键按钮触发
+    /// </summary>
+    [RelayCommand]
+    private void BeginListenHotkey()
+    {
+        IsListeningHotkey = true;
+    }
+
+    /// <summary>
+    /// 手动检查更新, 由设置抽屉的检查更新按钮触发
+    /// </summary>
+    [RelayCommand]
+    private Task CheckForUpdatesAsync()
+    {
+        return _update.CheckForUpdatesAsync(manual: true);
+    }
+
+    /// <summary>
     /// 打开 GitHub 仓库地址, 由视图在点击链接时调用, 失败时通过 Toast 提示
     /// </summary>
     public void OpenGitHub()
@@ -265,5 +337,41 @@ public sealed partial class SettingsViewModel : ObservableObject
     public void RequestClose()
     {
         CloseRequested?.Invoke();
+    }
+
+    /// <summary>
+    /// 取消快捷键录制, 不改变设置, 由视图在 Esc/鼠标点击时调用
+    /// </summary>
+    public void CancelHotkeyListening()
+    {
+        IsListeningHotkey = false;
+    }
+
+    /// <summary>
+    /// 设置新的快捷键并退出录制, 由视图在监听到有效按键时调用
+    /// </summary>
+    /// <param name="key">新快捷键</param>
+    public void CompleteHotkeyCapture(Key key)
+    {
+        ShowIndexHotKey = key;
+        IsListeningHotkey = false;
+    }
+
+    /// <summary>
+    /// 清除快捷键并退出录制, 由视图在监听到 Back/Delete 时调用
+    /// </summary>
+    public void ClearHotkey()
+    {
+        ShowIndexHotKey = Key.None;
+        IsListeningHotkey = false;
+    }
+
+    /// <summary>
+    /// 提示按键不能用作快捷键, 由视图在监听到无效按键时调用
+    /// </summary>
+    /// <param name="key">无效按键</param>
+    public void NotifyDisallowedHotKey(Key key)
+    {
+        _toast.Show($"该按键 ({key}) 不能用作快捷键");
     }
 }

@@ -19,6 +19,7 @@
 - 🎨 **主题切换** — 跟随系统 / 浅色 / 深色, 即时生效并自动保存
 - ⚙️ **设置抽屉** — 主题 / Toast 时长与数量 / 日志级别 / 下载悬浮球即时配置, 手动检查更新与清除更新缓存, 关于信息 (游戏视图内呼出自动暂停)
 - 👋 **首次启动提示** — 首次启动展示欢迎信息与操作指引 (作者 / Esc 打开设置抽屉 / 种子雷区 / 自动更新说明), 展示后自动关闭
+- 🔢 **格子索引显示与复制** — 等待开始时按住热键显示全部格子索引 (松开隐藏), 首次点击格子可自动复制索引到剪贴板, 热键可在设置中录制
 - 🔄 **自动更新** — 启动时后台检查 GitHub 新版本, 断点续传下载并校验更新包完整性, 下载进度悬浮球与详情抽屉, 退出后引导更新失败自动回滚
 - 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
 - 🧩 **MVVM 模式** — 基于 CommunityToolkit.Mvvm 源代码生成器
@@ -57,6 +58,7 @@ MineClearance/
 ├── MineClearance.slnx                                #   解决方案文件 (.NET XML 格式)
 ├── README.md                                         #   本文档
 ├── RePublish.bat                                     #   Windows 清理构建脚本
+├── TagPush.bat                                       #   打 tag 并推送发布脚本 (校验版本/工作区/CHANGELOG)
 ├── srcs/
 │   ├── MineClearance.Core/                           # 核心层 — 领域模型、接口、枚举、领域服务
 │   │   ├── MineClearance.Core.csproj                 #   项目文件 (DI/Logging Abstractions 引用)
@@ -126,6 +128,7 @@ MineClearance/
 │       ├── AppMetadata.cs                            #   应用元数据 (AssemblyMetadata 读取)
 │       ├── Constants.cs                              #   UI 常量
 │       ├── EnumDescriptionConverter.cs               #   枚举描述转换器 ([Description] → 文本)
+│       ├── KeyExtensions.cs                          #   Key 按键扩展 (快捷键有效性校验)
 │       ├── Models/                                   #   UI 模型
 │       │   ├── DifficultyFilterOption.cs             #     难度筛选选项 (多选)
 │       │   ├── GameResultRow.cs                      #     游戏结果行 (显示文本/棋盘尺寸)

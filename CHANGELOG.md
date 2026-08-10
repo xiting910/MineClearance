@@ -9,6 +9,22 @@
 
 ## [Unreleased]
 
+**格子索引显示与复制**: 新增格子索引功能, 等待开始时按住可配置热键显示全部格子索引 (松开隐藏), 首次点击格子可自动复制索引到剪贴板并提示, 设置抽屉新增热键录制 (点击按钮后按键, Esc 取消, Backspace/Delete 清除, 系统保留键禁用).
+
+### Added
+
+- UI 层: KeyExtensions 按键有效性校验扩展 (IsValidHotKey, 排除功能键/Windows 键/状态锁定键/系统拦截键/IME 内部键)
+- UI 层: 格子索引显示功能 (UIOptions 新增 ShowIndexHotKey 热键配置, ShellWindow 等待开始时按住热键显示全部格子索引/松开隐藏, 游戏开始后强制隐藏, 格子模板新增不拦截指针的索引叠加层)
+- UI 层: 首点复制索引功能 (UIOptions 新增 CopyIndexOnFirstClick 开关默认关闭, 首次点击格子时写入系统剪贴板并 Toast 提示结果)
+- UI 层: 设置抽屉新增首点复制索引开关与显示索引热键录制按钮 (录制状态按钮文本变为 >键名<, 无效按键 Toast 提示)
+- 工程化: TagPush.bat 发布脚本 (校验 Git 仓库/工作区干净/版本号格式/tag 与 CHANGELOG 条目, 创建 tag 并推送触发 Release 发布)
+
+### Changed
+
+- UI 层: UIOptions 由主构造函数改为普通构造函数统一读取配置, 新增配置项持久化
+- UI 层: CellViewModel 构造函数参数顺序调整 (cell 在前), GameViewModel 棋盘订阅改为订阅字段管理 (替换棋盘时先退订旧棋盘)
+- UI 层: Cell / Shell / Main / History / Settings / Update 视图模型成员顺序按 VM 组织规则重排 (字段 → 属性 → 事件 → 构造函数 → 方法)
+
 ---
 
 ## [1.1.1] - 2026-08-10

@@ -20,7 +20,7 @@
       <!-- UI 配置 (主题/Toast 时长与数量/悬浮球) -->
       <TextBlock Text="UI 配置" FontWeight="Bold"
                  Foreground="{DynamicResource TitleForegroundBrush}"/>
-      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
         <TextBlock Text="主题:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
         <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
@@ -47,6 +47,17 @@
         <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowDownloadBall}"
                   Content="下载时在左下角显示进度悬浮球" VerticalAlignment="Center"
                   ToolTip.Tip="下载更新时是否在左下角显示进度悬浮球"/>
+        <TextBlock Grid.Row="4" Text="首点复制索引:" VerticalAlignment="Center"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+        <CheckBox Grid.Row="4" Grid.Column="1" IsChecked="{Binding CopyIndexOnFirstClick}"
+                  Content="首次点击格子时复制索引到剪贴板" VerticalAlignment="Center"
+                  ToolTip.Tip="游戏开始时首次点击的格子索引复制到剪贴板并提示"/>
+        <TextBlock Grid.Row="5" Text="显示索引快捷键:" VerticalAlignment="Center"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+        <Button Grid.Row="5" Grid.Column="1" Content="{Binding HotkeyButtonText}"
+                Command="{Binding BeginListenHotkeyCommand}" HorizontalAlignment="Stretch" Padding="12,6"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                ToolTip.Tip="点击后按下按键设置热键, Esc 取消, Backspace/Delete 清除, 游戏等待开始时按住显示格子索引"/>
       </Grid>
 
       <Separator/>

@@ -16,6 +16,10 @@ public sealed partial class SettingsView : UserControl
     public SettingsView()
     {
         InitializeComponent();
+
+        // 录制模式下使用 Tunnel 方向注册事件, 在内部控件 (按钮/复选框) 之前拦截按键与点击
+        AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
+        AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
     }
 
     /// <summary>
@@ -42,5 +46,46 @@ public sealed partial class SettingsView : UserControl
         {
             viewModel.OpenGitHub();
         }
+    }
+
+    /// <summary>
+    /// 录制模式下处理按键: Esc 取消, Back/Delete 清除, 无效键提示, 有效键设置
+    /// </summary>
+    /// <param name="sender">设置视图</param>
+    /// <param name="e">键盘事件参数</param>
+    private void OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (DataContext is not SettingsViewModel { IsListeningHotkey: true } viewModel) { return; }
+
+        e.Handled = true;
+
+        switch (e.Key)
+        {
+            case Key.Escape: viewModel.CancelHotkeyListening(); break;
+            case Key.Back or Key.Delete: viewModel.ClearHotkey(); break;
+            default:
+                if (e.Key.IsValidHotKey())
+                {
+                    viewModel.CompleteHotkeyCapture(e.Key);
+                }
+                else
+                {
+                    viewModel.NotifyDisallowedHotKey(e.Key);
+                }
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 录制模式下鼠标点击任意位置退出录制, 并拦截该次点击不落到其他控件
+    /// </summary>
+    /// <param name="sender">设置视图</param>
+    /// <param name="e">指针按下事件参数</param>
+    private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (DataContext is not SettingsViewModel { IsListeningHotkey: true } viewModel) { return; }
+
+        viewModel.CancelHotkeyListening();
+        e.Handled = true;
     }
 }

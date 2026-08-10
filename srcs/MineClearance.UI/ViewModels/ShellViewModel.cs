@@ -15,39 +15,19 @@ namespace MineClearance.UI.ViewModels;
 public sealed partial class ShellViewModel : ObservableObject
 {
     /// <summary>
-    /// 主视图模型
+    /// 因打开抽屉而暂停游戏的计数, 任一抽屉打开时累加, 全部关闭归零时恢复
     /// </summary>
-    public MainViewModel Main { get; }
+    private int _gamePauseCount;
 
     /// <summary>
-    /// 游戏视图模型
+    /// 首次因抽屉暂停前游戏是否已处于暂停状态, 关闭抽屉时据此避免取消用户原有的暂停
     /// </summary>
-    public GameViewModel Game { get; }
+    private bool _wasPausedBeforeDrawer;
 
     /// <summary>
-    /// 历史记录视图模型
+    /// 设置抽屉关闭动画的版本号, 防止过期的延迟隐藏任务误关重新打开的抽屉
     /// </summary>
-    public HistoryViewModel History { get; }
-
-    /// <summary>
-    /// 全局短暂提示视图模型
-    /// </summary>
-    public ToastViewModel Toast { get; }
-
-    /// <summary>
-    /// 更新视图模型, 负责更新流程与下载悬浮球/下载详情抽屉
-    /// </summary>
-    public UpdateViewModel Update { get; }
-
-    /// <summary>
-    /// 游戏视图透明度, 未显示时为 0 (透明常驻布局以便预热棋盘控件), 显示时为 1
-    /// </summary>
-    public double GameViewOpacity => IsGameViewVisible ? Constants.MaxRatio : 0;
-
-    /// <summary>
-    /// 历史记录视图透明度, 未显示时为 0 (透明常驻布局以便预热表格控件), 显示时为 1
-    /// </summary>
-    public double HistoryViewOpacity => IsHistoryViewVisible ? Constants.MaxRatio : 0;
+    private int _closeSettingsVersion;
 
     /// <summary>
     /// 当前可见的视图
@@ -122,24 +102,44 @@ public sealed partial class ShellViewModel : ObservableObject
     public partial double MaskOpacity { get; set; }
 
     /// <summary>
+    /// 主视图模型
+    /// </summary>
+    public MainViewModel Main { get; }
+
+    /// <summary>
+    /// 游戏视图模型
+    /// </summary>
+    public GameViewModel Game { get; }
+
+    /// <summary>
+    /// 历史记录视图模型
+    /// </summary>
+    public HistoryViewModel History { get; }
+
+    /// <summary>
+    /// 全局短暂提示视图模型
+    /// </summary>
+    public ToastViewModel Toast { get; }
+
+    /// <summary>
+    /// 更新视图模型, 负责更新流程与下载悬浮球/下载详情抽屉
+    /// </summary>
+    public UpdateViewModel Update { get; }
+
+    /// <summary>
+    /// 游戏视图透明度, 未显示时为 0 (透明常驻布局以便预热棋盘控件), 显示时为 1
+    /// </summary>
+    public double GameViewOpacity => IsGameViewVisible ? Constants.MaxRatio : 0;
+
+    /// <summary>
+    /// 历史记录视图透明度, 未显示时为 0 (透明常驻布局以便预热表格控件), 显示时为 1
+    /// </summary>
+    public double HistoryViewOpacity => IsHistoryViewVisible ? Constants.MaxRatio : 0;
+
+    /// <summary>
     /// 请求退出程序的事件, 由视图层关闭主窗口
     /// </summary>
     public event Action? ExitRequested;
-
-    /// <summary>
-    /// 因打开抽屉而暂停游戏的计数, 任一抽屉打开时累加, 全部关闭归零时恢复
-    /// </summary>
-    private int _gamePauseCount;
-
-    /// <summary>
-    /// 首次因抽屉暂停前游戏是否已处于暂停状态, 关闭抽屉时据此避免取消用户原有的暂停
-    /// </summary>
-    private bool _wasPausedBeforeDrawer;
-
-    /// <summary>
-    /// 设置抽屉关闭动画的版本号, 防止过期的延迟隐藏任务误关重新打开的抽屉
-    /// </summary>
-    private int _closeSettingsVersion;
 
     /// <summary>
     /// 创建壳视图模型
@@ -216,6 +216,67 @@ public sealed partial class ShellViewModel : ObservableObject
     {
         Main.RefreshSaveDataState();
         CurrentView = Main;
+    }
+
+    /// <summary>
+    /// 关闭设置抽屉: 抽屉滑出淡出, 动画结束后隐藏, 并恢复因打开抽屉而暂停的游戏
+    /// </summary>
+    public void CloseSettings()
+    {
+        // 未打开时忽略, 防止动画延迟期间的重复调用
+        if (!IsSettingsOpen) { return; }
+
+        IsSettingsOpen = false;
+        SettingsOpacity = 0;
+        SettingsSlideOffset = -SettingsDrawerWidth;
+        RefreshMask();
+
+        ResumeGameForDrawer();
+
+        _ = HideSettingsAfterAnimationAsync();
+    }
+
+    /// <summary>
+    /// 壳视图可用宽度变化时钳制各抽屉当前宽度, 防止抽屉超出壳视图范围 (窗口变窄时压缩, 变宽时保持用户拖动设定的宽度)
+    /// </summary>
+    /// <param name="availableWidth">壳视图当前可用宽度</param>
+    public void ClampDrawerWidths(double availableWidth)
+    {
+        if (SettingsDrawerWidth > availableWidth)
+        {
+            SettingsDrawerWidth = availableWidth;
+        }
+        if (Update.DrawerWidth > availableWidth)
+        {
+            Update.DrawerWidth = availableWidth;
+        }
+    }
+
+    /// <summary>
+    /// 处理 Esc 键: 下载抽屉可见时隐藏它, 否则交给设置抽屉的开关
+    /// </summary>
+    public void HandleEscapeKey()
+    {
+        if (Update.IsDrawerVisible)
+        {
+            Update.CloseDrawer();
+        }
+        else if (IsSettingsOpen)
+        {
+            CloseSettings();
+        }
+        else
+        {
+            OpenSettings();
+        }
+    }
+
+    /// <summary>
+    /// 启动更新流程, 由窗口首次打开时调用
+    /// </summary>
+    public void StartUpdateRoutine()
+    {
+        Update.StartUpdateRoutine();
     }
 
     /// <summary>
@@ -313,67 +374,6 @@ public sealed partial class ShellViewModel : ObservableObject
         Settings?.CloseRequested -= CloseSettings;
         Settings = null;
         RefreshMask();
-    }
-
-    /// <summary>
-    /// 关闭设置抽屉: 抽屉滑出淡出, 动画结束后隐藏, 并恢复因打开抽屉而暂停的游戏
-    /// </summary>
-    public void CloseSettings()
-    {
-        // 未打开时忽略, 防止动画延迟期间的重复调用
-        if (!IsSettingsOpen) { return; }
-
-        IsSettingsOpen = false;
-        SettingsOpacity = 0;
-        SettingsSlideOffset = -SettingsDrawerWidth;
-        RefreshMask();
-
-        ResumeGameForDrawer();
-
-        _ = HideSettingsAfterAnimationAsync();
-    }
-
-    /// <summary>
-    /// 壳视图可用宽度变化时钳制各抽屉当前宽度, 防止抽屉超出壳视图范围 (窗口变窄时压缩, 变宽时保持用户拖动设定的宽度)
-    /// </summary>
-    /// <param name="availableWidth">壳视图当前可用宽度</param>
-    public void ClampDrawerWidths(double availableWidth)
-    {
-        if (SettingsDrawerWidth > availableWidth)
-        {
-            SettingsDrawerWidth = availableWidth;
-        }
-        if (Update.DrawerWidth > availableWidth)
-        {
-            Update.DrawerWidth = availableWidth;
-        }
-    }
-
-    /// <summary>
-    /// 处理 Esc 键: 下载抽屉可见时隐藏它, 否则交给设置抽屉的开关
-    /// </summary>
-    public void HandleEscapeKey()
-    {
-        if (Update.IsDrawerVisible)
-        {
-            Update.CloseDrawer();
-        }
-        else if (IsSettingsOpen)
-        {
-            CloseSettings();
-        }
-        else
-        {
-            OpenSettings();
-        }
-    }
-
-    /// <summary>
-    /// 启动更新流程, 由窗口首次打开时调用
-    /// </summary>
-    public void StartUpdateRoutine()
-    {
-        Update.StartUpdateRoutine();
     }
 
     /// <summary>
