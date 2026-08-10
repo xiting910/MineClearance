@@ -39,7 +39,9 @@ rem 3. 从 Directory.Build.props 读取 Version 值
 echo.
 echo [3/7] 读取版本号...
 set "VER="
-for /f "tokens=2 delims=<>" %%a in ('findstr /r /c:"<Version>[^<]*</Version>" "%PROPS_FILE%"') do set "RAW=%%a"
+for /f "delims=" %%a in ('findstr /c:"<Version>" "%PROPS_FILE%"') do set "RAW=%%a"
+set "RAW=%RAW:*<Version>=%"
+set "RAW=%RAW:</Version>=%"
 set "VER=%RAW: =%"
 
 rem 校验版本号格式 (x.y.z)

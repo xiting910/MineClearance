@@ -13,6 +13,8 @@ public static class KeyExtensions
     /// </summary>
     private static readonly HashSet<Key> InvalidKeys =
     [
+        // Avalonia 内部保留键: 用于内部处理, 应用收不到按键事件
+        Key.Enter, Key.Return, Key.Space, Key.Tab,
         // 功能键: 录制模式拦截, 系统保留, 应用收不到按键事件
         Key.Back, Key.Delete, Key.Escape,
         // Windows 键: 切换系统状态, 应用收不到按键事件

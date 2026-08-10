@@ -12,13 +12,15 @@
       <views:MainView DataContext="{Binding Main}"/>
     </Panel>
 
-    <!-- 游戏视图常驻布局 (启动预热棋盘控件), 宿主层控制透明度与命中测试, 不绑定 IsVisible 以免跳过布局 -->
-    <Panel Opacity="{Binding GameViewOpacity}" IsHitTestVisible="{Binding IsGameViewVisible}">
+    <!-- 游戏视图常驻布局 (启动预热棋盘控件) -->
+    <Panel Opacity="{Binding GameViewOpacity}" IsHitTestVisible="{Binding IsGameViewVisible}"
+           IsEnabled="{Binding IsGameViewVisible}">
       <views:GameView DataContext="{Binding Game}"/>
     </Panel>
 
-    <!-- 历史记录视图常驻布局 (预热 DataGrid 等重控件), 通过透明度与命中测试控制可见与交互 -->
-    <Panel Opacity="{Binding HistoryViewOpacity}" IsHitTestVisible="{Binding IsHistoryViewVisible}">
+    <!-- 历史记录视图常驻布局 (预热 DataGrid 等重控件) -->
+    <Panel Opacity="{Binding HistoryViewOpacity}" IsHitTestVisible="{Binding IsHistoryViewVisible}"
+           IsEnabled="{Binding IsHistoryViewVisible}">
       <views:HistoryView DataContext="{Binding History}"/>
     </Panel>
 
