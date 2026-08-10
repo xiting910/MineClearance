@@ -232,13 +232,13 @@ public sealed partial class UpdateViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 刷新悬浮球可见性并处理配置关闭悬浮球时的抽屉兜底, 由设置抽屉切换开关时调用
+    /// 刷新悬浮球可见性并处理配置关闭悬浮球时的抽屉兜底, 由设置抽屉切换开关时调用, 下载中兜底弹出抽屉一次
     /// </summary>
     public void RefreshBallVisibility()
     {
         IsBallVisible = _updateService.State is UpdateState.Downloading && _uiOptions.ShowDownloadBall;
 
-        // 悬浮球被禁用时下载中自动弹出抽屉, 保证下载过程有可见反馈
+        // 悬浮球被禁用时, 如果正在下载中自动弹出抽屉, 保证下载过程有可见反馈
         if (!_uiOptions.ShowDownloadBall && _updateService.State is UpdateState.Downloading && !IsDrawerOpen)
         {
             IsDrawerOpen = true;
@@ -342,7 +342,7 @@ public sealed partial class UpdateViewModel : ObservableObject
             case UpdateState.NeedUpdate:
                 _toast.Show(
                     $"发现新版本 v{_updateService.LatestVersion}, 点击下载更新",
-                    () => _ = StartDownloadAsync()
+                    () => _ = _updateService.DownloadAsync(App.ExitCts.Token)
                 );
                 break;
 
@@ -381,8 +381,19 @@ public sealed partial class UpdateViewModel : ObservableObject
             _toast.Show("下载已取消");
             IsDrawerOpen = false;
         }
+        else if (previous is not UpdateState.Downloading && state is UpdateState.Downloading)
+        {
+            // 下载开始: 悬浮球被禁用时自动弹出抽屉一次, 进度更新不重复弹出
+            if (!_uiOptions.ShowDownloadBall && !IsDrawerOpen)
+            {
+                IsDrawerOpen = true;
+            }
+        }
 
-        // 刷新悬浮球填充与抽屉内容
+        // 刷新悬浮球可见性, 仅下载中且配置允许时显示
+        IsBallVisible = _updateService.State is UpdateState.Downloading && _uiOptions.ShowDownloadBall;
+
+        // 刷新抽屉内容
         if (state is UpdateState.Downloading)
         {
             BallFillHeight = (_updateService.ProgressPercentage ?? 0) / Constants.PercentBase * Constants.DownloadBallSize;
@@ -406,9 +417,6 @@ public sealed partial class UpdateViewModel : ObservableObject
             UpdateState.DownloadFailed => "下载失败",
             _ => string.Empty
         };
-
-        // 每次刷新统一更新悬浮球可见性, 取消/完成/失败后自动隐藏
-        RefreshBallVisibility();
     }
 
     /// <summary>
@@ -441,15 +449,6 @@ public sealed partial class UpdateViewModel : ObservableObject
 
         // 后台检查更新, 启动检查不提示已是最新
         await CheckForUpdatesAsync(manual: false);
-    }
-
-    /// <summary>
-    /// 开始下载更新, 仅在需要更新或下载失败状态下生效
-    /// </summary>
-    private async Task StartDownloadAsync()
-    {
-        if (_updateService.State is not (UpdateState.NeedUpdate or UpdateState.DownloadFailed)) { return; }
-        await _updateService.DownloadAsync(App.ExitCts.Token);
     }
 
     /// <summary>
