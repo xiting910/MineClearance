@@ -19,6 +19,14 @@ namespace MineClearance.UI.ViewModels;
 public sealed partial class SettingsViewModel : ObservableObject
 {
     /// <summary>
+    /// 日志文件夹完整路径
+    /// </summary>
+    public static string LogsFolderPath => Path.Combine(
+        Infrastructure.Constants.AppDataRootDirectory,
+        Infrastructure.Constants.LogDirectoryName
+    );
+
+    /// <summary>
     /// UI 配置
     /// </summary>
     private readonly UIOptions _uiOptions;
@@ -213,10 +221,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         {
             _ = Process.Start(new ProcessStartInfo
             {
-                FileName = Path.Combine(
-                    Infrastructure.Constants.AppDataRootDirectory,
-                    Infrastructure.Constants.LogDirectoryName
-                ),
+                FileName = LogsFolderPath,
                 UseShellExecute = true
             });
         }
@@ -224,6 +229,15 @@ public sealed partial class SettingsViewModel : ObservableObject
         {
             _toast.Show($"打开日志文件夹失败: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// 清除更新缓存, 由设置抽屉的清除缓存按钮触发
+    /// </summary>
+    [RelayCommand]
+    private void ClearUpdateCache()
+    {
+        _update.ClearUpdateCache();
     }
 
     /// <summary>

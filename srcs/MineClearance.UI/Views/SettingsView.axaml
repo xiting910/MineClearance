@@ -25,7 +25,7 @@
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
         <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
                   ItemsSource="{Binding Themes}" SelectedItem="{Binding Theme}"
-                  ToolTip.Tip="切换界面配色模式, 修改后立即生效并自动保存">
+                  ToolTip.Tip="切换界面配色模式">
           <ComboBox.ItemTemplate>
             <DataTemplate x:DataType="models:ThemeMode">
               <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
@@ -36,17 +36,17 @@
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
         <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding ToastDurationSeconds}"
                        Minimum="0" Maximum="20" Increment="0.5" FormatString="0.0"
-                       ToolTip.Tip="右下角提示的显示时间 (秒), 修改后立即生效并自动保存"/>
+                       ToolTip.Tip="右下角提示的显示时间 (秒)"/>
         <TextBlock Grid.Row="2" Text="Toast 数量:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
         <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding MaxToastCount}"
                        Minimum="1" Maximum="5" Increment="1" FormatString="0"
-                       ToolTip.Tip="右下角提示的同时显示最大条数, 修改后立即生效并自动保存"/>
+                       ToolTip.Tip="右下角提示的同时显示最大条数"/>
         <TextBlock Grid.Row="3" Text="下载悬浮球:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
         <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowDownloadBall}"
                   Content="下载时在左下角显示进度悬浮球" VerticalAlignment="Center"
-                  ToolTip.Tip="下载更新时在左下角显示进度悬浮球, 修改后立即生效并自动保存"/>
+                  ToolTip.Tip="下载更新时是否在左下角显示进度悬浮球"/>
       </Grid>
 
       <Separator/>
@@ -59,12 +59,12 @@
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
         <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
                   ItemsSource="{Binding Levels}" SelectedItem="{Binding Level}"
-                  ToolTip.Tip="写入日志文件的最低级别, 修改后立即生效并自动保存"/>
+                  ToolTip.Tip="写入日志文件的最低日志级别"/>
         <TextBlock Grid.Row="1" Text="操作:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
         <Button Grid.Row="1" Grid.Column="1" Content="打开日志文件夹" Command="{Binding OpenLogsFolderCommand}"
                 HorizontalAlignment="Stretch" Padding="12,6"
-                ToolTip.Tip="在文件资源管理器中打开日志文件夹"
+                ToolTip.Tip="{x:Static vm:SettingsViewModel.LogsFolderPath}"
                 Background="{DynamicResource PrimaryButtonBackgroundBrush}" Foreground="{DynamicResource PrimaryButtonForegroundBrush}"/>
       </Grid>
 
@@ -73,13 +73,17 @@
       <!-- 更新 -->
       <TextBlock Text="更新" FontWeight="Bold"
                  Foreground="{DynamicResource GreenLabelBrush}"/>
-      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-        <TextBlock Text="操作:" VerticalAlignment="Center"
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto" RowSpacing="8">
+        <TextBlock Grid.RowSpan="2" Text="操作:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
         <Button Grid.Column="1" Content="检查更新" Command="{Binding CheckForUpdatesCommand}"
                 HorizontalAlignment="Stretch" Padding="12,6"
                 ToolTip.Tip="检查 GitHub 上是否有新版本"
                 Background="{DynamicResource SuccessButtonBackgroundBrush}" Foreground="{DynamicResource SuccessButtonForegroundBrush}"/>
+        <Button Grid.Row="1" Grid.Column="1" Content="清除更新缓存" Command="{Binding ClearUpdateCacheCommand}"
+                HorizontalAlignment="Stretch" Padding="12,6"
+                ToolTip.Tip="更新过程中或者下载完成等待重启更新时请勿清理缓存"
+                Background="{DynamicResource AccentButtonBackgroundBrush}" Foreground="{DynamicResource AccentButtonForegroundBrush}"/>
       </Grid>
 
       <Separator/>

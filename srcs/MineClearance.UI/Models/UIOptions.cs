@@ -13,7 +13,9 @@ namespace MineClearance.UI.Models;
 public sealed class UIOptions(IConfiguration _configuration)
 #pragma warning restore CA1707
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// 主题模式
+    /// </summary>
     public ThemeMode Theme
     {
         get;
@@ -27,7 +29,9 @@ public sealed class UIOptions(IConfiguration _configuration)
         }
     } = GetThemeFromConfiguration(_configuration);
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Toast 提示显示时间 (秒)
+    /// </summary>
     public double ToastDurationSeconds
     {
         get;
@@ -41,7 +45,9 @@ public sealed class UIOptions(IConfiguration _configuration)
         }
     } = GetToastDurationFromConfiguration(_configuration);
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Toast 同时显示的最大条数
+    /// </summary>
     public int MaxToastCount
     {
         get;
@@ -55,7 +61,9 @@ public sealed class UIOptions(IConfiguration _configuration)
         }
     } = GetMaxToastCountFromConfiguration(_configuration);
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// 是否显示下载悬浮球
+    /// </summary>
     public bool ShowDownloadBall
     {
         get;
@@ -68,6 +76,22 @@ public sealed class UIOptions(IConfiguration _configuration)
             }
         }
     } = GetShowDownloadBallFromConfiguration(_configuration);
+
+    /// <summary>
+    /// 是否显示首次启动提示, 仅在首次启动时显示, 显示后自动设置为 false
+    /// </summary>
+    public bool ShowFirstLaunchTip
+    {
+        get;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                SaveToFile();
+            }
+        }
+    } = GetShowFirstLaunchTipFromConfiguration(_configuration);
 
     /// <summary>
     /// 从应用程序配置对象中获取主题模式
@@ -118,6 +142,17 @@ public sealed class UIOptions(IConfiguration _configuration)
     }
 
     /// <summary>
+    /// 从应用程序配置对象中获取是否显示首次启动提示
+    /// </summary>
+    /// <param name="configuration">应用程序配置对象</param>
+    /// <returns>是否显示首次启动提示</returns>
+    private static bool GetShowFirstLaunchTipFromConfiguration(IConfiguration configuration)
+    {
+        var section = configuration.GetSection(nameof(UIOptions));
+        return !bool.TryParse(section[nameof(ShowFirstLaunchTip)], out var show) || show;
+    }
+
+    /// <summary>
     /// 将当前配置保存到文件
     /// </summary>
     private void SaveToFile()
@@ -131,7 +166,8 @@ public sealed class UIOptions(IConfiguration _configuration)
                     [nameof(Theme)] = Theme.ToString(),
                     [nameof(ToastDurationSeconds)] = ToastDurationSeconds,
                     [nameof(MaxToastCount)] = MaxToastCount,
-                    [nameof(ShowDownloadBall)] = ShowDownloadBall
+                    [nameof(ShowDownloadBall)] = ShowDownloadBall,
+                    [nameof(ShowFirstLaunchTip)] = ShowFirstLaunchTip
                 }
             }.ToJsonString(Infrastructure.Constants.JsonSerializerOptions));
         }

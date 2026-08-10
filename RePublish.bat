@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 >nul
-title Clean and Build .NET Project
+title Clean and Build MineClearance Project
 
 echo ========================================================
-echo                .NET 项目清理和构建脚本
+echo               MineClearance 清理和发布脚本
 echo ========================================================
 
 echo.

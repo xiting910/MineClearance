@@ -7,6 +7,7 @@ using MineClearance.UI.Models;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace MineClearance.UI.ViewModels;
@@ -16,6 +17,26 @@ namespace MineClearance.UI.ViewModels;
 /// </summary>
 public sealed partial class UpdateViewModel : ObservableObject
 {
+    /// <summary>
+    /// 字节单位换算基数
+    /// </summary>
+    private const long BytesBase = 1024;
+
+    /// <summary>
+    /// 字节的单位数组
+    /// </summary>
+    private static readonly string[] BytesUnits = ["B", "KB", "MB", "GB"];
+
+    /// <summary>
+    /// 首次启动应用时的提示文本
+    /// </summary>
+    private static readonly string FirstLaunchTipText = $"欢迎使用 {nameof(MineClearance)}!\n" +
+        $"本程序由 {AppMetadata.Get(AppMetadata.AuthorKey)} 开发\n" +
+        "任意界面按下 Esc 键可打开设置抽屉\n" +
+        "支持通过设置种子来生成固定雷区, 但需要确保难度和首次点击位置一致\n" +
+        "应用启动时会自动检查更新, 发现新版本后可通过提示下载\n" +
+        $"应用的全部数据保存在 {Infrastructure.Constants.AppDataRootDirectory}";
+
     /// <summary>
     /// 更新服务, 其属性变化事件驱动界面刷新
     /// </summary>
@@ -305,6 +326,25 @@ public sealed partial class UpdateViewModel : ObservableObject
     }
 
     /// <summary>
+    /// 清除更新缓存, 由设置界面按钮触发, 失败时通过 Toast 提示
+    /// </summary>
+    public void ClearUpdateCache()
+    {
+        try
+        {
+            if (Directory.Exists(Infrastructure.Constants.UpdateDataDirectory))
+            {
+                Directory.Delete(Infrastructure.Constants.UpdateDataDirectory, recursive: true);
+            }
+            _toast.Show("更新缓存已清除");
+        }
+        catch (Exception ex)
+        {
+            _toast.Show($"清除更新缓存失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// 取消当前下载, 取消后状态机自动关闭抽屉并提示
     /// </summary>
     [RelayCommand]
@@ -331,6 +371,13 @@ public sealed partial class UpdateViewModel : ObservableObject
     /// </summary>
     private async Task RunStartupAsync()
     {
+        // 首次启动提示: 介绍自动更新功能, 展示后自动关闭该配置
+        if (_uiOptions.ShowFirstLaunchTip)
+        {
+            _toast.Show(FirstLaunchTipText);
+            _uiOptions.ShowFirstLaunchTip = false;
+        }
+
         // 读取上次更新信息并清理, 仅在有结果时提示, 失败时可点击打开日志目录查看
         var info = _updateService.GetLastUpdateInfoAndCleanUp();
 
@@ -451,14 +498,4 @@ public sealed partial class UpdateViewModel : ObservableObject
         }
         return $"{bytes:F2} {BytesUnits[unitIndex]}";
     }
-
-    /// <summary>
-    /// 字节的单位数组
-    /// </summary>
-    private static readonly string[] BytesUnits = ["B", "KB", "MB", "GB"];
-
-    /// <summary>
-    /// 字节单位换算基数
-    /// </summary>
-    private const long BytesBase = 1024;
 }

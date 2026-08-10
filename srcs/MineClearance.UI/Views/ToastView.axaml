@@ -42,7 +42,7 @@
           </Border.RenderTransform>
 
           <StackPanel Spacing="6">
-            <TextBlock Text="{Binding Feedback}" Foreground="White" FontSize="13" TextWrapping="Wrap" MaxWidth="400"/>
+            <TextBlock Text="{Binding Feedback}" Foreground="White" FontSize="13" TextWrapping="Wrap" MaxWidth="500"/>
 
             <!-- 剩余时间进度条: 前景条按剩余比例从满宽缩至零, 线性过渡补间保证平滑缩短, 鼠标悬停时倒计时暂停进度条也停住 -->
             <Border Height="3" CornerRadius="1.5" Background="#33FFFFFF">

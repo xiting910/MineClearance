@@ -9,6 +9,20 @@
 
 ## [Unreleased]
 
+**首次启动提示与更新维护**: 新增首次启动欢迎提示 (作者 / 操作指引 / 自动更新说明, 展示后自动关闭), 设置抽屉新增清除更新缓存按钮, 并优化 ToolTip 显示细节.
+
+### Added
+
+- UI 层: 首次启动欢迎提示 (UIOptions 新增 ShowFirstLaunchTip 配置默认开启, 启动时 Toast 展示作者 / Esc 设置抽屉 / 种子雷区 / 自动更新 / 数据目录指引, 展示后自动关闭配置并保存)
+- UI 层: 设置抽屉更新分组新增清除更新缓存按钮 (删除更新数据目录, 成功/失败 Toast 反馈, ToolTip 提醒更新过程中请勿清理)
+- UI 层: 全局 ToolTip 样式限制最大宽度 500, 日志文件夹按钮 ToolTip 直接显示日志文件夹实际路径
+
+### Changed
+
+- UI 层: UIOptions 各属性补充 XML 注释 (替换 inheritdoc), UpdateViewModel 字节单位常量与基数移至类顶部
+- UI 层: 设置项 ToolTip 文案精简 (移除"修改后立即生效并自动保存"赘述), Toast 文本最大宽度 400 提升至 500
+- 工程化: RePublish.bat 脚本标题与提示文案更新为 MineClearance 清理和发布脚本
+
 ---
 
 ## [1.1.0] - 2026-08-10
