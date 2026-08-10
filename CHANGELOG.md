@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.1.1] - 2026-08-10
+
 **首次启动提示与更新维护**: 新增首次启动欢迎提示 (作者 / 操作指引 / 自动更新说明, 展示后自动关闭), 设置抽屉新增清除更新缓存按钮, 并优化 ToolTip 显示细节.
 
 ### Added
@@ -159,6 +163,7 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.1
 [1.1.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.0
 [1.0.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.0.0
