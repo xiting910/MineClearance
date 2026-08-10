@@ -9,10 +9,11 @@
 
 ## [Unreleased]
 
-**Tab 导航与空格误触发修复**: 常驻隐藏视图 (游戏/历史) 宿主 Panel 新增 IsEnabled 可见性绑定, 隐藏时禁用控件, 防止 Tab 焦点导航错乱与空格误触发隐藏视图控件; 同时禁止空格/Tab/回车作为索引热键.
+**窗口交互修复**: 常驻隐藏视图 (游戏/历史) 宿主 Panel 新增 IsEnabled 可见性绑定, 隐藏时禁用控件, 防止 Tab 焦点导航错乱与空格误触发隐藏视图控件; 同时禁止空格/Tab/回车作为索引热键; 窗口位置钳制参数防护, 修复最大化时布局中断卡死.
 
 ### Fixed
 
+- UI 层: ShellWindow 位置钳制修复 (移除 WindowState 最大化跳过检查, Clamp 上界用 Math.Max 钳制到工作区边界, 修复最大化瞬间窗口尺寸先变全屏而状态未同步时 Math.Clamp 因上界小于下界抛 ArgumentException, 布局中断导致视图不缩放与窗口卡死)
 - UI 层: ShellView 游戏/历史视图宿主 Panel 新增 IsEnabled 可见性绑定 (隐藏时禁用控件, 防止 Tab 焦点导航进入隐藏视图与空格误触发隐藏视图控件, 不影响常驻布局预热)
 - UI 层: KeyExtensions 将 Enter/Return/Space/Tab 加入无效热键集合 (避免索引热键与按钮激活/焦点导航等内部按键行为冲突)
 - UI 层: 设置抽屉两处 ToolTip 文案精简

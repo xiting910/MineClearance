@@ -241,8 +241,6 @@ public sealed partial class ShellWindow : Window
     /// </summary>
     private void AdjustPositionToWorkingArea()
     {
-        if (WindowState is WindowState.Maximized) { return; }
-
         var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
         if (screen is null) { return; }
 
@@ -257,14 +255,16 @@ public sealed partial class ShellWindow : Window
         );
 
         var x = Math.Clamp(
-            Position.X,
-            workArea.X,
-            workArea.X + workArea.Width - frameSize.Width - Constants.WindowClampRightMargin
+            Position.X, workArea.X,
+            Math.Max(workArea.X,
+                workArea.X + workArea.Width - frameSize.Width - Constants.WindowClampRightMargin
+            )
         );
         var y = Math.Clamp(
-            Position.Y,
-            workArea.Y,
-            workArea.Y + workArea.Height - frameSize.Height - Constants.WindowClampBottomMargin
+            Position.Y, workArea.Y,
+            Math.Max(workArea.Y,
+                workArea.Y + workArea.Height - frameSize.Height - Constants.WindowClampBottomMargin
+            )
         );
 
         if (x == Position.X && y == Position.Y) { return; }
