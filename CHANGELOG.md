@@ -9,6 +9,17 @@
 
 ## [Unreleased]
 
+**更新服务接口去可空化重构**: IUpdateService 全部可空属性改为非空契约 (LatestVersion/Exception 未就绪时访问抛 InvalidOperationException, 其余属性以 0 为初始与哨兵值), 状态机各分支重排属性写入顺序 (异常与版本信息在状态通知前就绪, 检查失败重置版本信息而下载失败保留版本号供重试), 下载进度属性终态化 (开始/取消归零, 完成置 100% 与总大小, 失败速度归零), 百分比基数常量迁入基础设施层, UI 层移除属性断言与抽屉内容手动初始化, 抽屉内容完全由服务端属性驱动.
+
+### Changed
+
+- Infrastructure 层: IUpdateService 接口去可空化 (LatestVersion/Exception 改为非空契约, 未就绪访问抛 InvalidOperationException; TotalBytes/DownloadedBytes/ProgressPercentage/SpeedBytesPerSecond 改为非空值类型, 0 为初始与哨兵值)
+- Infrastructure 层: UpdateService 状态机属性写入顺序重排 (异常清空/记录先于状态通知, 检查失败重置下载地址/版本/总大小, 下载失败保留版本号供重试)
+- Infrastructure 层: 下载进度属性终态化 (下载开始与取消归零, 完成置 100% 与总大小, 失败速度归零), 完整包识别前置到下载入口
+- Infrastructure 层: 内部字段去可空化 (_currentVersion/_downloadUri 空串初始), 更新包临时文件路径提取为静态字段, 完整包校验改用哨兵值
+- UI 层: PercentBase 百分比基数常量由 UI 层迁入基础设施层 (服务端完成态百分比与 UI 统计行共用)
+- UI 层: UpdateViewModel 简化 (移除属性非空断言与抽屉内容手动初始化, 下载状态转换时同步刷新进度与大小文本, OpenUpdateLogFolder 改私有, 下载完成 Toast 文案调整)
+
 ---
 
 ## [1.1.6] - 2026-08-11

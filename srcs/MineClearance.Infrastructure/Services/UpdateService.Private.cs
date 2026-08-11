@@ -47,6 +47,12 @@ internal sealed partial class UpdateService
                 : throw new PlatformNotSupportedException("不支持的操作系统平台");
 
     /// <summary>
+    /// 更新包临时文件路径 (用于断点续传)
+    /// </summary>
+    private static readonly string _tempFilePath = Constants.UpdatePackageFilePath
+        + Constants.DownloadTempFileSuffix;
+
+    /// <summary>
     /// 检查更新使用的 <see cref="HttpClient"/> 实例
     /// </summary>
     private readonly HttpClient _httpClient = CreateHttpClient();
@@ -54,12 +60,12 @@ internal sealed partial class UpdateService
     /// <summary>
     /// 当前版本号
     /// </summary>
-    private string? _currentVersion;
+    private string _currentVersion = string.Empty;
 
     /// <summary>
     /// 下载地址
     /// </summary>
-    private string? _downloadUri;
+    private string _downloadUri = string.Empty;
 
     /// <summary>
     /// 当前下载服务实例, 用于取消下载
@@ -72,7 +78,7 @@ internal sealed partial class UpdateService
     /// <returns><see langword="true"/> 如果版本一致, 否则 <see langword="false"/></returns>
     private bool IsNewVersionFileMatch()
     {
-        return File.Exists(Constants.NewVersionFilePath) &&
+        return !string.IsNullOrEmpty(LatestVersion) && File.Exists(Constants.NewVersionFilePath) &&
             File.ReadAllText(Constants.NewVersionFilePath).Trim() == LatestVersion;
     }
 
@@ -82,10 +88,9 @@ internal sealed partial class UpdateService
     /// <returns><see langword="true"/> 如果更新包已下载完整, 否则 <see langword="false"/></returns>
     private bool IsUpdatePackageComplete()
     {
-        if (TotalBytes is not { } totalBytes) { return false; }
-        if (!IsNewVersionFileMatch()) { return false; }
+        if (TotalBytes == 0 || !IsNewVersionFileMatch()) { return false; }
         var file = new FileInfo(Constants.UpdatePackageFilePath);
-        return file.Exists && file.Length == totalBytes;
+        return file.Exists && file.Length == TotalBytes;
     }
 
     /// <summary>

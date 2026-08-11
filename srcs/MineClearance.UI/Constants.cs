@@ -23,11 +23,6 @@ public static class Constants
     public const double MaxRatio = 1.0;
 
     /// <summary>
-    /// 百分比基数, 用于百分比和比例的转换
-    /// </summary>
-    public const double PercentBase = 100.0;
-
-    /// <summary>
     /// 界面状态轮询刷新间隔 (毫秒), 用于游戏计时显示
     /// </summary>
     public const int UiRefreshIntervalMilliseconds = 250;

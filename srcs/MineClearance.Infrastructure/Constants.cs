@@ -148,4 +148,9 @@ public static class Constants
     /// 最大日志文件数量
     /// </summary>
     public const int MaxLogFiles = 5;
+
+    /// <summary>
+    /// 百分比基数, 用于百分比和比例的转换
+    /// </summary>
+    public const double PercentBase = 100.0;
 }

@@ -69,8 +69,10 @@ public struct StatsRowBuilder()
             DifficultyText: text,
             Games: _games,
             Wins: _wins,
-            WinRateText: _games == 0 ? EmptyStatsText : $"{_wins * Constants.PercentBase / _games:0.##}%",
-            WinRate: _games == 0 ? -1 : _wins * Constants.PercentBase / _games,
+            WinRateText: _games == 0
+                ? EmptyStatsText
+                : $"{_wins * Infrastructure.Constants.PercentBase / _games:0.##}%",
+            WinRate: _games == 0 ? -1 : _wins * Infrastructure.Constants.PercentBase / _games,
             AvgWinDurationText: _wins == 0
                 ? EmptyStatsText
                 : FormatTimeSpan(TimeSpan.FromTicks(_winTicks / _wins)),
@@ -79,7 +81,7 @@ public struct StatsRowBuilder()
             MinWinDuration: _wins == 0 ? null : TimeSpan.FromTicks(_minWinTicks),
             AvgCompletionText: losses == 0
                 ? EmptyStatsText
-                : $"{_lossCompletion / losses * Constants.PercentBase:0.##}%",
+                : $"{_lossCompletion / losses * Infrastructure.Constants.PercentBase:0.##}%",
             AvgCompletion: losses == 0 ? -1 : _lossCompletion / losses
         );
     }

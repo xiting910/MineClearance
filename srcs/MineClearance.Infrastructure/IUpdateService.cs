@@ -19,32 +19,34 @@ public interface IUpdateService : INotifyPropertyChanged, IDisposable
     /// <summary>
     /// 获取最新版本号
     /// </summary>
-    string? LatestVersion { get; }
+    /// <exception cref="InvalidOperationException">如果在检查最新版本之前访问此属性, 则抛出异常</exception>
+    string LatestVersion { get; }
 
     /// <summary>
     /// 获取总字节数
     /// </summary>
-    long? TotalBytes { get; }
+    long TotalBytes { get; }
 
     /// <summary>
     /// 获取当前已下载字节数
     /// </summary>
-    long? DownloadedBytes { get; }
+    long DownloadedBytes { get; }
 
     /// <summary>
     /// 获取当前下载进度百分比
     /// </summary>
-    double? ProgressPercentage { get; }
+    double ProgressPercentage { get; }
 
     /// <summary>
     /// 获取当前下载速度
     /// </summary>
-    double? SpeedBytesPerSecond { get; }
+    double SpeedBytesPerSecond { get; }
 
     /// <summary>
-    /// 发生的异常, 如果检查或下载失败则包含异常信息
+    /// 检查或下载失败时发生的异常
     /// </summary>
-    Exception? Exception { get; }
+    /// <exception cref="InvalidOperationException">如果在没有发生异常的情况下访问此属性, 则抛出异常</exception>
+    Exception Exception { get; }
 
     /// <summary>
     /// 获取上次更新的更新信息并清理残留

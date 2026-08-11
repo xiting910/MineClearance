@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using MineClearance.Infrastructure.Models;
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
@@ -34,13 +34,20 @@ internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IU
     }
 
     /// <inheritdoc/>
-    public string? LatestVersion { get; private set; }
+    [AllowNull]
+    public string LatestVersion
+    {
+        get => field ?? throw new InvalidOperationException(
+            $"{nameof(LatestVersion)} is not available before checking for updates."
+        );
+        private set;
+    }
 
     /// <inheritdoc/>
-    public long? TotalBytes { get; private set; }
+    public long TotalBytes { get; private set; }
 
     /// <inheritdoc/>
-    public long? DownloadedBytes
+    public long DownloadedBytes
     {
         get;
         private set
@@ -54,7 +61,7 @@ internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IU
     }
 
     /// <inheritdoc/>
-    public double? ProgressPercentage
+    public double ProgressPercentage
     {
         get;
         private set
@@ -68,7 +75,7 @@ internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IU
     }
 
     /// <inheritdoc/>
-    public double? SpeedBytesPerSecond
+    public double SpeedBytesPerSecond
     {
         get;
         private set
@@ -82,7 +89,14 @@ internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IU
     }
 
     /// <inheritdoc/>
-    public Exception? Exception { get; private set; }
+    [AllowNull]
+    public Exception Exception
+    {
+        get => field ?? throw new InvalidOperationException(
+            $"{nameof(Exception)} is not available when there is no exception."
+        );
+        private set;
+    }
 
     /// <inheritdoc/>
     public UpdateInfo? GetLastUpdateInfoAndCleanUp()
@@ -102,10 +116,12 @@ internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IU
             return;
         }
 
-        // 更新状态为检查中, 并清空异常信息
-        State = UpdateState.Checking;
+        // 清空异常信息, 并设置为检查中状态
         Exception = null;
+        State = UpdateState.Checking;
         LogCheckingForUpdates(author, repository, version);
+
+        // 保存当前版本号
         _currentVersion = version;
 
         try
@@ -129,12 +145,12 @@ internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IU
                 latestVersion = tagName.GetString()?.TrimStart('v');
             }
 
-            // 没有新版本: 清空最新版本信息并置为已是最新
+            // 没有新版本
             if (!IsNewerVersion(latestVersion, _currentVersion))
             {
-                LatestVersion = null;
-                _downloadUri = null;
-                TotalBytes = null;
+                _downloadUri = string.Empty;
+                LatestVersion = _currentVersion;
+                TotalBytes = 0;
                 State = UpdateState.UpToDate;
                 LogUpToDate(_currentVersion);
                 return;
@@ -170,9 +186,14 @@ internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IU
         }
         catch (Exception ex)
         {
-            // 检查更新失败: 设置为检查失败状态, 并记录异常信息
-            State = UpdateState.CheckFailed;
+            // 检查更新失败: 将各种状态重置为初始值
+            _downloadUri = string.Empty;
+            LatestVersion = null;
+            TotalBytes = 0;
+
+            // 记录异常信息, 并设置为检查失败状态
             Exception = ex;
+            State = UpdateState.CheckFailed;
             LogCheckingFailed(ex);
         }
     }
@@ -186,38 +207,32 @@ internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IU
             return;
         }
 
-        // 检查必要的前置条件: 最新版本号, 下载地址与总大小必须存在
-        Debug.Assert(_downloadUri is not null, "Download URI should not be null when downloading.");
-        Debug.Assert(LatestVersion is not null, "Latest version should not be null when downloading.");
-        Debug.Assert(TotalBytes is not null, "Total bytes should not be null when downloading.");
+        // 更新包已存在且大小与服务器资产一致: 无需重新下载, 直接完成 (恢复已完成的下载)
+        if (IsUpdatePackageComplete())
+        {
+            State = UpdateState.DownloadCompleted;
+            LogUpdatePackageAlreadyComplete(Constants.UpdatePackageFilePath);
+            return;
+        }
 
-        // 更新状态为下载中
+        // 重置异常并更新状态为下载中
+        Exception = null;
         State = UpdateState.Downloading;
 
-        // 重置进度信息与异常
-        DownloadedBytes = null;
-        ProgressPercentage = null;
-        SpeedBytesPerSecond = null;
-        Exception = null;
+        // 重置下载进度信息
+        DownloadedBytes = 0;
+        ProgressPercentage = 0;
+        SpeedBytesPerSecond = 0;
 
         try
         {
-            // 更新包已存在且大小与服务器资产一致: 无需重新下载, 直接完成 (恢复已完成的下载)
-            if (IsUpdatePackageComplete())
-            {
-                State = UpdateState.DownloadCompleted;
-                LogUpdatePackageAlreadyComplete(Constants.UpdatePackageFilePath);
-                return;
-            }
-
             // 确保更新数据目录存在
             _ = Directory.CreateDirectory(Constants.UpdateDataDirectory);
 
             // 存在断点文件时先校验版本标识: 与当前要下载的版本不一致时删除断点, 避免跨版本续传
-            var tempFilePath = Constants.UpdatePackageFilePath + Constants.DownloadTempFileSuffix;
-            if (File.Exists(tempFilePath) && !IsNewVersionFileMatch())
+            if (File.Exists(_tempFilePath) && !IsNewVersionFileMatch())
             {
-                File.Delete(tempFilePath);
+                File.Delete(_tempFilePath);
             }
 
             // 保存最新版本号到文件, 作为断点文件与完整更新包的版本标识
@@ -236,7 +251,7 @@ internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IU
             });
 
             // 存在断点文件时, Downloader 会自动从断点继续下载
-            if (File.Exists(tempFilePath))
+            if (File.Exists(_tempFilePath))
             {
                 LogResumingDownload(Constants.UpdatePackageFilePath);
             }
@@ -251,10 +266,13 @@ internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IU
                 _downloadUri, Constants.UpdatePackageFilePath, ct
             ).ConfigureAwait(false);
 
-            // 用户取消: 保留断点文件供下次续传, 回到需要更新状态
+            // 用户取消: 保留断点文件供下次续传, 回到需要更新状态, 并重置下载进度信息
             if (ct.IsCancellationRequested || _downloadService.IsCancelled)
             {
                 State = UpdateState.NeedUpdate;
+                DownloadedBytes = 0;
+                ProgressPercentage = 0;
+                SpeedBytesPerSecond = 0;
                 LogDownloadCancelled();
                 return;
             }
@@ -269,25 +287,32 @@ internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IU
             }
 
             State = UpdateState.DownloadCompleted;
+            DownloadedBytes = TotalBytes;
+            ProgressPercentage = Constants.PercentBase;
+            SpeedBytesPerSecond = 0;
             LogDownloadCompleted(LatestVersion);
         }
         catch (OperationCanceledException)
         {
             State = UpdateState.NeedUpdate;
+            DownloadedBytes = 0;
+            ProgressPercentage = 0;
+            SpeedBytesPerSecond = 0;
             LogDownloadCancelled();
         }
         catch (Exception ex)
         {
-            State = UpdateState.DownloadFailed;
+            SpeedBytesPerSecond = 0;
             Exception = ex;
+            State = UpdateState.DownloadFailed;
             LogDownloadFailed(ex);
         }
         finally
         {
-            _downloadService?.DownloadStarted -= OnDownloadStarted;
-            _downloadService?.DownloadProgressChanged -= OnDownloadProgressChanged;
             if (_downloadService is not null)
             {
+                _downloadService.DownloadStarted -= OnDownloadStarted;
+                _downloadService.DownloadProgressChanged -= OnDownloadProgressChanged;
                 await _downloadService.DisposeAsync().ConfigureAwait(false);
                 _downloadService = null;
             }
@@ -312,10 +337,6 @@ internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IU
     {
         if (State is UpdateState.DownloadCompleted)
         {
-            Debug.Assert(
-                !string.IsNullOrWhiteSpace(_currentVersion),
-                "Current version should not be null when performing bootstrap update."
-            );
             try
             {
                 BootstrapUpdateHelper.PrepareBootstrapUpdate(_currentVersion);

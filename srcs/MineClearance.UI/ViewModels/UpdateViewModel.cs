@@ -247,25 +247,6 @@ public sealed partial class UpdateViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 打开更新日志文件夹, 由上次更新失败的提示点击调用
-    /// </summary>
-    public void OpenUpdateLogFolder()
-    {
-        try
-        {
-            _ = Process.Start(new ProcessStartInfo
-            {
-                FileName = Infrastructure.Constants.UpdateDataDirectory,
-                UseShellExecute = true
-            });
-        }
-        catch (Exception ex)
-        {
-            _toast.Show($"打开更新日志文件夹失败: {ex.Message}");
-        }
-    }
-
-    /// <summary>
     /// 清除更新缓存, 由设置界面按钮触发, 失败时通过 Toast 提示
     /// </summary>
     public void ClearUpdateCache()
@@ -315,6 +296,25 @@ public sealed partial class UpdateViewModel : ObservableObject
     }
 
     /// <summary>
+    /// 打开更新日志文件夹, 由上次更新失败的提示点击调用
+    /// </summary>
+    private void OpenUpdateLogFolder()
+    {
+        try
+        {
+            _ = Process.Start(new ProcessStartInfo
+            {
+                FileName = Infrastructure.Constants.UpdateDataDirectory,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            _toast.Show($"打开更新日志文件夹失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// 处理更新服务的状态转换
     /// </summary>
     /// <param name="state">当前状态</param>
@@ -352,26 +352,16 @@ public sealed partial class UpdateViewModel : ObservableObject
                 break;
 
             case UpdateState.CheckFailed when isManualCheck:
-                Debug.Assert(
-                    _updateService.Exception is not null,
-                    "Exception should not be null when check failed."
-                );
                 _toast.Show($"检查更新失败: {_updateService.Exception.Message}");
                 break;
 
             case UpdateState.Downloading:
-                Debug.Assert(
-                    _updateService.LatestVersion is not null,
-                    "LatestVersion should not be null when downloading."
-                );
                 DrawerVersionText = $"v{_updateService.LatestVersion}";
-                DrawerProgress = 0;
-                DownloadedText = $"0.00 B / {FormatBytesValue(_updateService.TotalBytes ?? 0)}";
-                SpeedText = "0.00 B/s";
                 ExceptionText = string.Empty;
                 IsCancelVisible = true;
                 IsFailed = false;
                 StateText = "正在下载";
+                RefreshFromDownloadProgress(state);
                 if (_uiOptions.ShowDownloadBall) { IsBallVisible = true; }
                 else { IsDrawerOpen = true; }
                 break;
@@ -382,14 +372,10 @@ public sealed partial class UpdateViewModel : ObservableObject
                 StateText = "下载完成";
                 IsBallVisible = false;
                 IsDrawerOpen = false;
-                _toast.Show($"更新包已下载完成 (v{_updateService.LatestVersion}), 关闭应用后将自动更新");
+                _toast.Show($"更新包 (v{_updateService.LatestVersion})已下载完成, 关闭应用后将自动更新");
                 break;
 
             case UpdateState.DownloadFailed:
-                Debug.Assert(
-                    _updateService.Exception is not null,
-                    "Exception should not be null when download failed."
-                );
                 IsCancelVisible = false;
                 IsFailed = true;
                 StateText = "下载失败";
@@ -417,25 +403,12 @@ public sealed partial class UpdateViewModel : ObservableObject
     /// <param name="state">当前状态</param>
     private void RefreshFromDownloadProgress(UpdateState state)
     {
-        // 当前是否正在下载中
-        var isDownloading = state is UpdateState.Downloading;
-
-        // 刷新悬浮球可见性
-        IsBallVisible = _uiOptions.ShowDownloadBall && isDownloading;
-
-        // 刷新悬浮球填充高度, 仅下载中时显示进度
-        if (isDownloading)
-        {
-            var percentage = _updateService.ProgressPercentage ?? 0;
-            BallFillHeight = percentage / Constants.PercentBase * Constants.DownloadBallSize;
-        }
-
-        // 刷新抽屉内容的各种属性
-        DrawerProgress = (_updateService.ProgressPercentage ?? 0) / Constants.PercentBase;
-        DownloadedText = _updateService.TotalBytes is { } total
-            ? $"{FormatBytesValue(_updateService.DownloadedBytes ?? 0)} / {FormatBytesValue(total)}"
-            : string.Empty;
-        SpeedText = $"{FormatBytesValue(_updateService.SpeedBytesPerSecond ?? 0)}/s";
+        var percent = _updateService.ProgressPercentage / Infrastructure.Constants.PercentBase;
+        IsBallVisible = _uiOptions.ShowDownloadBall && state is UpdateState.Downloading;
+        BallFillHeight = percent * Constants.DownloadBallSize;
+        DrawerProgress = percent;
+        DownloadedText = $"{FormatBytesValue(_updateService.DownloadedBytes)} / {FormatBytesValue(_updateService.TotalBytes)}";
+        SpeedText = $"{FormatBytesValue(_updateService.SpeedBytesPerSecond)}/s";
     }
 
     /// <summary>
