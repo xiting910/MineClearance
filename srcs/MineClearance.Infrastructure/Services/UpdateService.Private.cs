@@ -11,6 +11,16 @@ namespace MineClearance.Infrastructure.Services;
 internal sealed partial class UpdateService
 {
     /// <summary>
+    /// 建立连接的超时时间 (秒)
+    /// </summary>
+    private const int ConnectTimeout = 5;
+
+    /// <summary>
+    /// 请求超时时间 (秒)
+    /// </summary>
+    private const int RequestTimeout = 30;
+
+    /// <summary>
     /// Windows 平台的更新包文件名
     /// </summary>
     private const string WindowsPackageFileName = $"{nameof(MineClearance)}-win-x64{Constants.ZipFileSuffix}";
@@ -26,24 +36,9 @@ internal sealed partial class UpdateService
     private const string OsxPackageFileName = $"{nameof(MineClearance)}-osx-x64{Constants.ZipFileSuffix}";
 
     /// <summary>
-    /// 建立连接的超时时间 (秒)
-    /// </summary>
-    private const int ConnectTimeout = 5;
-
-    /// <summary>
-    /// 请求超时时间 (秒)
-    /// </summary>
-    private const int RequestTimeout = 30;
-
-    /// <summary>
-    /// 检查更新使用的 <see cref="HttpClient"/> 实例
-    /// </summary>
-    private readonly HttpClient _httpClient = CreateHttpClient();
-
-    /// <summary>
     /// 当前平台的更新包文件名
     /// </summary>
-    private readonly string _targetName = OperatingSystem.IsWindows()
+    private static readonly string TargetName = OperatingSystem.IsWindows()
         ? WindowsPackageFileName
         : OperatingSystem.IsLinux()
             ? LinuxPackageFileName
@@ -52,9 +47,9 @@ internal sealed partial class UpdateService
                 : throw new PlatformNotSupportedException("不支持的操作系统平台");
 
     /// <summary>
-    /// 当前状态的后备 int 字段
+    /// 检查更新使用的 <see cref="HttpClient"/> 实例
     /// </summary>
-    private volatile int _state;
+    private readonly HttpClient _httpClient = CreateHttpClient();
 
     /// <summary>
     /// 当前版本号
@@ -70,36 +65,6 @@ internal sealed partial class UpdateService
     /// 当前下载服务实例, 用于取消下载
     /// </summary>
     private DownloadService? _downloadService;
-
-    /// <summary>
-    /// 尝试从 release 资产中查找当前平台更新包的下载地址与大小并更新
-    /// <see cref="_downloadUri"/> 与 <see cref="TotalBytes"/>
-    /// </summary>
-    /// <param name="root">release 信息根元素</param>
-    /// <returns><see langword="true"/> 如果找到更新包, 否则 <see langword="false"/></returns>
-    [MemberNotNullWhen(true, nameof(_downloadUri), nameof(TotalBytes))]
-    private bool TryFindUpdateAsset(JsonElement root)
-    {
-        if (root.TryGetProperty("assets", out var assets))
-        {
-            foreach (var asset in assets.EnumerateArray())
-            {
-                if (asset.TryGetProperty("name", out var name) && name.GetString() == _targetName &&
-                    asset.TryGetProperty("browser_download_url", out var downloadUrl))
-                {
-                    var urlString = downloadUrl.GetString();
-                    if (!string.IsNullOrWhiteSpace(urlString) &&
-                        asset.TryGetProperty("size", out var sizeProperty))
-                    {
-                        _downloadUri = urlString;
-                        TotalBytes = sizeProperty.GetInt64();
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
 
     /// <summary>
     /// 判断新版本号文件记录的版本与当前要下载的版本是否一致
@@ -158,6 +123,41 @@ internal sealed partial class UpdateService
             && Version.TryParse(current, out var currentVersion)
             ? latestVersion > currentVersion
             : string.Compare(latest, current, StringComparison.Ordinal) > 0;
+    }
+
+    /// <summary>
+    /// 尝试从 release 资产中查找并获取当前平台更新包的下载地址与大小
+    /// </summary>
+    /// <param name="root">release 信息根元素</param>
+    /// <param name="downloadUri">下载地址</param>
+    /// <param name="totalBytes">更新包总字节数</param>
+    /// <returns><see langword="true"/> 如果找到更新包, 否则 <see langword="false"/></returns>
+    private static bool TryFindUpdateAsset(
+        JsonElement root,
+        [MaybeNullWhen(false)] out string downloadUri,
+        [MaybeNullWhen(false)] out long totalBytes)
+    {
+        downloadUri = default;
+        totalBytes = default;
+        if (root.TryGetProperty("assets", out var assets))
+        {
+            foreach (var asset in assets.EnumerateArray())
+            {
+                if (asset.TryGetProperty("name", out var name) && name.GetString() == TargetName &&
+                    asset.TryGetProperty("browser_download_url", out var downloadUrl))
+                {
+                    var urlString = downloadUrl.GetString();
+                    if (!string.IsNullOrWhiteSpace(urlString) &&
+                        asset.TryGetProperty("size", out var sizeProperty))
+                    {
+                        downloadUri = urlString;
+                        totalBytes = sizeProperty.GetInt64();
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /// <summary>

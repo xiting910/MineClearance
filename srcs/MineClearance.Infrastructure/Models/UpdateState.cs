@@ -26,6 +26,11 @@ public enum UpdateState
     NeedUpdate,
 
     /// <summary>
+    /// 检查失败
+    /// </summary>
+    CheckFailed,
+
+    /// <summary>
     /// 下载中
     /// </summary>
     Downloading,

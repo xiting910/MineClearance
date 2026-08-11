@@ -232,14 +232,15 @@ public sealed partial class UpdateViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 刷新悬浮球可见性并处理配置关闭悬浮球时的抽屉兜底, 由设置抽屉切换开关时调用, 下载中兜底弹出抽屉一次
+    /// 刷新悬浮球可见性
     /// </summary>
     public void RefreshBallVisibility()
     {
-        IsBallVisible = _updateService.State is UpdateState.Downloading && _uiOptions.ShowDownloadBall;
+        var isDownloading = _updateService.State is UpdateState.Downloading;
+        IsBallVisible = _uiOptions.ShowDownloadBall && isDownloading;
 
         // 悬浮球被禁用时, 如果正在下载中自动弹出抽屉, 保证下载过程有可见反馈
-        if (!_uiOptions.ShowDownloadBall && _updateService.State is UpdateState.Downloading && !IsDrawerOpen)
+        if (!_uiOptions.ShowDownloadBall && isDownloading && !IsDrawerOpen)
         {
             IsDrawerOpen = true;
         }
@@ -289,37 +290,16 @@ public sealed partial class UpdateViewModel : ObservableObject
     /// <param name="manual">是否由用户手动触发</param>
     public async Task CheckForUpdatesAsync(bool manual)
     {
-        var state = _updateService.State;
-
-        // 正在检查中: 手动触发时提示
-        if (state is UpdateState.Checking)
+        // 如果已有检查或下载在进行中, 则不发起新请求, 手动检查时提示
+        switch (_updateService.State)
         {
-            if (manual) { _toast.Show("已经有更新检查在后台进行"); }
-            return;
-        }
+            case UpdateState.Checking:
+                if (manual) { _toast.Show("已有更新检查在后台进行"); }
+                return;
 
-        // 正在下载中: 手动触发时提示
-        if (state is UpdateState.Downloading)
-        {
-            if (manual) { _toast.Show("正在下载更新, 请稍候再检查"); }
-            return;
-        }
-
-        // 下载失败: 手动触发时提示, 点击可重新打开抽屉查看异常并重试
-        if (state is UpdateState.DownloadFailed)
-        {
-            if (manual)
-            {
-                _toast.Show("上次下载失败, 点击查看详情", () => IsDrawerOpen = true);
-            }
-            return;
-        }
-
-        // 下载完成: 手动触发时提示关闭应用后自动更新
-        if (state is UpdateState.DownloadCompleted)
-        {
-            if (manual) { _toast.Show("更新包已下载, 关闭应用后将自动更新"); }
-            return;
+            case UpdateState.Downloading:
+                if (manual) { _toast.Show("正在后台下载更新, 请稍候再检查"); }
+                return;
         }
 
         // 发起检查请求
@@ -330,93 +310,126 @@ public sealed partial class UpdateViewModel : ObservableObject
             App.ExitCts.Token
         );
 
-        // 按检查结果反馈
-        switch (_updateService.State)
+        // 请求完成后处理状态转换反馈
+        HandleStateTransition(_updateService.State, manual);
+    }
+
+    /// <summary>
+    /// 处理更新服务的状态转换
+    /// </summary>
+    /// <param name="state">当前状态</param>
+    /// <param name="isManualCheck">是否由用户手动触发检查更新</param>
+    private void HandleStateTransition(UpdateState state, bool isManualCheck)
+    {
+        var previous = _previousState;
+        if (state == _previousState) { return; }
+        _previousState = state;
+
+        // 处理状态转换反馈: 按当前状态匹配, 对依赖前一状态的分支用 when 过滤
+        switch (state)
         {
-            // 已是最新: 仅手动检查时提示
-            case UpdateState.UpToDate:
-                if (manual) { _toast.Show("已是最新版本"); }
+            case UpdateState.Idle or UpdateState.Checking:
                 break;
 
-            // 发现新版本: 提示并允许点击开始下载
-            case UpdateState.NeedUpdate:
+            case UpdateState.UpToDate when isManualCheck:
+                _toast.Show($"当前版本 v{AppMetadata.Get(AppMetadata.VersionKey)} 已是最新版本");
+                break;
+
+            case UpdateState.NeedUpdate when previous is UpdateState.Checking:
                 _toast.Show(
                     $"发现新版本 v{_updateService.LatestVersion}, 点击下载更新",
                     () => _ = _updateService.DownloadAsync(App.ExitCts.Token)
                 );
                 break;
 
-            // 检查失败: 提示异常信息
-            case UpdateState.Idle when _updateService.Exception is { } exception:
-                _toast.Show($"检查更新失败: {exception.Message}");
+            case UpdateState.NeedUpdate when previous is UpdateState.Downloading:
+                IsCancelVisible = false;
+                IsFailed = false;
+                StateText = "下载已取消";
+                IsBallVisible = false;
+                IsDrawerOpen = false;
+                _toast.Show("下载已取消");
+                break;
+
+            case UpdateState.CheckFailed when isManualCheck:
+                Debug.Assert(
+                    _updateService.Exception is not null,
+                    "Exception should not be null when check failed."
+                );
+                _toast.Show($"检查更新失败: {_updateService.Exception.Message}");
+                break;
+
+            case UpdateState.Downloading:
+                IsCancelVisible = true;
+                IsFailed = false;
+                StateText = "正在下载";
+                if (_uiOptions.ShowDownloadBall) { IsBallVisible = true; }
+                else { IsDrawerOpen = true; }
+                break;
+
+            case UpdateState.DownloadCompleted:
+                IsCancelVisible = false;
+                IsFailed = false;
+                StateText = "下载完成";
+                IsBallVisible = false;
+                IsDrawerOpen = false;
+                _toast.Show($"更新包已下载完成 (v{_updateService.LatestVersion}), 关闭应用后将自动更新");
+                break;
+
+            case UpdateState.DownloadFailed:
+                IsCancelVisible = false;
+                IsFailed = true;
+                StateText = "下载失败";
+                if (_uiOptions.ShowDownloadBall)
+                {
+                    IsBallVisible = false;
+                    Debug.Assert(
+                        _updateService.Exception is not null,
+                        "Exception should not be null when download failed."
+                    );
+                    _toast.Show(
+                        $"下载更新失败: {_updateService.Exception.Message}, 点击查看错误详情",
+                        () => IsDrawerOpen = true
+                    );
+                }
+                else
+                {
+                    IsDrawerOpen = true;
+                    _toast.Show("下载更新失败");
+                }
                 break;
         }
     }
 
     /// <summary>
-    /// 按服务当前状态刷新界面: 处理状态转换反馈并更新悬浮球与抽屉内容
+    /// 下载进度变化时刷新界面, 由服务属性变化事件触发, 高频事件合并刷新
     /// </summary>
-    private void RefreshFromService()
+    /// <param name="state">当前状态</param>
+    private void RefreshFromDownloadProgress(UpdateState state)
     {
-        var state = _updateService.State;
-        var previous = _previousState;
-        _previousState = state;
+        // 当前是否正在下载中
+        var isDownloading = state is UpdateState.Downloading;
 
-        // 下载失败: 直接按状态处理, 不依赖前一状态 (瞬间失败时 Downloading 可能被合并刷新跳过)
-        if (state is UpdateState.DownloadFailed)
+        // 刷新悬浮球可见性
+        IsBallVisible = _uiOptions.ShowDownloadBall && isDownloading;
+
+        // 刷新悬浮球填充高度, 仅下载中时显示进度
+        if (isDownloading)
         {
-            // 自动弹出抽屉显示异常, 点击 Toast 可随时找回抽屉
-            _toast.Show($"下载失败: {_updateService.Exception?.Message}", () => IsDrawerOpen = true);
-            IsDrawerOpen = true;
-        }
-        else if (state is UpdateState.DownloadCompleted)
-        {
-            // 下载完成: 关闭抽屉并提示关闭应用后自动更新
-            _toast.Show($"更新包下载完成 (v{_updateService.LatestVersion}), 关闭应用后将自动更新");
-            IsDrawerOpen = false;
-        }
-        else if (previous is UpdateState.Downloading && state is UpdateState.NeedUpdate)
-        {
-            // 用户取消: 关闭抽屉并提示
-            _toast.Show("下载已取消");
-            IsDrawerOpen = false;
-        }
-        else if (previous is not UpdateState.Downloading && state is UpdateState.Downloading)
-        {
-            // 下载开始: 悬浮球被禁用时自动弹出抽屉一次, 进度更新不重复弹出
-            if (!_uiOptions.ShowDownloadBall && !IsDrawerOpen)
-            {
-                IsDrawerOpen = true;
-            }
+            var percentage = _updateService.ProgressPercentage ?? 0;
+            BallFillHeight = percentage / Constants.PercentBase * Constants.DownloadBallSize;
         }
 
-        // 刷新悬浮球可见性, 仅下载中且配置允许时显示
-        IsBallVisible = _updateService.State is UpdateState.Downloading && _uiOptions.ShowDownloadBall;
-
-        // 刷新抽屉内容
-        if (state is UpdateState.Downloading)
-        {
-            BallFillHeight = (_updateService.ProgressPercentage ?? 0) / Constants.PercentBase * Constants.DownloadBallSize;
-        }
-        DrawerVersionText = $"v{_updateService.LatestVersion}";
+        // 刷新抽屉内容的各种属性
+        DrawerVersionText = _updateService.LatestVersion is not null
+            ? $"v{_updateService.LatestVersion}"
+            : string.Empty;
         DrawerProgress = (_updateService.ProgressPercentage ?? 0) / Constants.PercentBase;
         DownloadedText = _updateService.TotalBytes is { } total
-            ? _updateService.DownloadedBytes is { } downloaded
-                ? $"{FormatBytesValue(downloaded)} / {FormatBytesValue(total)}"
-                : $"未知 / {FormatBytesValue(total)}"
+            ? $"{FormatBytesValue(_updateService.DownloadedBytes ?? 0)} / {FormatBytesValue(total)}"
             : string.Empty;
-        SpeedText = _updateService.SpeedBytesPerSecond is { } speed
-            ? $"{FormatBytesValue(speed)}/s"
-            : string.Empty;
-        IsFailed = state is UpdateState.DownloadFailed;
-        ExceptionText = _updateService.Exception?.Message ?? string.Empty;
-        IsCancelVisible = state is UpdateState.Downloading;
-        StateText = state switch
-        {
-            UpdateState.Downloading => "正在下载",
-            UpdateState.DownloadFailed => "下载失败",
-            _ => string.Empty
-        };
+        SpeedText = $"{FormatBytesValue(_updateService.SpeedBytesPerSecond ?? 0)}/s";
+        ExceptionText = _updateService.Exception?.ToString() ?? string.Empty;
     }
 
     /// <summary>
@@ -474,11 +487,25 @@ public sealed partial class UpdateViewModel : ObservableObject
         if (_refreshPending) { return; }
         _refreshPending = true;
 
+        // 捕获当前状态, 避免刷新时状态已变化导致的错误
+        var state = _updateService.State;
+
         // 服务事件来自后台线程, 统一编组到 UI 线程刷新
         Dispatcher.UIThread.Post(() =>
         {
             _refreshPending = false;
-            RefreshFromService();
+            if (e.PropertyName is nameof(IUpdateService.State))
+            {
+                // 从检查中退出的状态变化应该由 CheckForUpdatesAsync 处理以正确区分手动检查与自动检查
+                if (_previousState is not UpdateState.Checking)
+                {
+                    HandleStateTransition(state, isManualCheck: false);
+                }
+            }
+            else
+            {
+                RefreshFromDownloadProgress(state);
+            }
         });
     }
 

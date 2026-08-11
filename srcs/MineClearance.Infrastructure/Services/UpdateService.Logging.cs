@@ -33,11 +33,23 @@ internal partial class UpdateService
     private partial void LogUpToDate(string version);
 
     /// <summary>
+    /// 记录更新包已存在的日志
+    /// </summary>
+    /// <param name="filePath">更新包文件路径</param>
+    [LoggerMessage(
+        EventId = 3,
+        EventName = "UpdatePackageAlreadyComplete",
+        Level = LogLevel.Information,
+        Message = "Update package already complete at {FilePath}."
+    )]
+    private partial void LogUpdatePackageAlreadyComplete(string filePath);
+
+    /// <summary>
     /// 记录发现新版本的日志
     /// </summary>
     /// <param name="latestVersion">最新版本号</param>
     [LoggerMessage(
-        EventId = 3,
+        EventId = 4,
         EventName = "FoundUpdate",
         Level = LogLevel.Information,
         Message = "Found new version {LatestVersion}."
@@ -49,7 +61,7 @@ internal partial class UpdateService
     /// </summary>
     /// <param name="exception">引发异常</param>
     [LoggerMessage(
-        EventId = 4,
+        EventId = 5,
         EventName = "CheckingFailed",
         Level = LogLevel.Warning,
         Message = "Checking for updates failed"
@@ -62,7 +74,7 @@ internal partial class UpdateService
     /// <param name="url">下载地址</param>
     /// <param name="filePath">保存文件路径</param>
     [LoggerMessage(
-        EventId = 5,
+        EventId = 6,
         EventName = "DownloadStarted",
         Level = LogLevel.Information,
         Message = "Downloading update from {Url} to {FilePath}."
@@ -74,7 +86,7 @@ internal partial class UpdateService
     /// </summary>
     /// <param name="latestVersion">最新版本号</param>
     [LoggerMessage(
-        EventId = 6,
+        EventId = 7,
         EventName = "DownloadCompleted",
         Level = LogLevel.Information,
         Message = "Download completed for version {LatestVersion}."
@@ -85,7 +97,7 @@ internal partial class UpdateService
     /// 记录下载取消的日志
     /// </summary>
     [LoggerMessage(
-        EventId = 7,
+        EventId = 8,
         EventName = "DownloadCancelled",
         Level = LogLevel.Information,
         Message = "Download cancelled"
@@ -97,24 +109,12 @@ internal partial class UpdateService
     /// </summary>
     /// <param name="exception">引发异常</param>
     [LoggerMessage(
-        EventId = 8,
+        EventId = 9,
         EventName = "DownloadFailed",
         Level = LogLevel.Warning,
         Message = "Downloading update failed"
     )]
     private partial void LogDownloadFailed(Exception exception);
-
-    /// <summary>
-    /// 记录更新包已存在直接完成的日志
-    /// </summary>
-    /// <param name="filePath">更新包文件路径</param>
-    [LoggerMessage(
-        EventId = 9,
-        EventName = "UpdatePackageAlreadyComplete",
-        Level = LogLevel.Information,
-        Message = "Update package already complete at {FilePath}, skipping download."
-    )]
-    private partial void LogUpdatePackageAlreadyComplete(string filePath);
 
     /// <summary>
     /// 记录从断点续传的日志

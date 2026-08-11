@@ -289,7 +289,7 @@ public sealed partial class HistoryViewModel : ObservableObject
         // 第二次点击: 执行清空
         _isClearConfirmed = false;
         ClearAllButtonText = "清空历史";
-        var ok = await _dataRepository.ClearGameResultsAsync(App.ExitCts.Token).ConfigureAwait(false);
+        var ok = await _dataRepository.ClearGameResultsAsync(App.ExitCts.Token);
         Refresh();
         _toast.Show(ok ? "历史记录已清空" : "清空历史失败");
     }

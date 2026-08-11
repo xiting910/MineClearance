@@ -9,6 +9,23 @@
 
 ## [Unreleased]
 
+**更新状态机修复**: 修复检查更新后状态死锁 (已是最新/需要更新等终态无法再次发起检查, 发布新版本后同运行期内检测不到), 新增检查失败状态显式反馈, 下载取消状态由下载续体按真实结果收尾 (修复取消瞬间下载完成时状态被覆盖导致引导更新不执行), 历史记录清空后刷新回归 UI 线程.
+
+### Fixed
+
+- Infrastructure 层: 检查更新状态机修复 (检查入口放宽为仅拦截检查中/下载中, 已是最新/需要更新/下载失败/检查失败等状态均可重新发起检查; 取消检查恢复之前状态; DownloadCompleted 状态下检查且本地更新包完整时保持下载完成)
+- Infrastructure 层: 下载取消竞态修复 (CancelDownload 仅发送取消请求, 状态由下载续体按真实结果收尾, 修复取消瞬间下载完成时状态被覆盖为需要更新导致引导更新不执行的问题)
+- UI 层: 历史记录清空后刷新回归 UI 线程 (移除 ClearGameResultsAsync 的 ConfigureAwait(false), 续体回到 UI 线程执行 Refresh 与 Toast, 避免跨线程更新界面)
+
+### Changed
+
+- Infrastructure 层: UpdateState 新增 CheckFailed 检查失败状态 (检查失败从隐式的空闲+异常改为显式状态, UI 手动检查失败提示基于该状态)
+- Infrastructure 层: State 状态属性改为 Interlocked 原子读写 (原子读与交换+事件去重, 移除 CAS 门控与 volatile 后备字段; 检查与下载方法续体统一 ConfigureAwait(false), 服务不依赖调用方线程)
+- Infrastructure 层: TryFindUpdateAsset 纯函数化 (out 参数返回下载地址与大小并附加 MaybeNullWhen 流分析注解, TargetName 改为静态只读字段)
+- Infrastructure 层: LatestVersion / TotalBytes 移除属性变化通知 (UI 消费点均为事件驱动的同步读取, 减少无谓刷新)
+- Infrastructure 层: 更新日志事件 ID 重排 (UpdatePackageAlreadyComplete 由 9 移至 3, 与事件分组顺序对应)
+- UI 层: UpdateViewModel 状态反馈重构 (状态转换反馈与进度刷新分离为 HandleStateTransition / RefreshFromDownloadProgress, 事件按属性名路由; 检查反馈统一由检查方法按手动/自动区分, 下载失败按悬浮球开关分流提示)
+
 ---
 
 ## [1.1.3] - 2026-08-11
