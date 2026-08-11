@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.1.7] - 2026-08-11
+
 **更新服务接口去可空化重构**: IUpdateService 全部可空属性改为非空契约 (LatestVersion/Exception 未就绪时访问抛 InvalidOperationException, 其余属性以 0 为初始与哨兵值), 状态机各分支重排属性写入顺序 (异常与版本信息在状态通知前就绪, 检查失败重置版本信息而下载失败保留版本号供重试), 下载进度属性终态化 (开始/取消归零, 完成置 100% 与总大小, 失败速度归零), 百分比基数常量迁入基础设施层, UI 层移除属性断言与抽屉内容手动初始化, 抽屉内容完全由服务端属性驱动.
 
 ### Changed
@@ -261,7 +265,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.6...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.7...HEAD
+[1.1.7]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.7
 [1.1.6]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.6
 [1.1.5]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.5
 [1.1.4]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.4
