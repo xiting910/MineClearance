@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.1.8] - 2026-08-11
+
 **游戏结束状态漏洞与低分屏棋盘适配修复**: 修复游戏失败/胜利后暂停按钮仍可点击, 继续后可继续操作已结束游戏 (甚至可将失败局继续完成并覆盖结果为胜利) 的问题, 暂停命令增加 CanExecute 终局条件; 修复低分辨率屏幕下大师棋盘超出窗口无法完整查看的问题, 棋盘外层增加滚动容器, 窗口最小尺寸按屏幕工作区钳制上限, 位置钳制边距统一为逻辑像素语义.
 
 ### Fixed
@@ -277,7 +281,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.7...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.8...HEAD
+[1.1.8]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.8
 [1.1.7]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.7
 [1.1.6]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.6
 [1.1.5]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.5
