@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.1.6] - 2026-08-11
+
 **下载抽屉内容初始化修复**: 进入下载/下载失败状态时立即更新抽屉内容 (版本/进度/已下载/速度/异常文本), 不再依赖首次进度或属性变化事件刷新, 修复抽屉打开瞬间版本文本为空或残留上次下载异常文本的问题.
 
 ### Fixed
@@ -246,7 +250,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.5...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.6...HEAD
+[1.1.6]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.6
 [1.1.5]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.5
 [1.1.4]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.4
 [1.1.3]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.3
