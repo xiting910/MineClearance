@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.1.4] - 2026-08-11
+
 **更新状态机修复**: 修复检查更新后状态死锁 (已是最新/需要更新等终态无法再次发起检查, 发布新版本后同运行期内检测不到), 新增检查失败状态显式反馈, 下载取消状态由下载续体按真实结果收尾 (修复取消瞬间下载完成时状态被覆盖导致引导更新不执行), 历史记录清空后刷新回归 UI 线程.
 
 ### Fixed
@@ -219,7 +223,10 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.4...HEAD
+[1.1.4]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.4
+[1.1.3]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.3
+[1.1.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.2
 [1.1.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.1
 [1.1.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.0
 [1.0.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.0.0
