@@ -19,11 +19,6 @@ namespace MineClearance.UI.ViewModels;
 public sealed partial class HistoryViewModel : ObservableObject
 {
     /// <summary>
-    /// 空统计行文本, 用于无数据时显示
-    /// </summary>
-    private const string EmptyStatsText = "--";
-
-    /// <summary>
     /// 游戏数据存储库, 用于读取与修改游戏结果记录
     /// </summary>
     private readonly IGameDataRepository _dataRepository;
@@ -32,6 +27,11 @@ public sealed partial class HistoryViewModel : ObservableObject
     /// 全局短暂提示视图模型
     /// </summary>
     private readonly ToastViewModel _toast;
+
+    /// <summary>
+    /// 上次刷新时的数据指纹, 数据未变化时跳过重建
+    /// </summary>
+    private (int Count, GameResult? First) _lastFingerprint;
 
     /// <summary>
     /// 全部结果行 (未筛选未排序)
@@ -300,6 +300,9 @@ public sealed partial class HistoryViewModel : ObservableObject
     public void Refresh()
     {
         var results = _dataRepository.GameResults;
+        var fingerprint = (results.Count, results.Count > 0 ? results[0] : null);
+        if (fingerprint == _lastFingerprint) { return; }
+        _lastFingerprint = fingerprint;
         TotalSummaryText = $"共 {results.Count} 局游戏, 胜利 {results.Count(static result => result.IsWin)} 局";
         _allStats = [.. CreateStatsRows(results)];
         ApplyStatsSort();
@@ -457,78 +460,39 @@ public sealed partial class HistoryViewModel : ObservableObject
     /// <returns>统计行集合</returns>
     private static IReadOnlyList<StatsRow> CreateStatsRows(IReadOnlyList<GameResult> results)
     {
-        return
-        [
-            CreateStats("全部", results),
-            CreateStats(
-                GameDifficulty.Beginner.GetDescription(),
-                results.Where(static result => result.Difficulty is GameDifficulty.Beginner)
-            ),
-            CreateStats(
-                GameDifficulty.Intermediate.GetDescription(),
-                results.Where(static result => result.Difficulty is GameDifficulty.Intermediate)
-            ),
-            CreateStats(
-                GameDifficulty.Expert.GetDescription(),
-                results.Where(static result => result.Difficulty is GameDifficulty.Expert)
-            ),
-            CreateStats(
-                GameDifficulty.Master.GetDescription(),
-                results.Where(static result => result.Difficulty is GameDifficulty.Master)
-            ),
-            CreateStats(
-                GameDifficulty.Custom.GetDescription(),
-                results.Where(static result => result.Difficulty is GameDifficulty.Custom)
-            )
+        StatsRowBuilder all, beginner, intermediate, expert, master, custom;
+        all = beginner = intermediate = expert = master = custom = new();
+
+        foreach (var result in results)
+        {
+            all.Add(result);
+            switch (result.Difficulty)
+            {
+                case GameDifficulty.Beginner:
+                    beginner.Add(result);
+                    break;
+                case GameDifficulty.Intermediate:
+                    intermediate.Add(result);
+                    break;
+                case GameDifficulty.Expert:
+                    expert.Add(result);
+                    break;
+                case GameDifficulty.Master:
+                    master.Add(result);
+                    break;
+                case GameDifficulty.Custom:
+                    custom.Add(result);
+                    break;
+            }
+        }
+
+        return [
+            all.ToRow("全部"),
+            beginner.ToRow(GameDifficulty.Beginner.GetDescription()),
+            intermediate.ToRow(GameDifficulty.Intermediate.GetDescription()),
+            expert.ToRow(GameDifficulty.Expert.GetDescription()),
+            master.ToRow(GameDifficulty.Master.GetDescription()),
+            custom.ToRow(GameDifficulty.Custom.GetDescription())
         ];
-    }
-
-    /// <summary>
-    /// 计算一组游戏结果的汇总统计
-    /// </summary>
-    /// <param name="text">难度范围文本</param>
-    /// <param name="results">该组的游戏结果</param>
-    /// <returns>统计行</returns>
-    private static StatsRow CreateStats(string text, IEnumerable<GameResult> results)
-    {
-        var list = results.ToList();
-        var wins = list.Where(static result => result.IsWin).ToList();
-        var losses = list.Where(static result => !result.IsWin).ToList();
-
-        TimeSpan? avgWinDuration = wins.Count == 0 ? null : TimeSpan.FromTicks((long)wins.Average(static result => result.Duration.Ticks));
-        TimeSpan? minWinDuration = wins.Count == 0 ? null : wins.Min(static result => result.Duration);
-        double? avgCompletion = losses.Count == 0 ? null : losses.Average(static result => result.Completion!.Value);
-
-        return new(
-            DifficultyText: text,
-            Games: list.Count,
-            Wins: wins.Count,
-            WinRateText: list.Count == 0
-                ? EmptyStatsText
-                : $"{wins.Count * Constants.PercentBase / list.Count:0.##}%",
-            WinRate: list.Count == 0 ? -1 : wins.Count * Constants.PercentBase / list.Count,
-            AvgWinDurationText: avgWinDuration is null
-                ? EmptyStatsText
-                : FormatTimeSpan(avgWinDuration.Value),
-            AvgWinDuration: avgWinDuration,
-            MinWinDurationText: minWinDuration is null
-                ? EmptyStatsText
-                : FormatTimeSpan(minWinDuration.Value),
-            MinWinDuration: minWinDuration,
-            AvgCompletionText: avgCompletion is null
-                ? EmptyStatsText
-                : $"{avgCompletion.Value * Constants.PercentBase:0.##}%",
-            AvgCompletion: avgCompletion ?? -1
-        );
-    }
-
-    /// <summary>
-    /// 格式化统计用时为 MM:SS
-    /// </summary>
-    /// <param name="time">用时</param>
-    /// <returns>格式化后的文本</returns>
-    private static string FormatTimeSpan(TimeSpan time)
-    {
-        return $"{(int)time.TotalMinutes:00}:{time.Seconds:00}";
     }
 }

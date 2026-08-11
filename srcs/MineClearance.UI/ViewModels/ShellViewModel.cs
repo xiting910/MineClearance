@@ -1,4 +1,3 @@
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
@@ -288,12 +287,12 @@ public sealed partial class ShellViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 切换到历史记录视图, 游戏结果数据延迟到空闲时刷新, 避免同步重建造成卡顿
+    /// 切换到历史记录视图
     /// </summary>
     private void ShowHistoryView()
     {
         CurrentView = History;
-        Dispatcher.UIThread.Post(History.Refresh, DispatcherPriority.Background);
+        History.Refresh();
     }
 
     /// <summary>

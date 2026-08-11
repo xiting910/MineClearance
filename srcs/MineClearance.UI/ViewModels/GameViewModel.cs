@@ -226,13 +226,19 @@ public sealed partial class GameViewModel : ObservableObject
     /// 行数变化时通知棋盘像素高度
     /// </summary>
     /// <param name="value">新的行数</param>
-    partial void OnRowsChanged(int value) => OnPropertyChanged(nameof(BoardPixelHeight));
+    partial void OnRowsChanged(int value)
+    {
+        OnPropertyChanged(nameof(BoardPixelHeight));
+    }
 
     /// <summary>
     /// 列数变化时通知棋盘像素宽度
     /// </summary>
     /// <param name="value">新的列数</param>
-    partial void OnColumnsChanged(int value) => OnPropertyChanged(nameof(BoardPixelWidth));
+    partial void OnColumnsChanged(int value)
+    {
+        OnPropertyChanged(nameof(BoardPixelWidth));
+    }
 
     /// <summary>
     /// 索引显示状态变化时同步所有格子的索引可见性

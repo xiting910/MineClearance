@@ -136,6 +136,7 @@ MineClearance/
 │       │   ├── ResultFilterOption.cs                 #     结果筛选选项 (全部/胜利/失败)
 │       │   ├── SortKeys.cs                           #     统计表格排序键常量
 │       │   ├── StatsRow.cs                           #     统计行 (难度范围汇总统计)
+│       │   ├── StatsRowBuilder.cs                    #     统计行构建器 (单次遍历累积统计)
 │       │   ├── ThemeMode.cs                          #     主题模式枚举 (跟随系统/浅色/深色)
 │       │   ├── ToastItem.cs                          #     Toast 提示条目 (剩余进度/悬停暂停/点击回调)
 │       │   └── UIOptions.cs                          #     UI 配置 (setter 变化自动保存)
