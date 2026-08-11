@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.1.5] - 2026-08-11
+
 **历史记录视图卡顿修复**: 点击进入历史记录视图时 UI 冻结半秒, 根因为 Background 优先级的延迟刷新仍在视图切换渲染前同步执行全量重建; 改为切换后同步刷新, Refresh 新增数据指纹 (记录数与首条记录引用) 数据未变化时跳过重建, 统计聚合改为单次遍历累积 (新增 StatsRowBuilder, 移除多次全量遍历与 ToList 分配), 反复进出历史视图零开销.
 
 ### Fixed
@@ -235,7 +239,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.4...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.5...HEAD
+[1.1.5]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.5
 [1.1.4]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.4
 [1.1.3]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.3
 [1.1.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.2
