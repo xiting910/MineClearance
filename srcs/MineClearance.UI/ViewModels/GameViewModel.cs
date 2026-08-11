@@ -52,6 +52,11 @@ public sealed partial class GameViewModel : ObservableObject
     private IGameBoardDictionary? _subscribedBoard;
 
     /// <summary>
+    /// 是否允许切换暂停状态, 游戏结束后不允许暂停或继续
+    /// </summary>
+    private bool CanTogglePause => !IsGameEnded;
+
+    /// <summary>
     /// 固定大小的格子视图模型池, 按最大棋盘行列排列只创建一次, 通过可见性复用
     /// </summary>
     [ObservableProperty]
@@ -130,9 +135,10 @@ public sealed partial class GameViewModel : ObservableObject
     public partial bool IsPaused { get; set; }
 
     /// <summary>
-    /// 是否已结束
+    /// 是否已结束, 变化时同步刷新暂停命令可用性
     /// </summary>
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(PauseResumeCommand))]
     public partial bool IsGameEnded { get; set; }
 
     /// <summary>
@@ -278,9 +284,9 @@ public sealed partial class GameViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 暂停或继续当前游戏
+    /// 暂停或继续当前游戏, 游戏结束时不可用
     /// </summary>
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanTogglePause))]
     private void PauseResume()
     {
         var game = _gameManager.Game;

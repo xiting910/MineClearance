@@ -95,58 +95,61 @@
       <!-- 棋盘区与暂停覆盖层, 靠近信息栏下方居中 -->
       <Panel>
 
-        <Border Margin="16" Padding="8" CornerRadius="8"
-                Background="{DynamicResource CardBackgroundBrush}"
-                BorderBrush="{DynamicResource SeparatorBrush}" BorderThickness="1"
-                HorizontalAlignment="Center" VerticalAlignment="Top"
-                MaxWidth="1500">
-          <ItemsControl x:Name="BoardItemsControl" ItemsSource="{Binding Cells}"
-                        Width="{Binding BoardPixelWidth}" Height="{Binding BoardPixelHeight}"
-                        PointerPressed="OnBoardPointerPressed"
-                        PointerMoved="OnBoardPointerMoved"
-                        PointerReleased="OnBoardPointerReleased">
-            <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                <Canvas/>
-              </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <!-- 容器定位: Canvas 只读取直接子元素 (容器) 的布局参数, 故 Canvas.Left/Top 与可见性绑定在容器主题上 -->
-            <ItemsControl.ItemContainerTheme>
-              <ControlTheme TargetType="ContentPresenter">
-                <Setter Property="Canvas.Left" Value="{Binding X, x:DataType=vm:CellViewModel}"/>
-                <Setter Property="Canvas.Top" Value="{Binding Y, x:DataType=vm:CellViewModel}"/>
-                <Setter Property="IsVisible" Value="{Binding IsVisible, x:DataType=vm:CellViewModel}"/>
-              </ControlTheme>
-            </ItemsControl.ItemContainerTheme>
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:CellViewModel">
-                <Grid Width="{x:Static shared:Constants.CellSize}" Height="{x:Static shared:Constants.CellSize}">
-                  <Border Background="{Binding Background}" BorderBrush="#00000022" BorderThickness="1"/>
-                  <!-- 悬停高亮层, 指针悬停时叠加半透明橙色 -->
-                  <Border>
-                    <Border.Styles>
-                      <Style Selector="Border">
-                        <Setter Property="Background" Value="Transparent"/>
-                      </Style>
-                      <Style Selector="Border:pointerover">
-                        <Setter Property="Background" Value="#40FF8F00"/>
-                      </Style>
-                    </Border.Styles>
-                  </Border>
-                  <TextBlock Text="{Binding DisplayText}" Foreground="{Binding Foreground}"
-                             FontWeight="Bold" FontSize="15" IsHitTestVisible="False"
-                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                  <!-- 索引叠加层, 等待开始时按住热键显示, 不拦截指针保持点击行为不变 -->
-                  <TextBlock Text="{Binding IndexText}" IsVisible="{Binding ShowIndex}" IsHitTestVisible="False"
-                             FontSize="11" Foreground="#4B5563" FontWeight="Bold"
-                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                </Grid>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </Border>
+        <!-- 棋盘滚动容器: 窗口小于棋盘时出现滚动条, 低分辨率屏幕下仍可查看完整棋盘 -->
+        <ScrollViewer Margin="16" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+          <Border Padding="8" CornerRadius="8"
+                  Background="{DynamicResource CardBackgroundBrush}"
+                  BorderBrush="{DynamicResource SeparatorBrush}" BorderThickness="1"
+                  HorizontalAlignment="Center" VerticalAlignment="Top"
+                  MaxWidth="1500">
+            <ItemsControl x:Name="BoardItemsControl" ItemsSource="{Binding Cells}"
+                          Width="{Binding BoardPixelWidth}" Height="{Binding BoardPixelHeight}"
+                          PointerPressed="OnBoardPointerPressed"
+                          PointerMoved="OnBoardPointerMoved"
+                          PointerReleased="OnBoardPointerReleased">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <Canvas/>
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <!-- 容器定位: Canvas 只读取直接子元素的布局参数, 故 Canvas.Left/Top 与可见性绑定在容器主题上 -->
+              <ItemsControl.ItemContainerTheme>
+                <ControlTheme TargetType="ContentPresenter">
+                  <Setter Property="Canvas.Left" Value="{Binding X, x:DataType=vm:CellViewModel}"/>
+                  <Setter Property="Canvas.Top" Value="{Binding Y, x:DataType=vm:CellViewModel}"/>
+                  <Setter Property="IsVisible" Value="{Binding IsVisible, x:DataType=vm:CellViewModel}"/>
+                </ControlTheme>
+              </ItemsControl.ItemContainerTheme>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:CellViewModel">
+                  <Grid Width="{x:Static shared:Constants.CellSize}" Height="{x:Static shared:Constants.CellSize}">
+                    <Border Background="{Binding Background}" BorderBrush="#00000022" BorderThickness="1"/>
+                    <!-- 悬停高亮层, 指针悬停时叠加半透明橙色 -->
+                    <Border>
+                      <Border.Styles>
+                        <Style Selector="Border">
+                          <Setter Property="Background" Value="Transparent"/>
+                        </Style>
+                        <Style Selector="Border:pointerover">
+                          <Setter Property="Background" Value="#40FF8F00"/>
+                        </Style>
+                      </Border.Styles>
+                    </Border>
+                    <TextBlock Text="{Binding DisplayText}" Foreground="{Binding Foreground}"
+                               FontWeight="Bold" FontSize="15" IsHitTestVisible="False"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <!-- 索引叠加层, 等待开始时按住热键显示, 不拦截指针保持点击行为不变 -->
+                    <TextBlock Text="{Binding IndexText}" IsVisible="{Binding ShowIndex}" IsHitTestVisible="False"
+                               FontSize="11" Foreground="#4B5563" FontWeight="Bold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Border>
+        </ScrollViewer>
 
-        <!-- 暂停覆盖层, 只覆盖棋盘区域, 顶部信息栏按钮保持可点击 -->
+        <!-- 暂停覆盖层, 覆盖整个棋盘视口, 顶部信息栏按钮保持可点击 -->
         <Border IsVisible="{Binding IsPaused}" Background="#B3000000" Margin="16" CornerRadius="8">
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
             <TextBlock Text="⏸ 已暂停" FontSize="36" FontWeight="Bold" Foreground="White"

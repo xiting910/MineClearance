@@ -38,16 +38,6 @@ public static class Constants
     public const int DrawerAnimationDurationMilliseconds = 200;
 
     /// <summary>
-    /// 窗口钳制到工作区时的右边额外留边距
-    /// </summary>
-    public const int WindowClampRightMargin = 20;
-
-    /// <summary>
-    /// 窗口钳制到工作区时的底部额外留边距
-    /// </summary>
-    public const int WindowClampBottomMargin = 60;
-
-    /// <summary>
     /// Toast 提示入场偏移 (像素), 新提示从下方滑入时使用的初始位移
     /// </summary>
     public const double ToastEnterOffset = 16;
@@ -68,32 +58,42 @@ public static class Constants
     public const double DownloadBallSize = 48;
 
     /// <summary>
-    /// 最小窗口宽度的额外值
+    /// 窗口钳制到工作区时的右边额外留边距
+    /// </summary>
+    public const double WindowClampRightMargin = 8;
+
+    /// <summary>
+    /// 窗口钳制到工作区时的底部额外留边距
+    /// </summary>
+    public const double WindowClampBottomMargin = 30;
+
+    /// <summary>
+    /// 游戏视图最小宽度的额外值
     /// </summary>
     public const double GameViewMinWidthExtra = 50;
 
     /// <summary>
-    /// 最小窗口高度的额外值
+    /// 游戏视图最小高度的额外值
     /// </summary>
     public const double GameViewMinHeightExtra = 100;
 
     /// <summary>
-    /// 主视图最小窗口宽度
+    /// 主视图最小宽度
     /// </summary>
     public const double MainViewMinWidth = 700;
 
     /// <summary>
-    /// 主视图最小窗口高度
+    /// 主视图最小高度
     /// </summary>
     public const double MainViewMinHeight = 500;
 
     /// <summary>
-    /// 历史记录视图最小窗口宽度
+    /// 历史记录视图最小宽度
     /// </summary>
     public const double HistoryViewMinWidth = 1000;
 
     /// <summary>
-    /// 历史记录视图最小窗口高度
+    /// 历史记录视图最小高度
     /// </summary>
     public const double HistoryViewMinHeight = 600;
 

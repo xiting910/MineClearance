@@ -214,26 +214,39 @@ public sealed partial class ShellWindow : Window
     }
 
     /// <summary>
-    /// 应用固定的最小窗口宽高
+    /// 游戏视图可见时按当前棋盘尺寸更新最小窗口宽高
+    /// </summary>
+    private void UpdateMinSizeIfInGameView()
+    {
+        if (DataContext is not ShellViewModel { IsGameViewVisible: true } viewModel) { return; }
+
+        var minWidth = viewModel.Game.BoardPixelWidth + Constants.GameViewMinWidthExtra;
+        var minHeight = viewModel.Game.BoardPixelHeight + Constants.GameViewMinHeightExtra;
+
+        ApplyMinSize(minWidth, minHeight);
+    }
+
+    /// <summary>
+    /// 应用固定的最小窗口宽高, 并按当前屏幕工作区钳制最大值, 保证窗口完整可见
     /// </summary>
     /// <param name="minWidth">最小宽度</param>
     /// <param name="minHeight">最小高度</param>
     private void ApplyMinSize(double minWidth, double minHeight)
     {
-        MinWidth = minWidth;
-        MinHeight = minHeight;
-    }
-
-    /// <summary>
-    /// 游戏视图可见时按当前棋盘尺寸更新最小窗口宽高
-    /// </summary>
-    private void UpdateMinSizeIfInGameView()
-    {
-        if (DataContext is ShellViewModel { IsGameViewVisible: true } viewModel)
+        var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
+        if (screen is null)
         {
-            MinWidth = viewModel.Game.BoardPixelWidth + Constants.GameViewMinWidthExtra;
-            MinHeight = viewModel.Game.BoardPixelHeight + Constants.GameViewMinHeightExtra;
+            MinWidth = minWidth;
+            MinHeight = minHeight;
+            return;
         }
+
+        MinWidth = Math.Min(
+            minWidth, (screen.WorkingArea.Width / screen.Scaling) - Constants.WindowClampRightMargin
+        );
+        MinHeight = Math.Min(
+            minHeight, (screen.WorkingArea.Height / screen.Scaling) - Constants.WindowClampBottomMargin
+        );
     }
 
     /// <summary>
@@ -245,28 +258,23 @@ public sealed partial class ShellWindow : Window
         if (screen is null) { return; }
 
         var workArea = screen.WorkingArea;
+        var frameSize = PixelSize.FromSize(ClientSize, screen.Scaling);
 
-        var frameSize = PixelSize.FromSize(
-            new(
-                ClientSize.Width + WindowDecorationMargin.Left + WindowDecorationMargin.Right,
-                ClientSize.Height + WindowDecorationMargin.Top + WindowDecorationMargin.Bottom
-            ),
-            screen.Scaling
-        );
+        var clampRightMargin = (int)(Constants.WindowClampRightMargin * screen.Scaling);
+        var clampBottomMargin = (int)(Constants.WindowClampBottomMargin * screen.Scaling);
 
         var x = Math.Clamp(
             Position.X, workArea.X,
-            Math.Max(workArea.X,
-                workArea.X + workArea.Width - frameSize.Width - Constants.WindowClampRightMargin
+            Math.Max(
+                workArea.X, workArea.X + workArea.Width - frameSize.Width - clampRightMargin
             )
         );
         var y = Math.Clamp(
             Position.Y, workArea.Y,
-            Math.Max(workArea.Y,
-                workArea.Y + workArea.Height - frameSize.Height - Constants.WindowClampBottomMargin
+            Math.Max(
+                workArea.Y, workArea.Y + workArea.Height - frameSize.Height - clampBottomMargin
             )
         );
-
         if (x == Position.X && y == Position.Y) { return; }
 
         _isAdjustingPosition = true;
