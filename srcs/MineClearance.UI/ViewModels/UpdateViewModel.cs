@@ -360,6 +360,15 @@ public sealed partial class UpdateViewModel : ObservableObject
                 break;
 
             case UpdateState.Downloading:
+                Debug.Assert(
+                    _updateService.LatestVersion is not null,
+                    "LatestVersion should not be null when downloading."
+                );
+                DrawerVersionText = $"v{_updateService.LatestVersion}";
+                DrawerProgress = 0;
+                DownloadedText = $"0.00 B / {FormatBytesValue(_updateService.TotalBytes ?? 0)}";
+                SpeedText = "0.00 B/s";
+                ExceptionText = string.Empty;
                 IsCancelVisible = true;
                 IsFailed = false;
                 StateText = "正在下载";
@@ -377,16 +386,17 @@ public sealed partial class UpdateViewModel : ObservableObject
                 break;
 
             case UpdateState.DownloadFailed:
+                Debug.Assert(
+                    _updateService.Exception is not null,
+                    "Exception should not be null when download failed."
+                );
                 IsCancelVisible = false;
                 IsFailed = true;
                 StateText = "下载失败";
+                ExceptionText = _updateService.Exception.ToString();
                 if (_uiOptions.ShowDownloadBall)
                 {
                     IsBallVisible = false;
-                    Debug.Assert(
-                        _updateService.Exception is not null,
-                        "Exception should not be null when download failed."
-                    );
                     _toast.Show(
                         $"下载更新失败: {_updateService.Exception.Message}, 点击查看错误详情",
                         () => IsDrawerOpen = true
@@ -421,15 +431,11 @@ public sealed partial class UpdateViewModel : ObservableObject
         }
 
         // 刷新抽屉内容的各种属性
-        DrawerVersionText = _updateService.LatestVersion is not null
-            ? $"v{_updateService.LatestVersion}"
-            : string.Empty;
         DrawerProgress = (_updateService.ProgressPercentage ?? 0) / Constants.PercentBase;
         DownloadedText = _updateService.TotalBytes is { } total
             ? $"{FormatBytesValue(_updateService.DownloadedBytes ?? 0)} / {FormatBytesValue(total)}"
             : string.Empty;
         SpeedText = $"{FormatBytesValue(_updateService.SpeedBytesPerSecond ?? 0)}/s";
-        ExceptionText = _updateService.Exception?.ToString() ?? string.Empty;
     }
 
     /// <summary>
