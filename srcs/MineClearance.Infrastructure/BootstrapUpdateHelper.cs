@@ -174,6 +174,8 @@ public static class BootstrapUpdateHelper
             return 6;
         }
 
+        // 目标可执行文件路径
+        var targetExecutablePath = Path.Combine(originalDirectory, executableName);
         try
         {
             // 执行更新操作
@@ -185,7 +187,7 @@ public static class BootstrapUpdateHelper
                 // 如果用户进行了重命名, 将更新包导出的原始可执行文件重命名为用户自定义的可执行文件名
                 File.Move(
                     Path.Combine(originalDirectory, Constants.OriginalExecutableName),
-                    Path.Combine(originalDirectory, executableName),
+                    targetExecutablePath,
                     overwrite: true
                 );
             }
@@ -236,7 +238,7 @@ public static class BootstrapUpdateHelper
             _ = Process.Start(new ProcessStartInfo
             {
                 WorkingDirectory = originalDirectory,
-                FileName = Path.Combine(originalDirectory, executableName)
+                FileName = targetExecutablePath
             });
 
             // 返回成功退出码

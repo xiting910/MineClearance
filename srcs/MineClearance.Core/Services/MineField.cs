@@ -136,17 +136,4 @@ internal sealed class MineField(IMineGenerator _mineGenerator) : IMineField
         // 返回该位置是否是地雷
         return _adjacentMineCounts[position.ToIndex(_columns)] == Constants.MineValue;
     }
-
-    /// <inheritdoc/>
-    public int GetAdjacentMineCount(Position position)
-    {
-        // 如果地雷场尚未生成, 则抛出异常
-        if (_adjacentMineCounts is null)
-        {
-            throw new InvalidOperationException(MineFieldNotGeneratedMessage);
-        }
-
-        // 返回该位置周围的地雷数量
-        return _adjacentMineCounts[position.ToIndex(_columns)];
-    }
 }

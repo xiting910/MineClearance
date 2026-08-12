@@ -9,6 +9,13 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Core 层: IGameTimer 接口精简 (移除 INotifyPropertyChanged 继承与 IsRunning/Refresh/ReStart 无消费成员, 计时器显示改由 UI 轮询 Elapsed 驱动; GameTimer 实现同步移除事件通知, 字段初始化替代构造函数)
+- Core 层: IMineField 移除 GetAdjacentMineCount 无消费成员 (生产侧相邻雷数统一经 Cell.AdjacentMineCount 读取; MineField 实现同步移除)
+- UI 层: GameViewModel 计时刷新移除 Timer.Refresh() 调用 (轮询直接读取 Elapsed)
+- Infrastructure 层: BootstrapUpdateHelper 目标可执行文件路径提取为局部变量复用 (File.Move 与 Process.Start 共用同一路径表达式)
+
 ---
 
 ## [1.1.9] - 2026-08-12

@@ -75,7 +75,7 @@ MineClearance/
 │   │   │   ├── IGameDataRepository.cs                #     游戏数据仓储接口
 │   │   │   ├── IGameFactory.cs                       #     游戏工厂接口 (internal)
 │   │   │   ├── IGameManager.cs                       #     游戏管理器接口
-│   │   │   ├── IGameTimer.cs                         #     游戏计时器接口 (INotifyPropertyChanged)
+│   │   │   ├── IGameTimer.cs                         #     游戏计时器接口
 │   │   │   ├── IMineField.cs                         #     地雷场接口 (internal)
 │   │   │   ├── IMineGenerator.cs                     #     地雷生成器接口 (internal)
 │   │   │   └── ISolvabilityChecker.cs                #     可解性检查器接口 (internal)

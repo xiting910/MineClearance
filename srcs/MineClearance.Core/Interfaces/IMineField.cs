@@ -46,12 +46,4 @@ internal interface IMineField
     /// <returns><see langword="true"/> 如果指定位置是地雷, 否则返回 <see langword="false"/></returns>
     /// <exception cref="InvalidOperationException">如果地雷场尚未生成, 则抛出该异常</exception>
     bool IsMine(Position position);
-
-    /// <summary>
-    /// 获取指定位置周围的地雷数量
-    /// </summary>
-    /// <param name="position">要查询的格子位置</param>
-    /// <returns>指定位置周围的地雷数量</returns>
-    /// <exception cref="InvalidOperationException">如果地雷场尚未生成, 则抛出该异常</exception>
-    int GetAdjacentMineCount(Position position);
 }

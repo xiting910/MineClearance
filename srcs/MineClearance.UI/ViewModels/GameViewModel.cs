@@ -606,8 +606,6 @@ public sealed partial class GameViewModel : ObservableObject
     {
         var game = _gameManager.Game;
         if (game is null) { return; }
-
-        game.Timer.Refresh();
         TimeText = FormatTime(game.Timer.Elapsed);
     }
 
