@@ -9,6 +9,14 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- 工程化: .gitignore TestResults 忽略规则调整 (TestResults/ 整目录忽略改为 TestResults/* 并放行 !TestResults/*.trx, 使 dorny/test-reporter 能解析 PR 生成的 trx 测试报告, 修复 No test report files were found)
+
+### Changed
+
+- 工程化: Release 发布说明移除 .NET 10 运行时安装要求 (publish 指定 runtime 为自包含发布, 下载对应平台 zip 解压即可运行)
+
 ---
 
 ## [1.1.8] - 2026-08-11

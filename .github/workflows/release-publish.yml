@@ -209,15 +209,13 @@ jobs:
 
             ###  下载
 
-            需先安装 [.NET 10 运行时](https://dotnet.microsoft.com/download/dotnet/10.0) 才能运行此应用。
-
             | 平台 | 文件 |
             |------|------|
             | 🪟 Windows x64 | `${{ env.APP_NAME }}-win-x64.zip` |
             | 🐧 Linux x64 | `${{ env.APP_NAME }}-linux-x64.zip` |
             | 🍎 macOS x64 | `${{ env.APP_NAME }}-osx-x64.zip` |
 
-            在 .NET 10.0 运行时已安装的情况下，下载对应平台的 zip 包，解压后运行其中的可执行文件即可。
+            下载对应平台的 zip 包，解压后运行其中的可执行文件即可。
 
             ### 🔗 链接
 

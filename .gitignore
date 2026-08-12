@@ -16,7 +16,8 @@ publish/
 
 # .NET
 *.nupkg
-TestResults/
+TestResults/*
+!TestResults/*.trx
 
 # 操作系统
 .DS_Store
