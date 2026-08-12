@@ -13,12 +13,16 @@
 
 - 测试: Core 层单元测试新增 9 组 (Game / GameManager / GameBoardDictionary / MineField / GameConfig / GameResult / GameSaveData / GameTimer / Position, 覆盖状态机流转、格子操作、胜负判定、地雷布局生成、相邻雷数计算、存档与结果校验、计时与位置计算)
 - 测试: Infrastructure 层单元测试新增 8 组 (BootstrapUpdateHelper / Constants / FileLoggerOptions / FileLoggerProvider / GameDataRepository / ServiceRegistration / UpdateService, 覆盖引导更新参数解析与残留清理、数据目录重定向、日志级别配置解析与持久化、日志级别过滤与内容写入、存档与结果记录的加载/保存/删除/清空、服务注册行为、更新服务状态守卫与检查/下载状态机流转)
+- 测试: UI 层单元测试新增 11 组 (AppMetadata / Constants / GameResultRow / HistoryViewModel / KeyExtensions / MainViewModel / SettingsViewModel / StatsRowBuilder / ToastItem / UIOptions / UpdateViewModel, 覆盖应用元数据读取、设置文件路径重定向、游戏结果行显示文本格式化、历史记录统计聚合与筛选排序、热键有效性校验、主视图难度参数联动与开始/继续/导航、设置项配置同步与热键录制、统计行胜率用时聚合、Toast 倒计时与悬停暂停与点击回调、UI 配置解析钳制与持久化、更新视图模型状态反馈与悬浮球/抽屉/缓存清理)
 - 测试: 程序集级测试夹具 TestEnvironmentFixture (AssemblyFixture 注册, 通过环境变量将数据根目录重定向到临时目录, 结束后恢复并清理; 文件系统测试禁用并行避免测试间文件冲突)
 - 工程化: Directory.Build.props 为非测试项目添加 DynamicProxyGenAssembly2 InternalsVisibleTo (允许 Moq 动态代理程序集模拟内部类型)
 
 ### Changed
 
 - 测试: 全部测试类的 XML 文档注释类名/方法名纯文本引用改为 `<see cref="..."/>` 引用 (Core 9 组 + Infrastructure 7 组, IDE 内可点击跳转并跟随重命名)
+- 测试: Infrastructure 层测试类 XML 文档注释补充 param/returns 参数与返回值说明 (FileLoggerOptions / FileLoggerProvider / GameDataRepository / UpdateService, 与上轮 cref 引用重构配套)
+- 工程化: Infrastructure 项目新增 InternalsVisibleTo MineClearance.UI.Tests (UI 层单元测试访问内部常量与类型)
+- 工程化: UI.Tests 项目新增 Microsoft.Extensions.Configuration.Json 包引用 (UI 配置解析测试), Directory.Packages.props 移除无消费的 Microsoft.Extensions.Configuration 包版本
 - Core 层: IGameTimer 接口精简 (移除 INotifyPropertyChanged 继承与 IsRunning/Refresh/ReStart 无消费成员, 计时器显示改由 UI 轮询 Elapsed 驱动; GameTimer 实现同步移除事件通知, 字段初始化替代构造函数)
 - Core 层: IMineField 移除 GetAdjacentMineCount 无消费成员 (生产侧相邻雷数统一经 Cell.AdjacentMineCount 读取; MineField 实现同步移除)
 - UI 层: GameViewModel 计时刷新移除 Timer.Refresh() 调用 (轮询直接读取 Elapsed)
@@ -30,6 +34,7 @@
 
 - 测试: 移除 Core 层占位冒烟测试 SmokeTest (由真实单元测试替代)
 - 测试: 移除 Infrastructure 层占位冒烟测试 SmokeTest (由真实单元测试替代)
+- 测试: 移除 UI 层占位冒烟测试 SmokeTest (由真实单元测试替代)
 
 ---
 

@@ -237,6 +237,7 @@ public sealed class UpdateServiceTests
     /// <summary>
     /// 创建使用 <see cref="NullLogger{T}"/> 的更新服务实例
     /// </summary>
+    /// <returns>更新服务实例</returns>
     private static UpdateService CreateService()
     {
         return new(NullLogger<UpdateService>.Instance);
@@ -245,6 +246,8 @@ public sealed class UpdateServiceTests
     /// <summary>
     /// 创建使用指定消息处理程序的更新服务实例
     /// </summary>
+    /// <param name="handler">HTTP 消息处理程序</param>
+    /// <returns>更新服务实例</returns>
     private static UpdateService CreateService(HttpMessageHandler handler)
     {
         return new(NullLogger<UpdateService>.Instance, new(handler));
@@ -253,6 +256,8 @@ public sealed class UpdateServiceTests
     /// <summary>
     /// 创建返回指定 JSON 的 HTTP 消息处理程序, 每次调用返回新的响应实例
     /// </summary>
+    /// <param name="json">响应内容 JSON</param>
+    /// <returns>HTTP 消息处理程序</returns>
     private static HttpMessageHandler CreateHandler(string json)
     {
         var handler = new Mock<HttpMessageHandler>();
@@ -268,6 +273,10 @@ public sealed class UpdateServiceTests
     /// <summary>
     /// 创建 GitHub release 响应的 JSON, 包含当前平台在内的更新包资产
     /// </summary>
+    /// <param name="tagName">版本标签</param>
+    /// <param name="size">更新包大小</param>
+    /// <param name="assets">是否包含当前平台的更新包资产</param>
+    /// <returns>GitHub release 响应的 JSON</returns>
     private static string CreateReleaseJson(string tagName, long size, bool assets = true)
     {
         return assets
@@ -286,6 +295,8 @@ public sealed class UpdateServiceTests
     /// <summary>
     /// 创建 HTTP 响应
     /// </summary>
+    /// <param name="json">响应内容 JSON</param>
+    /// <returns>HTTP 响应</returns>
     private static HttpResponseMessage CreateResponse(string json)
     {
         return new(HttpStatusCode.OK)

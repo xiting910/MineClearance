@@ -24,7 +24,7 @@
 - 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
 - 🧩 **MVVM 模式** — 基于 CommunityToolkit.Mvvm 源代码生成器
 - 📝 **结构化日志** — ILogger + LoggerMessage 源代码生成器，记录游戏关键事件
-- 🧪 **单元测试** — Core / Infrastructure 层单元测试 (xUnit v3 + Moq + coverlet), 覆盖状态机流转、格子操作、胜负判定、地雷布局生成、存档与结果校验、数据持久化、文件日志、服务注册、更新服务与引导更新
+- 🧪 **完善的单元测试** — Core / Infrastructure / UI 三层单元测试 (xUnit v3 + Moq + coverlet): Core 覆盖状态机流转、格子操作、胜负判定、地雷布局生成、存档与结果校验; Infrastructure 覆盖数据持久化、文件日志、服务注册、更新服务与引导更新; UI 覆盖视图模型状态与交互、统计筛选排序、配置解析持久化、Toast 计时与更新流程
 - 🔁 **CI/CD 自动化** — GitHub Actions 自动构建、测试、CodeQL 安全分析、Release 发布
 - 📦 **依赖自动更新** — Dependabot 分组策略，保持依赖最新
 
@@ -195,7 +195,19 @@ MineClearance/
     │   └── UpdateServiceTests.cs                     #     更新服务测试 (状态守卫/状态机流转)
     └── MineClearance.UI.Tests/                       # UI 层单元测试
         ├── MineClearance.UI.Tests.csproj             #   测试项目文件
-        └── SmokeTest.cs                              #   冒烟测试 (占位)
+        ├── AssemblyInfo.cs                           #   程序集级配置 (测试夹具注册/禁用并行)
+        ├── TestEnvironmentFixture.cs                 #   测试环境夹具 (临时数据目录重定向)
+        ├── AppMetadataTests.cs                       #     应用元数据测试 (AssemblyMetadata 读取)
+        ├── ConstantsTests.cs                         #     常量测试 (设置文件路径重定向)
+        ├── GameResultRowTests.cs                     #     游戏结果行测试 (显示文本格式化)
+        ├── HistoryViewModelTests.cs                  #     历史记录视图模型测试 (统计/筛选/排序/删除)
+        ├── KeyExtensionsTests.cs                     #     按键扩展测试 (热键有效性校验)
+        ├── MainViewModelTests.cs                     #     主视图模型测试 (难度参数联动/开始/继续/导航)
+        ├── SettingsViewModelTests.cs                 #     设置视图模型测试 (配置同步/热键录制)
+        ├── StatsRowBuilderTests.cs                   #     统计行构建器测试 (胜率/用时/完成度)
+        ├── ToastItemTests.cs                         #     Toast 条目测试 (倒计时/悬停暂停/点击回调)
+        ├── UIOptionsTests.cs                         #     UI 配置测试 (解析/钳制/持久化)
+        └── UpdateViewModelTests.cs                   #     更新视图模型测试 (状态反馈/悬浮球/抽屉)
 ```
 
 依赖方向：`UI → Infrastructure → Core`（符合整洁架构依赖规则）

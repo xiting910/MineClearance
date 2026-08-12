@@ -259,6 +259,7 @@ public sealed class GameDataRepositoryTests
     /// <summary>
     /// 创建合法的初级难度存档数据, 包含地雷位图与格子状态
     /// </summary>
+    /// <returns>合法的存档数据</returns>
     private static GameSaveData CreateValidSaveData()
     {
         var mineField = new BitArray(81);
@@ -278,6 +279,8 @@ public sealed class GameDataRepositoryTests
     /// <summary>
     /// 断言两个 <see cref="BitArray"/> 实例的内容相等
     /// </summary>
+    /// <param name="expected">期望的位图</param>
+    /// <param name="actual">实际的位图</param>
     private static void AssertBitArrayEqual(BitArray expected, BitArray actual)
     {
         Assert.Equal(expected.Length, actual.Length);
@@ -290,6 +293,7 @@ public sealed class GameDataRepositoryTests
     /// <summary>
     /// 重置指定路径, 兼容文件与目录两种占用形式
     /// </summary>
+    /// <param name="path">要删除的路径</param>
     private static void ResetPath(string path)
     {
         if (Directory.Exists(path))

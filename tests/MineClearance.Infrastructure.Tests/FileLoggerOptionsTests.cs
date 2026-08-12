@@ -84,6 +84,8 @@ public sealed class FileLoggerOptionsTests
     /// <summary>
     /// 创建指定日志级别的配置对象
     /// </summary>
+    /// <param name="level">日志级别字符串</param>
+    /// <returns>配置对象</returns>
     private static IConfiguration CreateConfiguration(string? level)
     {
         var section = new Mock<IConfigurationSection>();

@@ -87,6 +87,8 @@ public sealed class FileLoggerProviderTests
     /// <summary>
     /// 创建指定日志级别的文件日志提供程序
     /// </summary>
+    /// <param name="level">日志级别</param>
+    /// <returns>文件日志提供程序</returns>
     private static FileLoggerProvider CreateProvider(LogLevel level = LogLevel.Information)
     {
         var section = new Mock<IConfigurationSection>();
@@ -99,6 +101,7 @@ public sealed class FileLoggerProviderTests
     /// <summary>
     /// 重置指定路径, 兼容文件与目录两种占用形式
     /// </summary>
+    /// <param name="path">路径</param>
     private static void ResetPath(string path)
     {
         if (Directory.Exists(path))
