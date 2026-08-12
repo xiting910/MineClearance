@@ -9,6 +9,12 @@
 
 ## [Unreleased]
 
+---
+
+## [1.1.9] - 2026-08-12
+
+**引导更新重命名兼容与发布工程化修复**: 修复用户重命名可执行文件后引导更新失效的问题 (解压更新包后检测可执行文件名是否被重命名, 若重命名则将更新包导出的原始可执行文件重命名为用户自定义文件名再启动, 修复更新后启动残留旧版本; 等待进程退出超时提取为 MaxWaitTimeForProcessExit 常量, 原始可执行文件名提取为 OriginalExecutableName 常量按平台区分后缀); 调整 CI 测试报告与发布说明 (TestResults 忽略规则放行 trx 报告, 修复 PR 测试报告缺失; 发布说明移除 .NET 10 运行时安装要求, 自包含发布解压即用).
+
 ### Fixed
 
 - Infrastructure 层: 用户重命名可执行文件后引导更新失效修复 (解压更新包后检测可执行文件名是否被重命名, 若重命名则将更新包导出的原始可执行文件重命名为用户自定义文件名再启动, 修复更新后启动残留旧版本的问题; 等待进程退出超时提取为 MaxWaitTimeForProcessExit 常量, 原始可执行文件名提取为 OriginalExecutableName 常量按平台区分后缀)
@@ -290,7 +296,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.8...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.9...HEAD
+[1.1.9]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.9
 [1.1.8]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.8
 [1.1.7]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.7
 [1.1.6]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.6
