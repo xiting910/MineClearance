@@ -30,9 +30,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <!-- 非测试项目设置 InternalsVisibleTo 为测试项目 -->
+  <!-- 非测试项目设置 InternalsVisibleTo, 允许测试项目和 Moq 动态代理程序集访问内部类型 -->
   <ItemGroup Condition="'$(IsTestProject)' != 'true'">
     <InternalsVisibleTo Include="$(MSBuildProjectName).Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
   <!-- 仅测试项目: 设置输出类型为 Exe, 启用不可打包, 启用隐式 using, 忽略特定警告, 启用 .NET 测试平台支持 -->

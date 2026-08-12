@@ -24,7 +24,7 @@
 - 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
 - 🧩 **MVVM 模式** — 基于 CommunityToolkit.Mvvm 源代码生成器
 - 📝 **结构化日志** — ILogger + LoggerMessage 源代码生成器，记录游戏关键事件
-- 🧪 **测试框架就绪** — xUnit v3 + Moq + coverlet 已配置, 测试用例待完善
+- 🧪 **单元测试** — Core 层核心逻辑单元测试 (xUnit v3 + Moq + coverlet), 覆盖状态机流转、格子操作、胜负判定、地雷布局生成、存档与结果校验
 - 🔁 **CI/CD 自动化** — GitHub Actions 自动构建、测试、CodeQL 安全分析、Release 发布
 - 📦 **依赖自动更新** — Dependabot 分组策略，保持依赖最新
 
@@ -173,7 +173,15 @@ MineClearance/
 └── tests/
     ├── MineClearance.Core.Tests/                     # Core 层单元测试
     │   ├── MineClearance.Core.Tests.csproj           #   测试项目文件
-    │   └── SmokeTest.cs                              #   冒烟测试 (占位)
+    │   ├── GameBoardDictionaryTests.cs               #     棋盘字典测试 (格子访问/计数/导出)
+    │   ├── GameConfigTests.cs                        #     游戏配置测试 (校验/难度映射)
+    │   ├── GameManagerTests.cs                       #     游戏管理器测试 (创建/恢复/存档/结果)
+    │   ├── GameResultTests.cs                        #     游戏结果测试 (工厂校验/IsValid)
+    │   ├── GameSaveDataTests.cs                      #     游戏存档测试 (工厂校验/IsValid)
+    │   ├── GameTests.cs                              #     游戏核心测试 (状态机/操作/胜负/存档)
+    │   ├── GameTimerTests.cs                         #     游戏计时器测试 (启停/累计)
+    │   ├── MineFieldTests.cs                         #     地雷场测试 (布局/相邻雷数)
+    │   └── PositionTests.cs                          #     位置测试 (索引转换/相邻/边界)
     ├── MineClearance.Infrastructure.Tests/           # Infrastructure 层单元测试
     │   ├── MineClearance.Infrastructure.Tests.csproj #   测试项目文件
     │   └── SmokeTest.cs                              #   冒烟测试 (占位)

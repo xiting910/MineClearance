@@ -9,12 +9,21 @@
 
 ## [Unreleased]
 
+### Added
+
+- 测试: Core 层单元测试新增 9 组 (Game / GameManager / GameBoardDictionary / MineField / GameConfig / GameResult / GameSaveData / GameTimer / Position, 覆盖状态机流转、格子操作、胜负判定、地雷布局生成、相邻雷数计算、存档与结果校验、计时与位置计算)
+- 工程化: Directory.Build.props 为非测试项目添加 DynamicProxyGenAssembly2 InternalsVisibleTo (允许 Moq 动态代理程序集模拟内部类型)
+
 ### Changed
 
 - Core 层: IGameTimer 接口精简 (移除 INotifyPropertyChanged 继承与 IsRunning/Refresh/ReStart 无消费成员, 计时器显示改由 UI 轮询 Elapsed 驱动; GameTimer 实现同步移除事件通知, 字段初始化替代构造函数)
 - Core 层: IMineField 移除 GetAdjacentMineCount 无消费成员 (生产侧相邻雷数统一经 Cell.AdjacentMineCount 读取; MineField 实现同步移除)
 - UI 层: GameViewModel 计时刷新移除 Timer.Refresh() 调用 (轮询直接读取 Elapsed)
 - Infrastructure 层: BootstrapUpdateHelper 目标可执行文件路径提取为局部变量复用 (File.Move 与 Process.Start 共用同一路径表达式)
+
+### Removed
+
+- 测试: 移除 Core 层占位冒烟测试 SmokeTest (由真实单元测试替代)
 
 ---
 
