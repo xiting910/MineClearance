@@ -35,12 +35,20 @@ public static class Constants
         : $"{nameof(MineClearance)}.UI";
 
     /// <summary>
+    /// 定义程序数据目录的环境变量名
+    /// </summary>
+    internal const string AppDataRootDirectoryEnvironmentVariableName =
+        $"Test_{nameof(MineClearance)}_Data_Root_Dir";
+
+    /// <summary>
     /// 程序数据根目录
     /// </summary>
-    public static readonly string AppDataRootDirectory = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        nameof(MineClearance)
-    );
+    public static readonly string AppDataRootDirectory =
+        Environment.GetEnvironmentVariable(AppDataRootDirectoryEnvironmentVariableName) is { Length: > 0 } dir
+        ? dir : Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            nameof(MineClearance)
+        );
 
     /// <summary>
     /// 数据目录文件夹名

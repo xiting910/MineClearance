@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,11 @@ namespace MineClearance.Infrastructure.Services;
 /// 更新服务实现类
 /// </summary>
 /// <param name="_logger">日志记录器</param>
-internal sealed partial class UpdateService(ILogger<UpdateService> _logger) : IUpdateService, IDisposable
+/// <param name="httpClient">用于检查更新的 <see cref="HttpClient"/> 实例, 如果为 null 则使用默认配置创建</param>
+internal sealed partial class UpdateService(
+    ILogger<UpdateService> _logger,
+    HttpClient? httpClient = null
+) : IUpdateService
 {
     /// <inheritdoc/>
     public event PropertyChangedEventHandler? PropertyChanged;

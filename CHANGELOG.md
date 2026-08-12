@@ -12,6 +12,8 @@
 ### Added
 
 - 测试: Core 层单元测试新增 9 组 (Game / GameManager / GameBoardDictionary / MineField / GameConfig / GameResult / GameSaveData / GameTimer / Position, 覆盖状态机流转、格子操作、胜负判定、地雷布局生成、相邻雷数计算、存档与结果校验、计时与位置计算)
+- 测试: Infrastructure 层单元测试新增 8 组 (BootstrapUpdateHelper / Constants / FileLoggerOptions / FileLoggerProvider / GameDataRepository / ServiceRegistration / UpdateService, 覆盖引导更新参数解析与残留清理、数据目录重定向、日志级别配置解析与持久化、日志级别过滤与内容写入、存档与结果记录的加载/保存/删除/清空、服务注册行为、更新服务状态守卫与检查/下载状态机流转)
+- 测试: 程序集级测试夹具 TestEnvironmentFixture (AssemblyFixture 注册, 通过环境变量将数据根目录重定向到临时目录, 结束后恢复并清理; 文件系统测试禁用并行避免测试间文件冲突)
 - 工程化: Directory.Build.props 为非测试项目添加 DynamicProxyGenAssembly2 InternalsVisibleTo (允许 Moq 动态代理程序集模拟内部类型)
 
 ### Changed
@@ -20,10 +22,13 @@
 - Core 层: IMineField 移除 GetAdjacentMineCount 无消费成员 (生产侧相邻雷数统一经 Cell.AdjacentMineCount 读取; MineField 实现同步移除)
 - UI 层: GameViewModel 计时刷新移除 Timer.Refresh() 调用 (轮询直接读取 Elapsed)
 - Infrastructure 层: BootstrapUpdateHelper 目标可执行文件路径提取为局部变量复用 (File.Move 与 Process.Start 共用同一路径表达式)
+- Infrastructure 层: Constants 新增 AppDataRootDirectoryEnvironmentVariableName 内部常量, AppDataRootDirectory 支持环境变量重定向数据根目录 (测试用, 避免测试触碰真实数据目录)
+- Infrastructure 层: UpdateService 主构造函数新增可选 HttpClient 参数 (为 null 时按默认配置创建, 供测试注入模拟消息处理程序), 类声明移除接口已继承的 IDisposable
 
 ### Removed
 
 - 测试: 移除 Core 层占位冒烟测试 SmokeTest (由真实单元测试替代)
+- 测试: 移除 Infrastructure 层占位冒烟测试 SmokeTest (由真实单元测试替代)
 
 ---
 

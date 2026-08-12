@@ -24,7 +24,7 @@
 - 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
 - 🧩 **MVVM 模式** — 基于 CommunityToolkit.Mvvm 源代码生成器
 - 📝 **结构化日志** — ILogger + LoggerMessage 源代码生成器，记录游戏关键事件
-- 🧪 **单元测试** — Core 层核心逻辑单元测试 (xUnit v3 + Moq + coverlet), 覆盖状态机流转、格子操作、胜负判定、地雷布局生成、存档与结果校验
+- 🧪 **单元测试** — Core / Infrastructure 层单元测试 (xUnit v3 + Moq + coverlet), 覆盖状态机流转、格子操作、胜负判定、地雷布局生成、存档与结果校验、数据持久化、文件日志、服务注册、更新服务与引导更新
 - 🔁 **CI/CD 自动化** — GitHub Actions 自动构建、测试、CodeQL 安全分析、Release 发布
 - 📦 **依赖自动更新** — Dependabot 分组策略，保持依赖最新
 
@@ -184,7 +184,15 @@ MineClearance/
     │   └── PositionTests.cs                          #     位置测试 (索引转换/相邻/边界)
     ├── MineClearance.Infrastructure.Tests/           # Infrastructure 层单元测试
     │   ├── MineClearance.Infrastructure.Tests.csproj #   测试项目文件
-    │   └── SmokeTest.cs                              #   冒烟测试 (占位)
+    │   ├── AssemblyInfo.cs                           #   程序集级配置 (测试夹具注册/禁用并行)
+    │   ├── TestEnvironmentFixture.cs                 #   测试环境夹具 (临时数据目录重定向)
+    │   ├── BootstrapUpdateHelperTests.cs             #     引导更新辅助测试 (参数解析/残留清理)
+    │   ├── ConstantsTests.cs                         #     常量测试 (数据目录重定向)
+    │   ├── FileLoggerOptionsTests.cs                 #     文件日志选项测试 (级别配置解析/持久化)
+    │   ├── FileLoggerProviderTests.cs                #     文件日志提供程序测试 (级别过滤/内容写入)
+    │   ├── GameDataRepositoryTests.cs                #     游戏数据仓储测试 (存档/结果记录)
+    │   ├── ServiceRegistrationTests.cs               #     服务注册测试 (DI 注册行为)
+    │   └── UpdateServiceTests.cs                     #     更新服务测试 (状态守卫/状态机流转)
     └── MineClearance.UI.Tests/                       # UI 层单元测试
         ├── MineClearance.UI.Tests.csproj             #   测试项目文件
         └── SmokeTest.cs                              #   冒烟测试 (占位)

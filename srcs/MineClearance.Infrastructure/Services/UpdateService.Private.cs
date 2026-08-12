@@ -55,7 +55,7 @@ internal sealed partial class UpdateService
     /// <summary>
     /// 检查更新使用的 <see cref="HttpClient"/> 实例
     /// </summary>
-    private readonly HttpClient _httpClient = CreateHttpClient();
+    private readonly HttpClient _httpClient = httpClient ?? CreateHttpClient();
 
     /// <summary>
     /// 当前版本号
