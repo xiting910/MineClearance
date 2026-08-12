@@ -5,7 +5,7 @@ using System.Collections;
 namespace MineClearance.Core.Tests;
 
 /// <summary>
-/// GameSaveData 的单元测试, 覆盖各工厂方法的参数校验和 IsValid 有效性校验
+/// <see cref="GameSaveData"/> 的单元测试, 覆盖各工厂方法的参数校验和 <see cref="GameSaveData.IsValid"/> 有效性校验
 /// </summary>
 public sealed class GameSaveDataTests
 {

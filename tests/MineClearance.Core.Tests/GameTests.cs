@@ -10,7 +10,7 @@ using System.Collections;
 namespace MineClearance.Core.Tests;
 
 /// <summary>
-/// Game 的单元测试, 覆盖状态机流转、格子操作、胜负判定、存档与释放
+/// <see cref="Game"/> 的单元测试, 覆盖状态机流转、格子操作、胜负判定、存档与释放
 /// </summary>
 public sealed class GameTests
 {

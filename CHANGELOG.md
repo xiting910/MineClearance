@@ -18,6 +18,7 @@
 
 ### Changed
 
+- 测试: 全部测试类的 XML 文档注释类名/方法名纯文本引用改为 `<see cref="..."/>` 引用 (Core 9 组 + Infrastructure 7 组, IDE 内可点击跳转并跟随重命名)
 - Core 层: IGameTimer 接口精简 (移除 INotifyPropertyChanged 继承与 IsRunning/Refresh/ReStart 无消费成员, 计时器显示改由 UI 轮询 Elapsed 驱动; GameTimer 实现同步移除事件通知, 字段初始化替代构造函数)
 - Core 层: IMineField 移除 GetAdjacentMineCount 无消费成员 (生产侧相邻雷数统一经 Cell.AdjacentMineCount 读取; MineField 实现同步移除)
 - UI 层: GameViewModel 计时刷新移除 Timer.Refresh() 调用 (轮询直接读取 Elapsed)

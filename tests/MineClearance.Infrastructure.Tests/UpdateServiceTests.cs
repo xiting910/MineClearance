@@ -9,7 +9,7 @@ using System.Text;
 namespace MineClearance.Infrastructure.Tests;
 
 /// <summary>
-/// UpdateService 的单元测试, 覆盖状态守卫、初始状态与检查/下载状态机流转
+/// <see cref="UpdateService"/> 的单元测试, 覆盖状态守卫、初始状态与检查/下载状态机流转
 /// </summary>
 public sealed class UpdateServiceTests
 {

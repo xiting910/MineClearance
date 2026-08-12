@@ -7,7 +7,7 @@ using System.Text.Json.Nodes;
 namespace MineClearance.Infrastructure.Tests;
 
 /// <summary>
-/// FileLoggerOptions 的单元测试, 覆盖日志级别配置解析与级别设置的持久化
+/// <see cref="FileLoggerOptions"/> 的单元测试, 覆盖日志级别配置解析与级别设置的持久化
 /// </summary>
 public sealed class FileLoggerOptionsTests
 {

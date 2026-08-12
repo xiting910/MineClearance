@@ -3,7 +3,7 @@ using MineClearance.Core.Models.Records;
 namespace MineClearance.Core.Tests;
 
 /// <summary>
-/// Position 结构的单元测试, 覆盖一维索引转换、相邻位置计算和边界判断
+/// <see cref="Position"/> 结构的单元测试, 覆盖一维索引转换、相邻位置计算和边界判断
 /// </summary>
 public sealed class PositionTests
 {

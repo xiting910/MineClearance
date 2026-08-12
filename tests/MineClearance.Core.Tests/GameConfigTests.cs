@@ -4,7 +4,7 @@ using MineClearance.Core.Models.Records;
 namespace MineClearance.Core.Tests;
 
 /// <summary>
-/// GameConfig 的单元测试, 覆盖有效性校验、难度映射和格子总数计算
+/// <see cref="GameConfig"/> 的单元测试, 覆盖有效性校验、难度映射和格子总数计算
 /// </summary>
 public sealed class GameConfigTests
 {

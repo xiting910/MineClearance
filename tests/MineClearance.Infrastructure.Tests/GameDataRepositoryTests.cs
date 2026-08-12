@@ -8,7 +8,7 @@ using System.Text.Json;
 namespace MineClearance.Infrastructure.Tests;
 
 /// <summary>
-/// GameDataRepository 的单元测试, 覆盖存档与游戏结果记录的加载、保存、删除和清空
+/// <see cref="GameDataRepository"/> 的单元测试, 覆盖存档与游戏结果记录的加载、保存、删除和清空
 /// </summary>
 public sealed class GameDataRepositoryTests
 {

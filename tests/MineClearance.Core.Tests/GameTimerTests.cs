@@ -3,7 +3,7 @@ using MineClearance.Core.Services;
 namespace MineClearance.Core.Tests;
 
 /// <summary>
-/// GameTimer 的单元测试, 覆盖计时启停、首次开始时间和已用时累计
+/// <see cref="GameTimer"/> 的单元测试, 覆盖计时启停、首次开始时间和已用时累计
 /// </summary>
 public sealed class GameTimerTests
 {

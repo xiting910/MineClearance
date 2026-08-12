@@ -8,7 +8,9 @@ using Moq;
 namespace MineClearance.Infrastructure.Tests;
 
 /// <summary>
-/// 服务注册扩展方法的单元测试, 覆盖 AddInfrastructure 与 AddFileLogger 的注册行为
+/// 服务注册扩展方法的单元测试, 覆盖
+/// <see cref="IServiceCollectionExtensions.AddInfrastructure"/> 与
+/// <see cref="ILoggingBuilderExtensions.AddFileLogger"/> 的注册行为
 /// </summary>
 public sealed class ServiceRegistrationTests
 {

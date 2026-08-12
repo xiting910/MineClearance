@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace MineClearance.Infrastructure.Tests;
 
 /// <summary>
-/// BootstrapUpdateHelper 的单元测试, 覆盖引导更新参数解析、更新信息读取与残留清理
+/// <see cref="BootstrapUpdateHelper"/> 的单元测试, 覆盖引导更新参数解析、更新信息读取与残留清理
 /// </summary>
 public sealed class BootstrapUpdateHelperTests
 {

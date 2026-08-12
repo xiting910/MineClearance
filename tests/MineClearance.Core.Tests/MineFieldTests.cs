@@ -7,7 +7,7 @@ using System.Collections;
 namespace MineClearance.Core.Tests;
 
 /// <summary>
-/// MineField 的单元测试, 覆盖地雷布局生成、相邻雷数计算和地雷查询
+/// <see cref="MineField"/> 的单元测试, 覆盖地雷布局生成、相邻雷数计算和地雷查询
 /// </summary>
 public sealed class MineFieldTests
 {

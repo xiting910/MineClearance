@@ -5,7 +5,7 @@ using MineClearance.Core.Services;
 namespace MineClearance.Core.Tests;
 
 /// <summary>
-/// GameBoardDictionary 的单元测试, 覆盖格子访问、计数统计和状态导出
+/// <see cref="GameBoardDictionary"/> 的单元测试, 覆盖格子访问、计数统计和状态导出
 /// </summary>
 public sealed class GameBoardDictionaryTests
 {

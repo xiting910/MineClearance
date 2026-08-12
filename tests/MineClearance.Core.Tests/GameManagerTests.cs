@@ -9,7 +9,7 @@ using System.ComponentModel;
 namespace MineClearance.Core.Tests;
 
 /// <summary>
-/// GameManager 的单元测试, 覆盖游戏创建、恢复、重开、存档保存与结果持久化
+/// <see cref="GameManager"/> 的单元测试, 覆盖游戏创建、恢复、重开、存档保存与结果持久化
 /// </summary>
 public sealed class GameManagerTests
 {

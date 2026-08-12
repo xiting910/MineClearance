@@ -1,7 +1,7 @@
 namespace MineClearance.Infrastructure.Tests;
 
 /// <summary>
-/// Constants 的单元测试, 验证测试环境下的数据根目录重定向机制
+/// <see cref="Constants"/> 的单元测试, 验证测试环境下的数据根目录重定向机制
 /// </summary>
 public sealed class ConstantsTests
 {

@@ -4,7 +4,7 @@ using MineClearance.Core.Models.Records;
 namespace MineClearance.Core.Tests;
 
 /// <summary>
-/// GameResult 的单元测试, 覆盖各工厂方法的参数校验和 IsValid 有效性校验
+/// <see cref="GameResult"/> 的单元测试, 覆盖各工厂方法的参数校验和 <see cref="GameResult.IsValid"/> 有效性校验
 /// </summary>
 public sealed class GameResultTests
 {

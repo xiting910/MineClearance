@@ -7,7 +7,7 @@ using Moq;
 namespace MineClearance.Infrastructure.Tests;
 
 /// <summary>
-/// FileLoggerProvider 的单元测试, 覆盖日志级别过滤与日志内容写入
+/// <see cref="FileLoggerProvider"/> 的单元测试, 覆盖日志级别过滤与日志内容写入
 /// </summary>
 public sealed class FileLoggerProviderTests
 {
