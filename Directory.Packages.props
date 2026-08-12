@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <!-- Microsoft.Extensions 系列 -->
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.11" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.11" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.11" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
