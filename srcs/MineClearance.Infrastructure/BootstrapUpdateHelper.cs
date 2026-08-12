@@ -99,7 +99,7 @@ public static class BootstrapUpdateHelper
         {
             try
             {
-                if (!process.WaitForExit(10000))
+                if (!process.WaitForExit(Constants.MaxWaitTimeForProcessExit))
                 {
                     // 记录等待超时的进程信息
                     logStream.WriteLine(
@@ -160,10 +160,35 @@ public static class BootstrapUpdateHelper
             return 5;
         }
 
+        // 获取可执行文件名
+        var executableName = Path.GetFileName(currentProcess.MainModule?.FileName);
+        if (string.IsNullOrWhiteSpace(executableName))
+        {
+            // 记录获取可执行文件名失败信息
+            logStream.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] 获取可执行文件名失败");
+
+            // 写入更新失败信息
+            WriteUpdateInfo(false, originalVersion, newVersion);
+
+            // 退出引导更新
+            return 6;
+        }
+
         try
         {
             // 执行更新操作
             ZipFile.ExtractToDirectory(Constants.UpdatePackageFilePath, originalDirectory, true);
+
+            // 检查可执行文件名是否被用户重命名
+            if (!Constants.PathComparer.Equals(executableName, Constants.OriginalExecutableName))
+            {
+                // 如果用户进行了重命名, 将更新包导出的原始可执行文件重命名为用户自定义的可执行文件名
+                File.Move(
+                    Path.Combine(originalDirectory, Constants.OriginalExecutableName),
+                    Path.Combine(originalDirectory, executableName),
+                    overwrite: true
+                );
+            }
         }
         catch (Exception ex)
         {
@@ -194,7 +219,7 @@ public static class BootstrapUpdateHelper
             WriteUpdateInfo(false, originalVersion, newVersion);
 
             // 退出引导更新
-            return 6;
+            return 7;
         }
 
         // 记录更新成功信息
@@ -204,17 +229,6 @@ public static class BootstrapUpdateHelper
 
         // 写入更新成功信息
         WriteUpdateInfo(true, originalVersion, newVersion);
-
-        // 获取可执行文件名
-        var executableName = Path.GetFileName(currentProcess.MainModule?.FileName);
-        if (string.IsNullOrWhiteSpace(executableName))
-        {
-            // 记录获取可执行文件名失败信息
-            logStream.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] 获取可执行文件名失败");
-
-            // 退出引导更新
-            return 7;
-        }
 
         try
         {

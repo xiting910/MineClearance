@@ -11,6 +11,7 @@
 
 ### Fixed
 
+- Infrastructure 层: 用户重命名可执行文件后引导更新失效修复 (解压更新包后检测可执行文件名是否被重命名, 若重命名则将更新包导出的原始可执行文件重命名为用户自定义文件名再启动, 修复更新后启动残留旧版本的问题; 等待进程退出超时提取为 MaxWaitTimeForProcessExit 常量, 原始可执行文件名提取为 OriginalExecutableName 常量按平台区分后缀)
 - 工程化: .gitignore TestResults 忽略规则调整 (TestResults/ 整目录忽略改为 TestResults/* 并放行 !TestResults/*.trx, 使 dorny/test-reporter 能解析 PR 生成的 trx 测试报告, 修复 No test report files were found)
 
 ### Changed

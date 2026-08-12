@@ -28,6 +28,13 @@ public static class Constants
         : StringComparer.Ordinal;
 
     /// <summary>
+    /// 更新压缩包导出的原始可执行文件名
+    /// </summary>
+    public static readonly string OriginalExecutableName = OperatingSystem.IsWindows()
+        ? $"{nameof(MineClearance)}.UI.exe"
+        : $"{nameof(MineClearance)}.UI";
+
+    /// <summary>
     /// 程序数据根目录
     /// </summary>
     public static readonly string AppDataRootDirectory = Path.Combine(
@@ -148,6 +155,11 @@ public static class Constants
     /// 最大日志文件数量
     /// </summary>
     public const int MaxLogFiles = 5;
+
+    /// <summary>
+    /// 引导更新时等待每个进程退出的最大时间 (毫秒)
+    /// </summary>
+    public const int MaxWaitTimeForProcessExit = 10000;
 
     /// <summary>
     /// 百分比基数, 用于百分比和比例的转换
