@@ -9,6 +9,12 @@
 
 ## [Unreleased]
 
+---
+
+## [1.1.10] - 2026-08-13
+
+**单实例运行与异常处理加固, 三层单元测试补全**: 新增单实例运行 (命名管道服务器, 已有实例时请求激活窗口并退出) 与未处理异常处理 (独立日志文件, UI 线程异常 Toast 提示日志路径); Core / Infrastructure / UI 三层共新增 28 组单元测试与程序集级测试夹具, 移除全部占位冒烟测试, 非测试项目对测试程序集与 Moq 动态代理程序集开放内部可见性.
+
 ### Added
 
 - 功能: 单实例运行 (Infrastructure 层新增 SingleInstanceServer 命名管道服务器, TryCreate 创建失败表示已有实例在运行, SendActivateRequest 请求已有实例激活; UI 层 Program.cs 启动时检查单实例, 已有实例时发送激活请求后退出, App.axaml.cs 收到激活请求时恢复最小化窗口并激活)
@@ -327,7 +333,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.9...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.10...HEAD
+[1.1.10]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.10
 [1.1.9]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.9
 [1.1.8]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.8
 [1.1.7]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.7
