@@ -3,6 +3,7 @@ using MineClearance.Infrastructure.Models;
 using System;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace MineClearance.Infrastructure.Services;
 
@@ -12,6 +13,11 @@ namespace MineClearance.Infrastructure.Services;
 /// <param name="_options">文件日志记录器选项</param>
 internal sealed class FileLoggerProvider(FileLoggerOptions _options) : ILoggerProvider
 {
+    /// <summary>
+    /// 文件日志记录器锁对象
+    /// </summary>
+    private readonly Lock _lock = new();
+
     /// <summary>
     /// 文件日志记录器的写入器
     /// </summary>
@@ -23,7 +29,7 @@ internal sealed class FileLoggerProvider(FileLoggerOptions _options) : ILoggerPr
     /// <inheritdoc/>
     public ILogger CreateLogger(string categoryName)
     {
-        return new FileLogger(_options, _writer, categoryName);
+        return new FileLogger(_options, _writer, categoryName, _lock);
     }
 
     /// <inheritdoc/>
@@ -39,10 +45,12 @@ internal sealed class FileLoggerProvider(FileLoggerOptions _options) : ILoggerPr
     /// <param name="_options">文件日志记录器选项</param>
     /// <param name="_writer">文件日志记录器的写入器</param>
     /// <param name="_categoryName">日志类别名称</param>
+    /// <param name="_lock">文件日志记录器锁对象</param>
     private sealed class FileLogger(
         FileLoggerOptions _options,
         StreamWriter _writer,
-        string _categoryName
+        string _categoryName,
+        Lock _lock
     ) : ILogger
     {
         /// <inheritdoc/>
@@ -77,13 +85,16 @@ internal sealed class FileLoggerProvider(FileLoggerOptions _options) : ILoggerPr
 
             try
             {
-                // 写入日志行
-                _writer.WriteLine(line);
-
-                // 如果有异常, 则写入异常信息
-                if (exception is not null)
+                lock (_lock)
                 {
-                    _writer.WriteLine(exception);
+                    // 写入日志行
+                    _writer.WriteLine(line);
+
+                    // 如果有异常, 则写入异常信息
+                    if (exception is not null)
+                    {
+                        _writer.WriteLine(exception);
+                    }
                 }
             }
             catch { /* 忽略写日志时发生的异常 */ }

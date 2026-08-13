@@ -21,6 +21,8 @@
 - 👋 **首次启动提示** — 首次启动展示欢迎信息与操作指引 (作者 / Esc 打开设置抽屉 / 种子雷区 / 自动更新说明), 展示后自动关闭
 - 🔢 **格子索引显示与复制** — 等待开始时按住热键显示全部格子索引 (松开隐藏), 首次点击格子可自动复制索引到剪贴板, 热键可在设置中录制
 - 🔄 **自动更新** — 启动时后台检查 GitHub 新版本, 断点续传下载并校验更新包完整性, 下载进度悬浮球与详情抽屉, 退出后引导更新失败自动回滚
+- 🔁 **单实例运行** — 重复启动时自动激活已有实例主窗口, 避免多开
+- 🛡️ **未处理异常处理** — 未处理异常写入独立日志文件, UI 线程异常通过 Toast 提示日志位置
 - 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
 - 🧩 **MVVM 模式** — 基于 CommunityToolkit.Mvvm 源代码生成器
 - 📝 **结构化日志** — ILogger + LoggerMessage 源代码生成器，记录游戏关键事件
@@ -110,19 +112,21 @@ MineClearance/
 │   │   │   ├── FileLoggerOptions.cs                  #     文件日志选项
 │   │   │   ├── UpdateInfo.cs                         #     更新信息记录
 │   │   │   └── UpdateState.cs                        #     更新状态枚举
-│   │   └── Services/                                 #   服务实现
-│   │       ├── FileLoggerProvider.cs                 #     文件日志提供程序实现
-│   │       ├── GameDataRepository.cs                 #     游戏数据仓储实现
-│   │       ├── GameDataRepository.Converter.cs       #     游戏数据仓储 Json 转换器
-│   │       ├── GameDataRepository.Logging.cs         #     游戏数据仓储日志 (LoggerMessage)
-│   │       ├── UpdateService.cs                      #     更新服务实现
-│   │       ├── UpdateService.Logging.cs              #     更新服务日志 (LoggerMessage)
-│   │       └── UpdateService.Private.cs              #     更新服务私有实现
+│   │   ├── Services/                                 #   服务实现
+│   │   │   ├── FileLoggerProvider.cs                 #     文件日志提供程序实现
+│   │   │   ├── GameDataRepository.cs                 #     游戏数据仓储实现
+│   │   │   ├── GameDataRepository.Converter.cs       #     游戏数据仓储 Json 转换器
+│   │   │   ├── GameDataRepository.Logging.cs         #     游戏数据仓储日志 (LoggerMessage)
+│   │   │   ├── UpdateService.cs                      #     更新服务实现
+│   │   │   ├── UpdateService.Logging.cs              #     更新服务日志 (LoggerMessage)
+│   │   │   └── UpdateService.Private.cs              #     更新服务私有实现
+│   │   ├── SingleInstanceServer.cs                   #   单实例服务器 (命名管道/激活请求)
+│   │   └── UnhandledExceptionHelper.cs               #   未处理异常辅助 (未处理异常日志)
 │   └── MineClearance.UI/                             # 表示层 — Avalonia 桌面应用
 │       ├── MineClearance.UI.csproj                   #   项目文件 (Avalonia 系列/图标/单文件发布)
 │       ├── App.Manifest.xml                          #   Windows 应用清单
 │       ├── App.axaml                                 #   应用定义 (主题/DataTemplate/颜色资源)
-│       ├── App.axaml.cs                              #   应用类 (服务容器/主题应用/主窗口)
+│       ├── App.axaml.cs                              #   应用类 (服务容器/异常处理/主题应用/主窗口)
 │       ├── Assets/                                   #   资源目录
 │       │   └── logo.ico                              #     应用图标
 │       ├── AppMetadata.cs                            #   应用元数据 (AssemblyMetadata 读取)
@@ -140,7 +144,7 @@ MineClearance/
 │       │   ├── ThemeMode.cs                          #     主题模式枚举 (跟随系统/浅色/深色)
 │       │   ├── ToastItem.cs                          #     Toast 提示条目 (剩余进度/悬停暂停/点击回调)
 │       │   └── UIOptions.cs                          #     UI 配置 (setter 变化自动保存)
-│       ├── Program.cs                                #   应用入口 (DI + Avalonia 启动)
+│       ├── Program.cs                                #   应用入口 (单实例检查 + DI + Avalonia 启动)
 │       ├── ShellWindow.axaml                         #   主窗口 (关闭自动保存/退出触发引导更新/启动更新流程)
 │       ├── ShellWindow.axaml.cs                      #   主窗口代码 (自动保存/引导更新/Esc 处理抽屉/启动更新流程)
 │       ├── ViewLocator.cs                            #   ViewModel → View 定位器

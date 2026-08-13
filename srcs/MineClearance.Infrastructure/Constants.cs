@@ -51,6 +51,13 @@ public static class Constants
         );
 
     /// <summary>
+    /// 未处理异常日志记录文件
+    /// </summary>
+    public static readonly string UnhandledExceptionLogFilePath = Path.Combine(
+        AppDataRootDirectory, $"UnhandledException{LogFileSuffix}"
+    );
+
+    /// <summary>
     /// 数据目录文件夹名
     /// </summary>
     public const string DataDirectoryName = "Data";
@@ -168,6 +175,16 @@ public static class Constants
     /// 引导更新时等待每个进程退出的最大时间 (毫秒)
     /// </summary>
     public const int MaxWaitTimeForProcessExit = 10000;
+
+    /// <summary>
+    /// 发生激活请求时等待的最大时间 (秒)
+    /// </summary>
+    public const int MaxWaitTimeForActivationRequest = 2;
+
+    /// <summary>
+    /// 发生激活请求的 byte 值
+    /// </summary>
+    public const byte ActivateRequestByte = 91;
 
     /// <summary>
     /// 百分比基数, 用于百分比和比例的转换

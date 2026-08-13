@@ -22,37 +22,56 @@ file static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+        {
+            if (e.ExceptionObject is Exception ex)
+            {
+                UnhandledExceptionHelper.HandleException(e.IsTerminating, ex);
+            }
+        };
+
         if (BootstrapUpdateHelper.IsBootstrapUpdateRequested(
             args, out var originalDirectory, out var originalVersion))
         {
             return BootstrapUpdateHelper.ExecuteBootstrapUpdate(originalDirectory, originalVersion);
         }
 
+        var pipeName = $"{AppMetadata.Get(AppMetadata.ProductKey)}_{AppMetadata.Get(AppMetadata.AuthorKey)}";
+        if (!SingleInstanceServer.TryCreate(pipeName, out var server))
+        {
+            SingleInstanceServer.SendActivateRequest(pipeName);
+            return 0;
+        }
+
         using var service = new ServiceCollection()
+            .AddSingleton(server)
             .AddSingleton<IConfiguration>(Initialize())
             .AddLogging(builder => builder.AddFileLogger())
             .AddCore()
             .AddInfrastructure()
             .AddSingleton<UIOptions>()
+            .AddSingleton<ShellViewModel>()
             .AddSingleton<ToastViewModel>()
             .AddSingleton<UpdateViewModel>()
             .AddSingleton<MainViewModel>()
-            .AddSingleton<ShellViewModel>()
             .AddSingleton<GameViewModel>()
             .AddSingleton<HistoryViewModel>()
             .AddTransient<SettingsViewModel>()
             .BuildServiceProvider();
 
         App.Services = service;
-        return AppBuilder.Configure<App>()
+        var exitCode = AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace()
             .StartWithClassicDesktopLifetime(args);
+
+        server.Dispose();
+        return exitCode;
     }
 
     /// <summary>
-    /// 初始化应用程序: 创建必要的目录, 完成日志文件的轮转并创建
+    /// 初始化应用程序: 创建必要的目录, 完成日志文件的轮转并创建应用程序配置对象
     /// </summary>
     /// <returns>应用程序配置对象</returns>
     private static IConfigurationRoot Initialize()

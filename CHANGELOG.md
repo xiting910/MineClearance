@@ -11,6 +11,8 @@
 
 ### Added
 
+- 功能: 单实例运行 (Infrastructure 层新增 SingleInstanceServer 命名管道服务器, TryCreate 创建失败表示已有实例在运行, SendActivateRequest 请求已有实例激活; UI 层 Program.cs 启动时检查单实例, 已有实例时发送激活请求后退出, App.axaml.cs 收到激活请求时恢复最小化窗口并激活)
+- 功能: 未处理异常处理 (Infrastructure 层新增 UnhandledExceptionHelper 将未处理异常写入独立日志文件; UI 层挂接 AppDomain.UnhandledException / Dispatcher.UnhandledException / UnobservedTaskException, UI 线程异常 Toast 提示日志文件路径)
 - 测试: Core 层单元测试新增 9 组 (Game / GameManager / GameBoardDictionary / MineField / GameConfig / GameResult / GameSaveData / GameTimer / Position, 覆盖状态机流转、格子操作、胜负判定、地雷布局生成、相邻雷数计算、存档与结果校验、计时与位置计算)
 - 测试: Infrastructure 层单元测试新增 8 组 (BootstrapUpdateHelper / Constants / FileLoggerOptions / FileLoggerProvider / GameDataRepository / ServiceRegistration / UpdateService, 覆盖引导更新参数解析与残留清理、数据目录重定向、日志级别配置解析与持久化、日志级别过滤与内容写入、存档与结果记录的加载/保存/删除/清空、服务注册行为、更新服务状态守卫与检查/下载状态机流转)
 - 测试: UI 层单元测试新增 11 组 (AppMetadata / Constants / GameResultRow / HistoryViewModel / KeyExtensions / MainViewModel / SettingsViewModel / StatsRowBuilder / ToastItem / UIOptions / UpdateViewModel, 覆盖应用元数据读取、设置文件路径重定向、游戏结果行显示文本格式化、历史记录统计聚合与筛选排序、热键有效性校验、主视图难度参数联动与开始/继续/导航、设置项配置同步与热键录制、统计行胜率用时聚合、Toast 倒计时与悬停暂停与点击回调、UI 配置解析钳制与持久化、更新视图模型状态反馈与悬浮球/抽屉/缓存清理)
@@ -29,6 +31,8 @@
 - Infrastructure 层: BootstrapUpdateHelper 目标可执行文件路径提取为局部变量复用 (File.Move 与 Process.Start 共用同一路径表达式)
 - Infrastructure 层: Constants 新增 AppDataRootDirectoryEnvironmentVariableName 内部常量, AppDataRootDirectory 支持环境变量重定向数据根目录 (测试用, 避免测试触碰真实数据目录)
 - Infrastructure 层: UpdateService 主构造函数新增可选 HttpClient 参数 (为 null 时按默认配置创建, 供测试注入模拟消息处理程序), 类声明移除接口已继承的 IDisposable
+- Infrastructure 层: FileLoggerProvider 日志写入加锁 (Lock 对象保护 StreamWriter 并发写入, 多线程写日志安全)
+- Infrastructure 层: Constants 新增未处理异常日志文件路径与激活请求常量 (UnhandledExceptionLogFilePath / MaxWaitTimeForActivationRequest / ActivateRequestByte)
 
 ### Removed
 
