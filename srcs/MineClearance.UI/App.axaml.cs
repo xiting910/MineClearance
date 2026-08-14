@@ -91,7 +91,14 @@ public sealed partial class App : Application
                         window.WindowState = WindowState.Normal;
                     }
                     window.Show();
-                    window.Activate();
+                    if (OperatingSystem.IsWindows())
+                    {
+                        WindowsHelper.BringToFront(window);
+                    }
+                    else
+                    {
+                        window.Activate();
+                    }
                 }
             }), ExitCts.Token);
         }

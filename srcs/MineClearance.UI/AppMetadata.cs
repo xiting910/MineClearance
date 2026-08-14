@@ -28,7 +28,8 @@ public static class AppMetadata
     /// <summary>
     /// 应用元数据
     /// </summary>
-    private static readonly IEnumerable<AssemblyMetadataAttribute> _metadata = Assembly.GetExecutingAssembly()
+    private static readonly IEnumerable<AssemblyMetadataAttribute> _metadata = Assembly
+        .GetExecutingAssembly()
         .GetCustomAttributes<AssemblyMetadataAttribute>();
 
     /// <summary>
@@ -36,7 +37,8 @@ public static class AppMetadata
     /// </summary>
     /// <param name="key">键</param>
     /// <returns>值</returns>
-    /// <exception cref="InvalidOperationException">当指定键不存在或对应值为 null 时抛出</exception>
+    /// <exception cref="InvalidOperationException">当指定键不存在或对应值为
+    /// <see langword="null"/> 时抛出</exception>
     public static string Get(string key)
     {
         return _metadata.First(x => x.Key == key).Value
