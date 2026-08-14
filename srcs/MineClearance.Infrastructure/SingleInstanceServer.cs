@@ -38,22 +38,22 @@ public sealed class SingleInstanceServer : IDisposable
             try
             {
                 await _server.WaitForConnectionAsync(token);
-                if (_server.ReadByte() == Constants.ActivateRequestByte)
+                try
                 {
-                    onActivated();
+                    if (_server.ReadByte() == Constants.ActivateRequestByte)
+                    {
+                        onActivated();
+                    }
                 }
-            }
-            catch (IOException) { /* 客户端异常断开, 继续等待下一个 */ }
-            catch (Exception ex) when (ex is OperationCanceledException or ObjectDisposedException)
-            {
-                break;
-            }
-            finally
-            {
-                if (_server.IsConnected)
+                finally
                 {
                     _server.Disconnect();
                 }
+            }
+            catch (IOException) { /* 客户端异常断开或复位失败, 继续等待下一个 */ }
+            catch (Exception ex) when (ex is OperationCanceledException or ObjectDisposedException)
+            {
+                break;
             }
         }
     }

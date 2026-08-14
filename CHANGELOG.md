@@ -9,6 +9,14 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Infrastructure 层: 单实例服务器客户端断开后无法接受后续连接修复 (客户端连接后未发送激活请求即断开时 IsConnected 已为 false, 原条件判断跳过 Disconnect 导致管道实例未复位, 后续激活请求全部超时; 改为连接处理内层 try/finally 无条件 Disconnect 复位管道, 移除 IsConnected 条件判断, 客户端异常断开或复位失败由外层 IOException 捕获后继续等待)
+
+### Added
+
+- 测试: Infrastructure 层单元测试新增 1 组 (SingleInstanceServerTests, 覆盖单实例创建判定、激活请求端到端传递、非激活字节不触发回调、取消令牌退出等待循环、客户端断开后继续等待后续激活请求)
+
 ---
 
 ## [1.1.10] - 2026-08-13

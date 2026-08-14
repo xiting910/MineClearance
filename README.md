@@ -26,7 +26,7 @@
 - 🧱 **Clean Architecture** — 清晰的 Core / Infrastructure / UI 分层，高内聚低耦合
 - 🧩 **MVVM 模式** — 基于 CommunityToolkit.Mvvm 源代码生成器
 - 📝 **结构化日志** — ILogger + LoggerMessage 源代码生成器，记录游戏关键事件
-- 🧪 **完善的单元测试** — Core / Infrastructure / UI 三层单元测试 (xUnit v3 + Moq + coverlet): Core 覆盖状态机流转、格子操作、胜负判定、地雷布局生成、存档与结果校验; Infrastructure 覆盖数据持久化、文件日志、服务注册、更新服务与引导更新; UI 覆盖视图模型状态与交互、统计筛选排序、配置解析持久化、Toast 计时与更新流程
+- 🧪 **完善的单元测试** — Core / Infrastructure / UI 三层单元测试 (xUnit v3 + Moq + coverlet): Core 覆盖状态机流转、格子操作、胜负判定、地雷布局生成、存档与结果校验; Infrastructure 覆盖数据持久化、文件日志、服务注册、更新服务、引导更新与单实例服务器; UI 覆盖视图模型状态与交互、统计筛选排序、配置解析持久化、Toast 计时与更新流程
 - 🔁 **CI/CD 自动化** — GitHub Actions 自动构建、测试、CodeQL 安全分析、Release 发布
 - 📦 **依赖自动更新** — Dependabot 分组策略，保持依赖最新
 
@@ -196,6 +196,7 @@ MineClearance/
     │   ├── FileLoggerProviderTests.cs                #     文件日志提供程序测试 (级别过滤/内容写入)
     │   ├── GameDataRepositoryTests.cs                #     游戏数据仓储测试 (存档/结果记录)
     │   ├── ServiceRegistrationTests.cs               #     服务注册测试 (DI 注册行为)
+    │   ├── SingleInstanceServerTests.cs              #     单实例服务器测试 (创建/激活请求/断开恢复)
     │   └── UpdateServiceTests.cs                     #     更新服务测试 (状态守卫/状态机流转)
     └── MineClearance.UI.Tests/                       # UI 层单元测试
         ├── MineClearance.UI.Tests.csproj             #   测试项目文件
