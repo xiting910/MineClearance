@@ -9,6 +9,12 @@
 
 ## [Unreleased]
 
+---
+
+## [1.1.11] - 2026-08-14
+
+**单实例运行收尾修复与单实例服务器测试补全**: 修复单实例服务器客户端断开后无法接受后续连接 (连接处理改为无条件 Disconnect 复位管道) 与单实例激活时窗口被遮挡无法置前 (WindowsHelper.BringToFront 绕过 Windows 前台激活限制) 两个问题; 新增 SingleInstanceServerTests 单元测试组覆盖客户端断开后继续等待激活请求等场景; AppMetadata 异常文档换行排版, MineClearance.UI 启用 AllowUnsafeBlocks.
+
 ### Fixed
 
 - Infrastructure 层: 单实例服务器客户端断开后无法接受后续连接修复 (客户端连接后未发送激活请求即断开时 IsConnected 已为 false, 原条件判断跳过 Disconnect 导致管道实例未复位, 后续激活请求全部超时; 改为连接处理内层 try/finally 无条件 Disconnect 复位管道, 移除 IsConnected 条件判断, 客户端异常断开或复位失败由外层 IOException 捕获后继续等待)
@@ -347,7 +353,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.10...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.11...HEAD
+[1.1.11]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.11
 [1.1.10]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.10
 [1.1.9]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.9
 [1.1.8]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.8
