@@ -9,6 +9,18 @@
 
 ## [Unreleased]
 
+**可解性检查分级实现**: 可解性检查器按地雷密度分级处理 (密度低于 0.25 走完整可解性检查, 低于 0.8 退化为每个地雷周围至少一个安全格子的宽松校验, 0.8 及以上直接放行), GameConfig 新增 MineDensity 地雷密度属性; MineGenerator 地雷生成完成后输出重试次数调试日志, ShuffleEngine 改用主构造函数参数捕获精简冗余字段.
+
+### Added
+
+- Core 层: GameConfig 新增 MineDensity 计算属性 (地雷数量占总格子数的比例, 供可解性检查按密度分级处理)
+- Core 层: SolvabilityChecker 新增分级可解性检查 (新增 SolvableDensityThreshold / SafeNeighborDensityThreshold 阈值常量与 HasSafeNeighbor 校验 — 每个地雷周围至少存在一个安全格子; 密度低于 0.25 走 IsSolvableCore 完整检查, 低于 0.8 走宽松校验, 0.8 及以上直接放行)
+
+### Changed
+
+- Core 层: MineGenerator 地雷生成完成后输出 Debug.WriteLine 调试日志 (含重试次数, 便于排查可解性检查的重试行为)
+- Core 层: ShuffleEngine 移除冗余备份字段, 主构造函数参数改名为 _original 并直接用于 Result 初始化 (主构造函数参数捕获)
+
 ---
 
 ## [1.1.11] - 2026-08-14

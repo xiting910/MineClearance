@@ -2,6 +2,7 @@ using MineClearance.Core.Interfaces;
 using MineClearance.Core.Models.Records;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace MineClearance.Core.Services;
@@ -39,6 +40,7 @@ internal sealed class MineGenerator(ISolvabilityChecker _solvabilityChecker) : I
             if (retries++ >= MaxRetries) { break; }
         }
         while (!_solvabilityChecker.IsSolvable(config, firstClick, mines));
+        Debug.WriteLine($"Mine generation completed after {retries} retries.");
         return mines;
     }
 
@@ -46,18 +48,13 @@ internal sealed class MineGenerator(ISolvabilityChecker _solvabilityChecker) : I
     /// 洗牌引擎, 用于随机打乱数组元素的顺序
     /// </summary>
     /// <typeparam name="T">数组元素类型</typeparam>
-    /// <param name="original">原始数组</param>
-    private sealed class ShuffleEngine<T>(T[] original)
+    /// <param name="_original">原始数组</param>
+    private sealed class ShuffleEngine<T>(T[] _original)
     {
-        /// <summary>
-        /// 原始数组
-        /// </summary>
-        private readonly T[] _original = original;
-
         /// <summary>
         /// 获取打乱后的结果
         /// </summary>
-        public T[] Result { get; } = new T[original.Length];
+        public T[] Result { get; } = new T[_original.Length];
 
         /// <summary>
         /// 使用指定的随机数种子打乱数组元素的顺序

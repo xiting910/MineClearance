@@ -19,6 +19,11 @@ public readonly record struct GameConfig(int BoardHeight, int BoardWidth, int Mi
     public int TotalCellsToOpen => (BoardHeight * BoardWidth) - MineCount;
 
     /// <summary>
+    /// 获取当前配置下的地雷密度, 即地雷数量占总格子数的比例
+    /// </summary>
+    public double MineDensity => (double)MineCount / (BoardHeight * BoardWidth);
+
+    /// <summary>
     /// 判断当前配置是否有效
     /// </summary>
     /// <returns><see langword="true"/> 表示有效, <see langword="false"/> 表示无效</returns>
