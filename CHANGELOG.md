@@ -9,9 +9,11 @@
 
 ## [Unreleased]
 
-**雷数数据源迁移与棋盘非空化重构**: 格子周围雷数数据源从 Cell 快照迁移到 MineField 单一查询 (Cell 删除 AdjacentMineCount, IMineField / IGame 新增 GetAdjacentMineCount); 游戏棋盘改为创建即生成 (IGame.Board 非空, 构造器注入棋盘, 首次点击仅生成雷位, 是否开始过改以计时器 FirstStartTime 判断); 移除生成阶段的可解性检查 (删除 SolvabilityChecker, MineGenerator 回归纯随机) 为后续运行时无猜方案铺路; UI 层棋盘订阅与格子池绑定重构, 单实例服务器测试消除连接竞速.
+---
 
-**无猜挽救 (No-guess rescue) 功能**: 新增 MineSolver 地雷求解器, 玩家被迫猜测选到雷格时尝试重排雷位使该格安全翻开并继续游戏, 实现运行时无猜体验 (以已揭示数字格为约束、邻域未开格为边界变量的回溯搜索, 雷数守恒且目标格强制安全, 已揭示数字计数保持不变; 搜索节点上限 100 万防止极端局面卡顿, 确定性输出优先保持原雷位减少移动); 存在必安全格时玩家并非被迫猜测 (有确定安全动作, 失误不救), 打开必死格时无合法重排无法挽救, 两种情况均按原逻辑判负; Game 泛洪开格集成换雷, 首次启动提示文案同步说明种子复现需保证猜测点击位置一致.
+## [1.2.0] - 2026-08-16
+
+**雷数数据源迁移与棋盘非空化重构, 无猜挽救功能**: 格子周围雷数数据源从 Cell 快照迁移到 MineField 单一查询 (Cell 删除 AdjacentMineCount, IMineField / IGame 新增 GetAdjacentMineCount); 游戏棋盘改为创建即生成 (IGame.Board 非空, 构造器注入棋盘, 首次点击仅生成雷位, 是否开始过改以计时器 FirstStartTime 判断); 移除生成阶段的可解性检查 (删除 SolvabilityChecker, MineGenerator 回归纯随机) 为运行时无猜方案铺路; 新增 MineSolver 地雷求解器, 玩家被迫猜测选到雷格时尝试重排雷位使该格安全翻开并继续游戏, 实现运行时无猜体验 (以已揭示数字格为约束、邻域未开格为边界变量的回溯搜索, 雷数守恒且目标格强制安全, 已揭示数字计数保持不变; 搜索节点上限 100 万防止极端局面卡顿, 确定性输出优先保持原雷位减少移动); 存在必安全格时玩家并非被迫猜测 (有确定安全动作, 失误不救), 打开必死格时无合法重排无法挽救, 两种情况均按原逻辑判负; UI 层棋盘订阅与格子池绑定重构, 首次启动提示文案同步说明种子复现需保证猜测点击位置一致, 单实例服务器测试消除连接竞速.
 
 ### Added
 
@@ -376,7 +378,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.1.11...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.0
 [1.1.11]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.11
 [1.1.10]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.10
 [1.1.9]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.9
