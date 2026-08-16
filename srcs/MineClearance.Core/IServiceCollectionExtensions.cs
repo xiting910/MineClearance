@@ -26,6 +26,7 @@ public static class IServiceCollectionExtensions
                 .AddSingleton<IGameFactory, GameFactory>()
                 .AddSingleton<IGameManager, GameManager>()
                 .AddScoped<IMineField, MineField>()
+                .AddScoped<IMineSolver, MineSolver>()
                 .AddScoped<IGameTimer, GameTimer>()
                 .AddTransient<IMineGenerator, MineGenerator>();
         }

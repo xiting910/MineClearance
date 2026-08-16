@@ -32,6 +32,11 @@ internal partial class Game
     private readonly IMineField _mineField;
 
     /// <summary>
+    /// 内部地雷求解器
+    /// </summary>
+    private readonly IMineSolver _mineSolver;
+
+    /// <summary>
     /// 更新当前游戏的完成度, 并返回是否已完成
     /// </summary>
     /// <returns><see langword="true"/> 如果游戏已完成, 否则为 <see langword="false"/></returns>
@@ -68,28 +73,36 @@ internal partial class Game
         // 判断打开的格子是否是地雷
         if (_mineField.IsMine(position))
         {
-            // 如果是地雷, 则游戏失败
-            Timer.Pause();
-            cell.Type = CellType.OpenedMine;
-            foreach (var (p, c) in Board)
+            // 尝试安全打开格子
+            if (_mineSolver.TrySafeOpen(Config, Board, _mineField, position) is not { } newMineMap)
             {
-                var isMine = _mineField.IsMine(p);
-                if (c.Type is CellType.Unopened && isMine)
+                // 如果是地雷, 则游戏失败
+                Timer.Pause();
+                cell.Type = CellType.OpenedMine;
+                foreach (var (p, c) in Board)
                 {
-                    c.Type = CellType.Mine;
+                    var isMine = _mineField.IsMine(p);
+                    if (c.Type is CellType.Unopened && isMine)
+                    {
+                        c.Type = CellType.Mine;
+                    }
+                    else if (c.Type is CellType.Flagged && !isMine)
+                    {
+                        c.Type = CellType.ErrorFlag;
+                    }
+                    else if (c.Type is CellType.Question)
+                    {
+                        c.Type = isMine ? CellType.Mine : CellType.Unopened;
+                    }
                 }
-                else if (c.Type is CellType.Flagged && !isMine)
-                {
-                    c.Type = CellType.ErrorFlag;
-                }
-                else if (c.Type is CellType.Question)
-                {
-                    c.Type = isMine ? CellType.Mine : CellType.Unopened;
-                }
+                Status = GameStatus.Lost;
+                UpdateGameResult();
+                return;
             }
-            Status = GameStatus.Lost;
-            UpdateGameResult();
-            return;
+
+            // 如果安全打开格子成功, 则更新地雷场
+            _mineField.Apply(Config, newMineMap);
+            LogMineFieldReplaced();
         }
 
         // 获取当前位置是否为空白格子

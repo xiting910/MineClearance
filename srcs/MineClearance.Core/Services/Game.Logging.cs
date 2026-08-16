@@ -44,4 +44,15 @@ internal partial class Game
         Message = "Game ended with result: {Result}"
     )]
     private partial void LogGameResult(GameResult result);
+
+    /// <summary>
+    /// 记录内部地雷场被更换的日志信息
+    /// </summary>
+    [LoggerMessage(
+        EventId = 4,
+        EventName = "MineFieldReplaced",
+        Level = LogLevel.Information,
+        Message = "Internal mine field has been replaced"
+    )]
+    private partial void LogMineFieldReplaced();
 }

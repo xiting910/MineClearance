@@ -33,7 +33,7 @@ public sealed partial class UpdateViewModel : ObservableObject
     private static readonly string FirstLaunchTipText = $"欢迎使用 {nameof(MineClearance)}!\n" +
         $"本程序由 {AppMetadata.Get(AppMetadata.AuthorKey)} 开发\n" +
         "任意界面按下 Esc 键可打开设置抽屉\n" +
-        "支持通过设置种子来生成固定雷区, 但需要确保难度和首次点击位置一致\n" +
+        "支持通过设置种子来生成固定雷区, 但需要确保难度、首次点击位置以及进行猜测时的点击位置一致\n" +
         "应用启动时会自动检查更新, 发现新版本后可通过提示下载\n" +
         $"应用的全部数据保存在 {Infrastructure.Constants.AppDataRootDirectory}";
 

@@ -33,6 +33,9 @@ internal sealed class GameFactory(
         // 从服务作用域中获取内部地雷场实例
         var mineField = scope.ServiceProvider.GetRequiredService<IMineField>();
 
+        // 从服务作用域中获取内部地雷求解器实例
+        var mineSolver = scope.ServiceProvider.GetRequiredService<IMineSolver>();
+
         // 从服务作用域中获取游戏计时器实例
         var timer = scope.ServiceProvider.GetRequiredService<IGameTimer>();
 
@@ -46,7 +49,7 @@ internal sealed class GameFactory(
         var seed = Random.Shared.Next();
 
         // 创建并返回一个新的游戏实例
-        return new Game(scope, logger, mineField, board, timer, difficulty, config, seed);
+        return new Game(scope, logger, mineField, mineSolver, board, timer, difficulty, config, seed);
     }
 
     /// <inheritdoc/>
@@ -64,6 +67,9 @@ internal sealed class GameFactory(
         // 从服务作用域中获取内部地雷场实例
         var mineField = scope.ServiceProvider.GetRequiredService<IMineField>();
 
+        // 从服务作用域中获取内部地雷求解器实例
+        var mineSolver = scope.ServiceProvider.GetRequiredService<IMineSolver>();
+
         // 从服务作用域中获取游戏计时器实例
         var timer = scope.ServiceProvider.GetRequiredService<IGameTimer>();
 
@@ -71,7 +77,7 @@ internal sealed class GameFactory(
         seed ??= Random.Shared.Next();
 
         // 创建并返回一个新的游戏实例
-        return new Game(scope, logger, mineField, board, timer, GameDifficulty.Custom, config, seed.Value);
+        return new Game(scope, logger, mineField, mineSolver, board, timer, GameDifficulty.Custom, config, seed.Value);
     }
 
     /// <inheritdoc/>
@@ -86,6 +92,9 @@ internal sealed class GameFactory(
         // 从服务作用域中获取内部地雷场实例
         var mineField = scope.ServiceProvider.GetRequiredService<IMineField>();
 
+        // 从服务作用域中获取内部地雷求解器实例
+        var mineSolver = scope.ServiceProvider.GetRequiredService<IMineSolver>();
+
         // 从服务作用域中获取游戏计时器实例
         var timer = scope.ServiceProvider.GetRequiredService<IGameTimer>();
 
@@ -96,6 +105,6 @@ internal sealed class GameFactory(
         var board = _boardFactory.CreateGameBoardDictionary(config.BoardHeight, config.BoardWidth);
 
         // 创建并返回一个新的游戏实例, 使用存档数据中的配置和种子
-        return new Game(scope, logger, mineField, board, timer, config, saveData);
+        return new Game(scope, logger, mineField, mineSolver, board, timer, config, saveData);
     }
 }

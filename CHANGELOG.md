@@ -11,6 +11,15 @@
 
 **雷数数据源迁移与棋盘非空化重构**: 格子周围雷数数据源从 Cell 快照迁移到 MineField 单一查询 (Cell 删除 AdjacentMineCount, IMineField / IGame 新增 GetAdjacentMineCount); 游戏棋盘改为创建即生成 (IGame.Board 非空, 构造器注入棋盘, 首次点击仅生成雷位, 是否开始过改以计时器 FirstStartTime 判断); 移除生成阶段的可解性检查 (删除 SolvabilityChecker, MineGenerator 回归纯随机) 为后续运行时无猜方案铺路; UI 层棋盘订阅与格子池绑定重构, 单实例服务器测试消除连接竞速.
 
+**无猜挽救 (No-guess rescue) 功能**: 新增 MineSolver 地雷求解器, 玩家被迫猜测选到雷格时尝试重排雷位使该格安全翻开并继续游戏, 实现运行时无猜体验 (以已揭示数字格为约束、邻域未开格为边界变量的回溯搜索, 雷数守恒且目标格强制安全, 已揭示数字计数保持不变; 搜索节点上限 100 万防止极端局面卡顿, 确定性输出优先保持原雷位减少移动); 存在必安全格时玩家并非被迫猜测 (有确定安全动作, 失误不救), 打开必死格时无合法重排无法挽救, 两种情况均按原逻辑判负; Game 泛洪开格集成换雷, 首次启动提示文案同步说明种子复现需保证猜测点击位置一致.
+
+### Added
+
+- Core 层: 地雷求解器 MineSolver 与 IMineSolver 接口 (TrySafeOpen 约束求解重排雷位, 已开数字格计数作为约束, 邻域格与自由格按目标距离排序作为变量; 目标远离数字区时与最近自由格交换雷位快速路径, 必死格预检逐变量剪枝, 搜索节点上限 100 万)
+- Core 层: 无猜挽救集成 (Game.FloodOpen 踩雷时先尝试 MineSolver.TrySafeOpen, 成功则替换内部地雷场并继续泛洪展开, 失败才按原逻辑揭示雷局判负; 新增 LogMineFieldReplaced 日志事件, GameFactory 构造注入 IMineSolver, DI 注册 AddScoped)
+- UI 层: 首次启动提示文案更新 (种子固定雷区说明补充进行猜测时的点击位置需一致, 因无猜挽救会重排雷位)
+- 测试: Core 层单元测试新增 1 组 (MineSolverTests, 覆盖二选一僵局两侧挽救、必死格拒绝、自由格快速交换、必安全格拒救、错旗不当约束、无数字格快速路径、相同输入结果一致)
+
 ### Changed
 
 - Core 层: 格子周围雷数数据源迁移 (Cell 删除 AdjacentMineCount 属性, 雷数统一由 MineField.GetAdjacentMineCount 按位置查询; IGame 新增 GetAdjacentMineCount 转发供 UI 显示; 泛洪判空、警告数字判定、数字格展开与一键插旗改由 MineField 查询, 消除棋盘快照与雷位不一致的风险)

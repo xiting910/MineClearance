@@ -150,6 +150,7 @@ internal sealed partial class Game : IGame
     /// <param name="serviceScope">服务作用域</param>
     /// <param name="logger">日志记录器</param>
     /// <param name="mineField">内部地雷场</param>
+    /// <param name="mineSolver">内部地雷求解器</param>
     /// <param name="board">游戏棋盘字典</param>
     /// <param name="timer">游戏计时器</param>
     /// <param name="difficulty">游戏难度</param>
@@ -159,6 +160,7 @@ internal sealed partial class Game : IGame
         IServiceScope serviceScope,
         ILogger<Game> logger,
         IMineField mineField,
+        IMineSolver mineSolver,
         IGameBoardDictionary board,
         IGameTimer timer,
         GameDifficulty difficulty,
@@ -172,6 +174,7 @@ internal sealed partial class Game : IGame
         _serviceScope = serviceScope;
         _logger = logger;
         _mineField = mineField;
+        _mineSolver = mineSolver;
         Board = board;
         Timer = timer;
         Status = GameStatus.WaitingStarted;
@@ -187,6 +190,7 @@ internal sealed partial class Game : IGame
     /// <param name="serviceScope">服务作用域</param>
     /// <param name="logger">日志记录器</param>
     /// <param name="mineField">内部地雷场</param>
+    /// <param name="mineSolver">内部地雷求解器</param>
     /// <param name="board">游戏棋盘字典</param>
     /// <param name="timer">游戏计时器</param>
     /// <param name="config">游戏配置</param>
@@ -195,6 +199,7 @@ internal sealed partial class Game : IGame
         IServiceScope serviceScope,
         ILogger<Game> logger,
         IMineField mineField,
+        IMineSolver mineSolver,
         IGameBoardDictionary board,
         IGameTimer timer,
         GameConfig config,
@@ -203,6 +208,7 @@ internal sealed partial class Game : IGame
         _serviceScope = serviceScope;
         _logger = logger;
         _mineField = mineField;
+        _mineSolver = mineSolver;
         Board = board;
         Timer = timer;
         Difficulty = saveData.Difficulty;

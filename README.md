@@ -20,6 +20,7 @@
 - ⚙️ **设置抽屉** — 主题 / Toast 时长与数量 / 日志级别 / 下载悬浮球即时配置, 手动检查更新与清除更新缓存, 关于信息 (游戏视图内呼出自动暂停)
 - 👋 **首次启动提示** — 首次启动展示欢迎信息与操作指引 (作者 / Esc 打开设置抽屉 / 种子雷区 / 自动更新说明), 展示后自动关闭
 - 🔢 **格子索引显示与复制** — 等待开始时按住热键显示全部格子索引 (松开隐藏), 首次点击格子可自动复制索引到剪贴板, 热键可在设置中录制
+- 🎯 **无猜体验 (No-guess)** — 被迫猜测选到雷格时自动重排雷位使该格安全翻开并继续游戏 (约束求解保证已揭示数字不变); 存在必安全格 (玩家本有确定动作) 或打开必死格 (无合法重排) 时按原逻辑判负
 - 🔄 **自动更新** — 启动时后台检查 GitHub 新版本, 断点续传下载并校验更新包完整性, 下载进度悬浮球与详情抽屉, 退出后引导更新失败自动回滚
 - 🔁 **单实例运行** — 重复启动时自动激活已有实例主窗口 (Windows 上绕过系统前台激活限制, 被遮挡/最小化均强制置前), 避免多开
 - 🛡️ **未处理异常处理** — 未处理异常写入独立日志文件, UI 线程异常通过 Toast 提示日志位置
@@ -79,6 +80,7 @@ MineClearance/
 │   │   │   ├── IGameManager.cs                       #     游戏管理器接口
 │   │   │   ├── IGameTimer.cs                         #     游戏计时器接口
 │   │   │   ├── IMineField.cs                         #     地雷场接口 (internal)
+│   │   │   ├── IMineSolver.cs                        #     地雷求解器接口 (internal)
 │   │   │   └── IMineGenerator.cs                     #     地雷生成器接口 (internal)
 │   │   ├── Models/                                   #   领域模型
 │   │   │   ├── Cell.cs                               #     游戏格子 (INotifyPropertyChanged)
@@ -97,7 +99,8 @@ MineClearance/
 │   │   │   ├── GameManager.cs                        #     游戏管理器实现
 │   │   │   ├── GameTimer.cs                          #     游戏计时器实现
 │   │   │   ├── MineField.cs                          #     地雷场实现
-│   │   │   └── MineGenerator.cs                      #     地雷生成器实现 (纯随机, 首点及邻域排除)
+│   │   │   ├── MineGenerator.cs                      #     地雷生成器实现 (纯随机, 首点及邻域排除)
+│   │   │   └── MineSolver.cs                         #     地雷求解器实现 (无猜雷位重排)
 │   │   └── IServiceCollectionExtensions.cs           # DI 注册扩展
 │   ├── MineClearance.Infrastructure/                 # 基础设施层 — 数据访问、外部服务实现
 │   │   ├── MineClearance.Infrastructure.csproj       #   项目文件 (引用 Core + Downloader)
@@ -184,6 +187,7 @@ MineClearance/
     │   ├── GameTests.cs                              #     游戏核心测试 (状态机/操作/胜负/存档)
     │   ├── GameTimerTests.cs                         #     游戏计时器测试 (启停/累计)
     │   ├── MineFieldTests.cs                         #     地雷场测试 (布局/相邻雷数)
+    │   ├── MineSolverTests.cs                        #     地雷求解器测试 (无猜重排/必死格判定)
     │   └── PositionTests.cs                          #     位置测试 (索引转换/相邻/边界)
     ├── MineClearance.Infrastructure.Tests/           # Infrastructure 层单元测试
     │   ├── MineClearance.Infrastructure.Tests.csproj #   测试项目文件
