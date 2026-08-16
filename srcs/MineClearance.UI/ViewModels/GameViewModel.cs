@@ -47,11 +47,6 @@ public sealed partial class GameViewModel : ObservableObject
     private readonly UIOptions _uiOptions;
 
     /// <summary>
-    /// 当前已订阅属性变化的棋盘, 棋盘替换时先退订旧棋盘
-    /// </summary>
-    private IGameBoardDictionary? _subscribedBoard;
-
-    /// <summary>
     /// 是否允许切换暂停状态, 游戏结束后不允许暂停或继续
     /// </summary>
     private bool CanTogglePause => !IsGameEnded;
@@ -289,8 +284,7 @@ public sealed partial class GameViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanTogglePause))]
     private void PauseResume()
     {
-        var game = _gameManager.Game;
-        if (game is null) { return; }
+        if (_gameManager.Game is not { } game) { return; }
 
         if (game.Status is GameStatus.Paused)
         {
@@ -360,13 +354,12 @@ public sealed partial class GameViewModel : ObservableObject
     /// <param name="position">格子位置</param>
     public void LeftClickAt(Position position)
     {
-        var game = _gameManager.Game;
-        if (game is not { IsPerformable: true }) { return; }
+        if (_gameManager.Game is not { IsPerformable: true } game) { return; }
 
         var isFirstClick = game.Status is GameStatus.WaitingStarted;
-        switch (game.Board?[position].Type)
+        switch (game.Board[position].Type)
         {
-            case null or CellType.Unopened:
+            case CellType.Unopened:
                 game.OpenCell(position);
                 if (isFirstClick && _uiOptions.CopyIndexOnFirstClick)
                 {
@@ -386,12 +379,12 @@ public sealed partial class GameViewModel : ObservableObject
     /// <param name="position">格子位置</param>
     public void CycleMarkAt(Position position)
     {
-        if (_gameManager.Game is not { Status: GameStatus.InProgress } game || game.Board is not { } board)
+        if (_gameManager.Game is not { Status: GameStatus.InProgress } game)
         {
             return;
         }
 
-        switch (board[position].Type)
+        switch (game.Board[position].Type)
         {
             case CellType.Unopened: game.FlagCell(position); break;
             case CellType.Flagged: game.QuestionCell(position); break;
@@ -405,7 +398,8 @@ public sealed partial class GameViewModel : ObservableObject
     /// <param name="position">数字格位置</param>
     public void FlagAdjacentAt(Position position)
     {
-        if (_gameManager.Game is { Status: GameStatus.InProgress } game && game.Board?[position].Type is CellType.Number)
+        if (_gameManager.Game is { Status: GameStatus.InProgress } game &&
+            game.Board[position].Type is CellType.Number)
         {
             game.FlagAdjacentCells(position);
         }
@@ -436,13 +430,17 @@ public sealed partial class GameViewModel : ObservableObject
     private void BindGame(IGame game)
     {
         game.PropertyChanged += OnGamePropertyChanged;
+        game.Board.PropertyChanged += OnBoardPropertyChanged;
         HasGame = true;
 
-        var config = game.Config;
-        Rows = config.BoardHeight;
-        Columns = config.BoardWidth;
+        (Rows, Columns, var mineCount) = game.Config;
         Seed = game.Seed;
-        DifficultyText = $"{game.Difficulty.GetDescription()} ({config.BoardHeight}x{config.BoardWidth}, {config.MineCount} 雷)";
+        DifficultyText = $"{game.Difficulty.GetDescription()} ({Rows}x{Columns}, {mineCount} 雷)";
+
+        foreach (var cellViewModel in Cells)
+        {
+            cellViewModel.Game = game;
+        }
 
         UpdateBoard();
         UpdateStatus();
@@ -454,8 +452,12 @@ public sealed partial class GameViewModel : ObservableObject
     /// <param name="game">游戏实例</param>
     private void UnbindGame(IGame? game)
     {
-        _subscribedBoard?.PropertyChanged -= OnBoardPropertyChanged;
-        _subscribedBoard = null;
+        foreach (var cellViewModel in Cells)
+        {
+            cellViewModel.Game = null;
+        }
+
+        game?.Board.PropertyChanged -= OnBoardPropertyChanged;
         game?.PropertyChanged -= OnGamePropertyChanged;
     }
 
@@ -465,20 +467,14 @@ public sealed partial class GameViewModel : ObservableObject
     private void UpdateBoard()
     {
         if (_gameManager.Game is not { } game) { return; }
-        var board = game.Board;
-        foreach (var pos in Position.GetAllPositions(Core.Constants.MaxBoardHeight, Core.Constants.MaxBoardWidth))
+        foreach (var pos in Position.GetAllPositions(
+            Core.Constants.MaxBoardHeight, Core.Constants.MaxBoardWidth))
         {
             var cellViewModel = Cells[pos.ToIndex(Core.Constants.MaxBoardWidth)];
             var isInBoard = pos.IsInBounds(Rows, Columns);
             cellViewModel.IsVisible = isInBoard;
             cellViewModel.IndexText = isInBoard ? pos.ToIndex(Columns).ToString() : string.Empty;
-            cellViewModel.UpdateCell(isInBoard ? board?[pos] ?? PlaceholderCell : PlaceholderCell);
-        }
-        if (!ReferenceEquals(_subscribedBoard, board))
-        {
-            _subscribedBoard?.PropertyChanged -= OnBoardPropertyChanged;
-            _subscribedBoard = board;
-            _subscribedBoard?.PropertyChanged += OnBoardPropertyChanged;
+            cellViewModel.UpdateCell(isInBoard ? game.Board[pos] : PlaceholderCell);
         }
         UpdateStatus();
     }
@@ -508,8 +504,8 @@ public sealed partial class GameViewModel : ObservableObject
         IsWin = game.Status is GameStatus.Won;
         PauseButtonText = IsPaused ? "继续" : "暂停";
         CompletionText = $"{game.Completion * 100:0.##}%";
-        RemainingMines = game.Config.MineCount - (game.Board?.FlagCount ?? 0);
-        OpenedCount = game.Board?.OpenedCount ?? 0;
+        RemainingMines = game.Config.MineCount - game.Board.FlagCount;
+        OpenedCount = game.Board.OpenedCount;
 
         // 游戏开始 (等待状态结束) 后强制隐藏索引, 即使热键仍被按住
         if (!IsWaitingStarted)
@@ -568,7 +564,7 @@ public sealed partial class GameViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 游戏属性变化时更新界面: Board 出现时构建棋盘, Status 变化时更新状态
+    /// 游戏属性变化时更新界面: Status 变化时更新状态, Board 在游戏创建时已生成且之后不变, 无需监听
     /// </summary>
     /// <param name="sender">游戏实例</param>
     /// <param name="e">属性变化事件参数</param>
@@ -576,7 +572,6 @@ public sealed partial class GameViewModel : ObservableObject
     {
         switch (e.PropertyName)
         {
-            case nameof(IGame.Board): UpdateBoard(); break;
             case nameof(IGame.Status): UpdateStatus(); break;
             case nameof(IGame.Result): UpdateStatus(); break;
             case nameof(IGame.Completion): CompletionText = $"{_gameManager.Game?.Completion * 100:0.##}%"; break;
@@ -590,11 +585,10 @@ public sealed partial class GameViewModel : ObservableObject
     /// <param name="e">属性变化事件参数</param>
     private void OnBoardPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        var game = _gameManager.Game;
-        if (game?.Board is not { } board) { return; }
+        if (_gameManager.Game is not { } game) { return; }
 
-        RemainingMines = game.Config.MineCount - board.FlagCount;
-        OpenedCount = board.OpenedCount;
+        RemainingMines = game.Config.MineCount - game.Board.FlagCount;
+        OpenedCount = game.Board.OpenedCount;
     }
 
     /// <summary>
@@ -604,8 +598,7 @@ public sealed partial class GameViewModel : ObservableObject
     /// <param name="e">计时器事件参数</param>
     private void OnRefreshTimerTick(object? sender, EventArgs e)
     {
-        var game = _gameManager.Game;
-        if (game is null) { return; }
+        if (_gameManager.Game is not { } game) { return; }
         TimeText = FormatTime(game.Timer.Elapsed);
     }
 

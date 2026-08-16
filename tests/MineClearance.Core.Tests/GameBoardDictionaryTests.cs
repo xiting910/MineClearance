@@ -20,29 +20,22 @@ public sealed class GameBoardDictionaryTests
     private const int Columns = 3;
 
     /// <summary>
-    /// 测试布局: (0,1) 是地雷, 其余位置是周围地雷数量, 按行优先顺序排列
-    /// </summary>
-    private static readonly int[] AdjacentMineCounts = [1, -1, 1, 1, 1, 1, 0, 0, 0];
-
-    /// <summary>
     /// 创建测试棋盘
     /// </summary>
     /// <returns>棋盘实例</returns>
     private static GameBoardDictionary CreateBoard()
     {
-        return new(Rows, Columns, AdjacentMineCounts);
+        return new(Rows, Columns);
     }
 
     [Fact]
-    public void 构造_创建全部格子_数量与邻居数正确()
+    public void 构造_创建全部格子_初始状态为未打开()
     {
         var board = CreateBoard();
 
         Assert.Equal(9, board.Count);
         Assert.Equal(CellType.Unopened, board[new(0, 0)].Type);
-        Assert.Equal(Constants.MineValue, board[new(0, 1)].AdjacentMineCount);
-        Assert.Equal(1, board[new(0, 0)].AdjacentMineCount);
-        Assert.Equal(0, board[new(2, 2)].AdjacentMineCount);
+        Assert.Equal(CellType.Unopened, board[new(2, 2)].Type);
     }
 
     [Fact]

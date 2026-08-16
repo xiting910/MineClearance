@@ -85,10 +85,10 @@ public sealed class GameTests
     private static Mock<IMineField> CreateMineFieldMock()
     {
         var mock = new Mock<IMineField>();
-        _ = mock.Setup(m => m.Generate(It.IsAny<GameConfig>(), It.IsAny<Position>(), It.IsAny<int>()))
-            .Returns(() => (int[])AdjacentMineCounts.Clone());
-        _ = mock.Setup(m => m.Generate(It.IsAny<GameConfig>(), It.IsAny<BitArray>()))
-            .Returns(() => (int[])AdjacentMineCounts.Clone());
+        _ = mock.Setup(m => m.Generate(It.IsAny<GameConfig>(), It.IsAny<Position>(), It.IsAny<int>()));
+        _ = mock.Setup(m => m.Apply(It.IsAny<GameConfig>(), It.IsAny<BitArray>()));
+        _ = mock.Setup(m => m.GetAdjacentMineCount(It.IsAny<Position>()))
+            .Returns((Position position) => AdjacentMineCounts[position.ToIndex(Columns)]);
         _ = mock.Setup(m => m.IsMine(It.IsAny<Position>()))
             .Returns((Position position) => IsMine(position));
         _ = mock.Setup(m => m.GetMineMap())
@@ -97,13 +97,14 @@ public sealed class GameTests
     }
 
     /// <summary>
-    /// 创建计时器模拟, 固定返回开始时间和已用时
+    /// 创建计时器模拟, 固定返回开始时间和已用时, 可通过参数模拟尚未开始的计时器
     /// </summary>
+    /// <param name="hasStarted">计时器是否已经开始过</param>
     /// <returns>计时器模拟</returns>
-    private static Mock<IGameTimer> CreateTimerMock()
+    private static Mock<IGameTimer> CreateTimerMock(bool hasStarted = true)
     {
         var mock = new Mock<IGameTimer>();
-        _ = mock.SetupGet(timer => timer.FirstStartTime).Returns(StartTime);
+        _ = mock.SetupGet(timer => timer.FirstStartTime).Returns(hasStarted ? StartTime : null);
         _ = mock.SetupGet(timer => timer.Elapsed).Returns(TimeSpan.FromMinutes(1));
         return mock;
     }
@@ -111,16 +112,17 @@ public sealed class GameTests
     /// <summary>
     /// 创建可玩的游戏实例及配套模拟
     /// </summary>
+    /// <param name="timerStarted">计时器是否已经开始过</param>
     /// <returns>游戏实例和地雷场、计时器模拟</returns>
-    private static (Game Game, Mock<IMineField> MineField, Mock<IGameTimer> Timer) CreatePlayableGame()
+    private static (Game Game, Mock<IMineField> MineField, Mock<IGameTimer> Timer) CreatePlayableGame(bool timerStarted = true)
     {
         var mineField = CreateMineFieldMock();
-        var timer = CreateTimerMock();
+        var timer = CreateTimerMock(timerStarted);
         var game = new Game(
             new Mock<IServiceScope>().Object,
             NullLogger<Game>.Instance,
-            BoardFactory,
             mineField.Object,
+            BoardFactory.CreateGameBoardDictionary(Rows, Columns),
             timer.Object,
             GameDifficulty.Custom,
             Config,
@@ -139,8 +141,8 @@ public sealed class GameTests
         return new(
             (scopeMock ?? new Mock<IServiceScope>()).Object,
             NullLogger<Game>.Instance,
-            BoardFactory,
             CreateMineFieldMock().Object,
+            BoardFactory.CreateGameBoardDictionary(Rows, Columns),
             CreateTimerMock().Object,
             GameDifficulty.Custom,
             Config,
@@ -149,12 +151,13 @@ public sealed class GameTests
     }
 
     [Fact]
-    public void 构造_初始状态_等待开始且无棋盘()
+    public void 构造_初始状态_等待开始且棋盘未翻开()
     {
         var (game, _, _) = CreatePlayableGame();
 
         Assert.Equal(GameStatus.WaitingStarted, game.Status);
-        Assert.Null(game.Board);
+        Assert.NotNull(game.Board);
+        Assert.Equal(0, game.Board.OpenedCount);
         Assert.Equal(0, game.Completion);
         Assert.Null(game.Result);
         Assert.Equal(GameDifficulty.Custom, game.Difficulty);
@@ -165,13 +168,12 @@ public sealed class GameTests
     }
 
     [Fact]
-    public void OpenCell_首次点击_创建棋盘并开始计时()
+    public void OpenCell_首次点击_生成地雷场并开始计时()
     {
         var (game, mineField, timer) = CreatePlayableGame();
 
         game.OpenCell(new(0, 0));
 
-        Assert.NotNull(game.Board);
         Assert.Equal(GameStatus.InProgress, game.Status);
         Assert.True(game.HasProgress);
         Assert.Equal(CellType.Number, game.Board[new(0, 0)].Type);
@@ -228,7 +230,7 @@ public sealed class GameTests
     [Fact]
     public void Pause_尚未开始_状态变为已暂停()
     {
-        var (game, _, timer) = CreatePlayableGame();
+        var (game, _, timer) = CreatePlayableGame(timerStarted: false);
 
         game.Pause();
 
@@ -253,9 +255,20 @@ public sealed class GameTests
     }
 
     [Fact]
-    public void CancelPause_无棋盘_回到等待开始且不启动计时器()
+    public void CancelPause_尚未开始_回到等待开始且不启动计时器()
     {
-        var (game, _, timer) = CreatePlayableGame();
+        var mineField = CreateMineFieldMock();
+        var timer = CreateTimerMock(hasStarted: false);
+        var game = new Game(
+            new Mock<IServiceScope>().Object,
+            NullLogger<Game>.Instance,
+            mineField.Object,
+            BoardFactory.CreateGameBoardDictionary(Rows, Columns),
+            timer.Object,
+            GameDifficulty.Custom,
+            Config,
+            Seed
+        );
 
         game.Pause();
         game.CancelPause();
@@ -266,7 +279,7 @@ public sealed class GameTests
     }
 
     [Fact]
-    public void OpenCell_状态变化_触发属性变化事件()
+    public void OpenCell_状态变化_触发状态变化事件()
     {
         var (game, _, _) = CreatePlayableGame();
         var statusChangedCount = 0;
@@ -280,7 +293,7 @@ public sealed class GameTests
         game.OpenCell(new(0, 0));
 
         Assert.Equal(1, statusChangedCount);
-        Assert.Equal(1, boardChangedCount);
+        Assert.Equal(0, boardChangedCount);
     }
 
     [Fact]
@@ -553,21 +566,21 @@ public sealed class GameTests
         var game = new Game(
             new Mock<IServiceScope>().Object,
             NullLogger<Game>.Instance,
-            BoardFactory,
             mineField.Object,
+            BoardFactory.CreateGameBoardDictionary(Rows, Columns),
             timer.Object,
+            Config,
             saveData
         );
 
         Assert.Equal(GameStatus.Paused, game.Status);
-        Assert.NotNull(game.Board);
         Assert.Equal(CellType.Number, game.Board[new(0, 0)].Type);
         Assert.Equal(CellType.Unopened, game.Board[new(3, 3)].Type);
         Assert.Equal(GameDifficulty.Custom, game.Difficulty);
         Assert.Equal(Config, game.Config);
         Assert.Equal(Seed, game.Seed);
         Assert.Equal(1.0 / 23, game.Completion);
-        mineField.Verify(m => m.Generate(Config, saveData.MineField), Times.Once);
+        mineField.Verify(m => m.Apply(Config, saveData.MineField), Times.Once);
         timer.Verify(t => t.Initial(StartTime, TimeSpan.FromMinutes(1)), Times.Once);
     }
 

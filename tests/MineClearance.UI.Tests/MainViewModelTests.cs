@@ -122,19 +122,19 @@ public sealed class MainViewModelTests
     }
 
     [Fact]
-    public async Task 开始新游戏_预设难度_调用游戏管理器并导航至游戏视图()
+    public void 开始新游戏_预设难度_调用游戏管理器并导航至游戏视图()
     {
         NavigationTarget? navigated = null;
         _viewModel.NavigationRequested += target => navigated = target;
 
-        await _viewModel.StartNewGameCommand.ExecuteAsync(null);
+        _viewModel.StartNewGameCommand.Execute(null);
 
         _gameManager.Verify(m => m.StartNewGame(GameDifficulty.Beginner), Times.Once);
         Assert.Equal(NavigationTarget.GameView, navigated);
     }
 
     [Fact]
-    public async Task 开始新游戏_自定义难度_以输入参数构建配置并解析种子()
+    public void 开始新游戏_自定义难度_以输入参数构建配置并解析种子()
     {
         _viewModel.SelectedDifficulty = GameDifficulty.Custom;
         _viewModel.Height = 5;
@@ -142,13 +142,13 @@ public sealed class MainViewModelTests
         _viewModel.MineCount = 8;
         _viewModel.SeedText = "42";
 
-        await _viewModel.StartNewGameCommand.ExecuteAsync(null);
+        _viewModel.StartNewGameCommand.Execute(null);
 
         _gameManager.Verify(m => m.StartNewGame(new(5, 7, 8), 42), Times.Once);
     }
 
     [Fact]
-    public async Task 开始新游戏_自定义难度种子为空_不传种子()
+    public void 开始新游戏_自定义难度种子为空_不传种子()
     {
         _viewModel.SelectedDifficulty = GameDifficulty.Custom;
         _viewModel.Height = 5;
@@ -156,13 +156,13 @@ public sealed class MainViewModelTests
         _viewModel.MineCount = 8;
         _viewModel.SeedText = string.Empty;
 
-        await _viewModel.StartNewGameCommand.ExecuteAsync(null);
+        _viewModel.StartNewGameCommand.Execute(null);
 
         _gameManager.Verify(m => m.StartNewGame(new(5, 7, 8), null), Times.Once);
     }
 
     [Fact]
-    public async Task 开始新游戏_自定义难度配置无效_不开始游戏也不导航()
+    public void 开始新游戏_自定义难度配置无效_不开始游戏也不导航()
     {
         NavigationTarget? navigated = null;
         _viewModel.NavigationRequested += target => navigated = target;
@@ -171,7 +171,7 @@ public sealed class MainViewModelTests
         _viewModel.Width = 0;
         _viewModel.MineCount = 0;
 
-        await _viewModel.StartNewGameCommand.ExecuteAsync(null);
+        _viewModel.StartNewGameCommand.Execute(null);
 
         _gameManager.Verify(
             m => m.StartNewGame(It.IsAny<GameConfig>(), It.IsAny<int?>()), Times.Never

@@ -6,7 +6,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
@@ -85,17 +84,13 @@ internal sealed class GameBoardDictionary : IGameBoardDictionary
     /// </summary>
     /// <param name="rows">棋盘行数</param>
     /// <param name="columns">棋盘列数</param>
-    /// <param name="adjacentMineCounts">按行优先顺序排列的周围地雷数量数组</param>
-    public GameBoardDictionary(int rows, int columns, int[] adjacentMineCounts)
+    public GameBoardDictionary(int rows, int columns)
     {
-        Debug.Assert(adjacentMineCounts.Length == rows * columns, $"The length of {nameof(adjacentMineCounts)} must be equal to {nameof(rows)} * {nameof(columns)}.");
         foreach (var position in Position.GetAllPositions(rows, columns))
         {
-            _cells[position] = new()
-            {
-                AdjacentMineCount = adjacentMineCounts[position.ToIndex(columns)]
-            };
-            _cells[position].PropertyChanged += OnCellPropertyChanged;
+            var cell = new Cell();
+            cell.PropertyChanged += OnCellPropertyChanged;
+            _cells[position] = cell;
         }
     }
 

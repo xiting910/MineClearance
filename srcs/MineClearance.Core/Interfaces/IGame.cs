@@ -11,10 +11,10 @@ namespace MineClearance.Core.Interfaces;
 public interface IGame : INotifyPropertyChanged, IDisposable
 {
     /// <summary>
-    /// 获取当前游戏棋盘字典, 在地雷生成之前为 <see langword="null"/>
+    /// 获取当前游戏棋盘字典
     /// </summary>
     /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
-    IGameBoardDictionary? Board { get; }
+    IGameBoardDictionary Board { get; }
 
     /// <summary>
     /// 获取当前游戏计时器
@@ -123,6 +123,15 @@ public interface IGame : INotifyPropertyChanged, IDisposable
     /// <param name="position">要标记的数字格子的位置</param>
     /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
     void FlagAdjacentCells(Position position);
+
+    /// <summary>
+    /// 获取指定位置的相邻地雷数量
+    /// </summary>
+    /// <param name="position">要查询的位置</param>
+    /// <returns>相邻地雷数量</returns>
+    /// <exception cref="InvalidOperationException">如果地雷场尚未生成或该位置是地雷, 则抛出该异常</exception>
+    /// <exception cref="ObjectDisposedException">如果当前实例已被释放, 则抛出该异常</exception>
+    int GetAdjacentMineCount(Position position);
 
     /// <summary>
     /// 获取当前游戏的存档数据, 用于保存游戏进度

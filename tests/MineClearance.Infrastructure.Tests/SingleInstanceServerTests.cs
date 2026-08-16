@@ -86,6 +86,9 @@ public sealed class SingleInstanceServerTests
             client.Connect(TimeSpan.FromSeconds(5));
         }
 
+        // 等待服务器处理完客户端断开并重新监听, 避免后续连接与断开处理竞速
+        await Task.Delay(300, TestContext.Current.CancellationToken);
+
         // 第二个客户端发送激活请求
         SingleInstanceServer.SendActivateRequest(pipeName);
 

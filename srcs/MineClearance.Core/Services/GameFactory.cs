@@ -25,65 +25,77 @@ internal sealed class GameFactory(
         Debug.Assert(difficulty is not GameDifficulty.Custom, "Cannot create a game with custom difficulty using this method. Use CreateGame(GameConfig config, int? seed) instead.");
 
         // 创建一个新的服务作用域, 用于管理依赖注入的生命周期
-        var serviceScope = _serviceScopeFactory.CreateScope();
+        var scope = _serviceScopeFactory.CreateScope();
 
         // 从服务作用域中获取日志记录器实例
-        var logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<Game>>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Game>>();
 
         // 从服务作用域中获取内部地雷场实例
-        var mineField = serviceScope.ServiceProvider.GetRequiredService<IMineField>();
+        var mineField = scope.ServiceProvider.GetRequiredService<IMineField>();
 
         // 从服务作用域中获取游戏计时器实例
-        var timer = serviceScope.ServiceProvider.GetRequiredService<IGameTimer>();
+        var timer = scope.ServiceProvider.GetRequiredService<IGameTimer>();
 
         // 获取游戏配置
         var config = GameConfig.FromDifficulty(difficulty);
+
+        // 创建一个新的游戏棋盘字典, 用于存储格子集合
+        var board = _boardFactory.CreateGameBoardDictionary(config.BoardHeight, config.BoardWidth);
 
         // 生成一个随机种子
         var seed = Random.Shared.Next();
 
         // 创建并返回一个新的游戏实例
-        return new Game(serviceScope, logger, _boardFactory, mineField, timer, difficulty, config, seed);
+        return new Game(scope, logger, mineField, board, timer, difficulty, config, seed);
     }
 
     /// <inheritdoc/>
     public IGame CreateGame(GameConfig config, int? seed = null)
     {
         // 创建一个新的服务作用域, 用于管理依赖注入的生命周期
-        var serviceScope = _serviceScopeFactory.CreateScope();
+        var scope = _serviceScopeFactory.CreateScope();
+
+        // 创建一个新的游戏棋盘字典, 用于存储格子集合
+        var board = _boardFactory.CreateGameBoardDictionary(config.BoardHeight, config.BoardWidth);
 
         // 从服务作用域中获取日志记录器实例
-        var logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<Game>>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Game>>();
 
         // 从服务作用域中获取内部地雷场实例
-        var mineField = serviceScope.ServiceProvider.GetRequiredService<IMineField>();
+        var mineField = scope.ServiceProvider.GetRequiredService<IMineField>();
 
         // 从服务作用域中获取游戏计时器实例
-        var timer = serviceScope.ServiceProvider.GetRequiredService<IGameTimer>();
+        var timer = scope.ServiceProvider.GetRequiredService<IGameTimer>();
 
         // 如果未提供种子, 则生成一个随机种子
         seed ??= Random.Shared.Next();
 
         // 创建并返回一个新的游戏实例
-        return new Game(serviceScope, logger, _boardFactory, mineField, timer, GameDifficulty.Custom, config, seed.Value);
+        return new Game(scope, logger, mineField, board, timer, GameDifficulty.Custom, config, seed.Value);
     }
 
     /// <inheritdoc/>
     public IGame CreateGame(GameSaveData saveData)
     {
         // 创建一个新的服务作用域, 用于管理依赖注入的生命周期
-        var serviceScope = _serviceScopeFactory.CreateScope();
+        var scope = _serviceScopeFactory.CreateScope();
 
         // 从服务作用域中获取日志记录器实例
-        var logger = serviceScope.ServiceProvider.GetRequiredService<ILogger<Game>>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Game>>();
 
         // 从服务作用域中获取内部地雷场实例
-        var mineField = serviceScope.ServiceProvider.GetRequiredService<IMineField>();
+        var mineField = scope.ServiceProvider.GetRequiredService<IMineField>();
 
         // 从服务作用域中获取游戏计时器实例
-        var timer = serviceScope.ServiceProvider.GetRequiredService<IGameTimer>();
+        var timer = scope.ServiceProvider.GetRequiredService<IGameTimer>();
+
+        // 从存档数据中获取游戏配置
+        var config = GameConfig.FromGameSaveData(saveData);
+
+        // 创建一个新的游戏棋盘字典, 用于存储格子集合
+        var board = _boardFactory.CreateGameBoardDictionary(config.BoardHeight, config.BoardWidth);
 
         // 创建并返回一个新的游戏实例, 使用存档数据中的配置和种子
-        return new Game(serviceScope, logger, _boardFactory, mineField, timer, saveData);
+        return new Game(scope, logger, mineField, board, timer, config, saveData);
     }
 }

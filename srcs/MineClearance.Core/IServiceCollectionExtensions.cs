@@ -27,8 +27,7 @@ public static class IServiceCollectionExtensions
                 .AddSingleton<IGameManager, GameManager>()
                 .AddScoped<IMineField, MineField>()
                 .AddScoped<IGameTimer, GameTimer>()
-                .AddTransient<IMineGenerator, MineGenerator>()
-                .AddTransient<ISolvabilityChecker, SolvabilityChecker>();
+                .AddTransient<IMineGenerator, MineGenerator>();
         }
     }
 }

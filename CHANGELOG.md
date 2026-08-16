@@ -9,17 +9,19 @@
 
 ## [Unreleased]
 
-**可解性检查分级实现**: 可解性检查器按地雷密度分级处理 (密度低于 0.25 走完整可解性检查, 低于 0.8 退化为每个地雷周围至少一个安全格子的宽松校验, 0.8 及以上直接放行), GameConfig 新增 MineDensity 地雷密度属性; MineGenerator 地雷生成完成后输出重试次数调试日志, ShuffleEngine 改用主构造函数参数捕获精简冗余字段.
-
-### Added
-
-- Core 层: GameConfig 新增 MineDensity 计算属性 (地雷数量占总格子数的比例, 供可解性检查按密度分级处理)
-- Core 层: SolvabilityChecker 新增分级可解性检查 (新增 SolvableDensityThreshold / SafeNeighborDensityThreshold 阈值常量与 HasSafeNeighbor 校验 — 每个地雷周围至少存在一个安全格子; 密度低于 0.25 走 IsSolvableCore 完整检查, 低于 0.8 走宽松校验, 0.8 及以上直接放行)
+**雷数数据源迁移与棋盘非空化重构**: 格子周围雷数数据源从 Cell 快照迁移到 MineField 单一查询 (Cell 删除 AdjacentMineCount, IMineField / IGame 新增 GetAdjacentMineCount); 游戏棋盘改为创建即生成 (IGame.Board 非空, 构造器注入棋盘, 首次点击仅生成雷位, 是否开始过改以计时器 FirstStartTime 判断); 移除生成阶段的可解性检查 (删除 SolvabilityChecker, MineGenerator 回归纯随机) 为后续运行时无猜方案铺路; UI 层棋盘订阅与格子池绑定重构, 单实例服务器测试消除连接竞速.
 
 ### Changed
 
-- Core 层: MineGenerator 地雷生成完成后输出 Debug.WriteLine 调试日志 (含重试次数, 便于排查可解性检查的重试行为)
-- Core 层: ShuffleEngine 移除冗余备份字段, 主构造函数参数改名为 _original 并直接用于 Result 初始化 (主构造函数参数捕获)
+- Core 层: 格子周围雷数数据源迁移 (Cell 删除 AdjacentMineCount 属性, 雷数统一由 MineField.GetAdjacentMineCount 按位置查询; IGame 新增 GetAdjacentMineCount 转发供 UI 显示; 泛洪判空、警告数字判定、数字格展开与一键插旗改由 MineField 查询, 消除棋盘快照与雷位不一致的风险)
+- Core 层: 游戏棋盘非空化 (IGame.Board 改为非空, 游戏创建时即生成棋盘, 首次点击仅生成雷位; HasProgress / CancelPause / GetSaveData 改以 Timer.FirstStartTime 判断游戏是否开始过; 移除全部棋盘空值分支)
+- Core 层: 移除生成时可解性检查 (删除 SolvabilityChecker / ISolvabilityChecker; MineGenerator 移除重试循环与 ShuffleEngine 回归纯随机生成; IMineField.Generate 改为 void 返回值, 存档恢复改用 Apply 应用雷位图)
+- UI 层: 棋盘订阅与格子池绑定重构 (棋盘事件订阅移入绑定/解绑并移除 _subscribedBoard 字段与永不复发的棋盘变化事件分支; CellViewModel 通过 IGame 查询雷数显示; MainViewModel 开始新游戏命令同步化)
+- 测试: Core / UI 层测试适配雷数查询与棋盘非空化
+
+### Fixed
+
+- 测试: 单实例服务器客户端断开后继续等待激活请求测试偶发超时修复 (客户端断开后服务器复位管道需时, 立即发送第二个激活请求会与复位竞速导致连接超时; 断开后等待服务器复位完成再发送激活请求)
 
 ---
 

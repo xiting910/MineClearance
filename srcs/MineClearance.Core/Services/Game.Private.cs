@@ -27,11 +27,6 @@ internal partial class Game
     private readonly ILogger<Game> _logger;
 
     /// <summary>
-    /// 游戏棋盘字典工厂
-    /// </summary>
-    private readonly IGameBoardDictionaryFactory _boardFactory;
-
-    /// <summary>
     /// 内部地雷场
     /// </summary>
     private readonly IMineField _mineField;
@@ -42,13 +37,6 @@ internal partial class Game
     /// <returns><see langword="true"/> 如果游戏已完成, 否则为 <see langword="false"/></returns>
     private bool UpdateCompletion()
     {
-        // 如果游戏棋盘字典为空, 则完成度为 0
-        if (Board is null)
-        {
-            Completion = 0;
-            return false;
-        }
-
         // 获取已经打开的格子数量
         var openedCount = Board.OpenedCount;
 
@@ -68,9 +56,6 @@ internal partial class Game
     /// <param name="position">要打开的格子位置</param>
     private void FloodOpen(Position position)
     {
-        // 调用该方法时, 游戏棋盘字典不应为 null, 因为该方法只在游戏进行中调用
-        Debug.Assert(Board is not null, $"{nameof(Board)} should not be null when calling FloodOpen.");
-
         // 如果游戏已经结束, 则不需要继续处理
         if (Status is GameStatus.Won or GameStatus.Lost) { return; }
 
@@ -107,16 +92,19 @@ internal partial class Game
             return;
         }
 
-        // 更新当前位置的格子类型
-        cell.Type = cell.AdjacentMineCount == 0 ? CellType.Empty : CellType.Number;
+        // 获取当前位置是否为空白格子
+        var isEmpty = _mineField.GetAdjacentMineCount(position) == 0;
 
-        // 如果该位置周围有地雷, 则不需要继续递归打开相邻格子
-        if (cell.AdjacentMineCount > 0) { return; }
+        // 更新当前位置的格子类型
+        cell.Type = isEmpty ? CellType.Empty : CellType.Number;
+
+        // 如果当前位置周围有地雷, 则不需要继续处理
+        if (!isEmpty) { return; }
 
         // 遍历该位置的所有相邻位置, 递归打开相邻格子
-        foreach (var adjacentPosition in position.GetAdjacentPositions(Config.BoardHeight, Config.BoardWidth))
+        foreach (var pos in position.GetAdjacentPositions(Config.BoardHeight, Config.BoardWidth))
         {
-            FloodOpen(adjacentPosition);
+            FloodOpen(pos);
         }
     }
 
@@ -133,7 +121,6 @@ internal partial class Game
         {
             // 如果游戏已完成, 则游戏胜利
             Timer.Pause();
-            Debug.Assert(Board is not null, $"{nameof(Board)} should not be null when game won.");
             foreach (var (p, c) in Board)
             {
                 if (c.Type is CellType.Unopened or CellType.Question && _mineField.IsMine(p))
@@ -183,9 +170,6 @@ internal partial class Game
     /// </summary>
     private void CheckAndUpdateWarningStates()
     {
-        // 如果游戏棋盘字典为空, 则不需要更新警告状态
-        if (Board is null) { return; }
-
         // 遍历所有位置和格子, 检测数字格子的警告状态是否需要更新
         foreach (var (position, cell) in Board)
         {
@@ -198,7 +182,9 @@ internal partial class Game
                     .Count(adjacentPosition => Board[adjacentPosition].Type is CellType.Flagged);
 
                 // 如果周围旗子格子数量大于实际地雷数量, 则将该格子类型设置为警告数字格子, 否则设置为普通数字格子
-                cell.Type = adjacentFlaggedCount > cell.AdjacentMineCount ? CellType.WarningNumber : CellType.Number;
+                cell.Type = adjacentFlaggedCount > _mineField.GetAdjacentMineCount(position)
+                    ? CellType.WarningNumber
+                    : CellType.Number;
             }
         }
     }

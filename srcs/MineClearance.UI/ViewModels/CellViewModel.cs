@@ -1,6 +1,7 @@
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MineClearance.Core.Enums;
+using MineClearance.Core.Interfaces;
 using MineClearance.Core.Models;
 using MineClearance.Core.Models.Records;
 using System.Collections.Generic;
@@ -81,6 +82,11 @@ public sealed partial class CellViewModel : ObservableObject
     public partial bool ShowIndex { get; set; }
 
     /// <summary>
+    /// 游戏实例, 用于查询格子周围地雷数量, 由游戏视图模型在棋盘更新时设置, 游戏解绑时清空
+    /// </summary>
+    public IGame? Game { get; set; }
+
+    /// <summary>
     /// 格子位置
     /// </summary>
     public Position Position { get; }
@@ -151,15 +157,11 @@ public sealed partial class CellViewModel : ObservableObject
                 break;
 
             case CellType.Number:
-                DisplayText = _cell.AdjacentMineCount.ToString();
-                Background = NumberBrush;
-                Foreground = NumberColors[_cell.AdjacentMineCount - 1];
+                UpdateNumberDisplay(NumberBrush);
                 break;
 
             case CellType.WarningNumber:
-                DisplayText = _cell.AdjacentMineCount.ToString();
-                Background = WarningBrush;
-                Foreground = NumberColors[_cell.AdjacentMineCount - 1];
+                UpdateNumberDisplay(WarningBrush);
                 break;
 
             case CellType.Flagged:
@@ -192,6 +194,20 @@ public sealed partial class CellViewModel : ObservableObject
                 Foreground = TextBrush;
                 break;
         }
+    }
+
+    /// <summary>
+    /// 更新数字格子的显示文本与配色, 雷数由游戏实例按位置查询, 游戏未绑定时不显示数字
+    /// </summary>
+    /// <param name="background">数字格子的背景</param>
+    private void UpdateNumberDisplay(IBrush background)
+    {
+        var mineCount = Game?.GetAdjacentMineCount(Position) ?? 0;
+        DisplayText = mineCount.ToString();
+        Background = background;
+        Foreground = mineCount > 0 && mineCount <= NumberColors.Count
+            ? NumberColors[mineCount - 1]
+            : TextBrush;
     }
 
     /// <summary>

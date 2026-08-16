@@ -10,7 +10,6 @@ internal interface IGameBoardDictionaryFactory
     /// </summary>
     /// <param name="rows">棋盘行数</param>
     /// <param name="columns">棋盘列数</param>
-    /// <param name="adjacentMineCounts">相邻地雷数量数组</param>
     /// <returns>游戏棋盘字典实例</returns>
-    IGameBoardDictionary CreateGameBoardDictionary(int rows, int columns, int[] adjacentMineCounts);
+    IGameBoardDictionary CreateGameBoardDictionary(int rows, int columns);
 }

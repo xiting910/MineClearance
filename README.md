@@ -79,8 +79,7 @@ MineClearance/
 │   │   │   ├── IGameManager.cs                       #     游戏管理器接口
 │   │   │   ├── IGameTimer.cs                         #     游戏计时器接口
 │   │   │   ├── IMineField.cs                         #     地雷场接口 (internal)
-│   │   │   ├── IMineGenerator.cs                     #     地雷生成器接口 (internal)
-│   │   │   └── ISolvabilityChecker.cs                #     可解性检查器接口 (internal)
+│   │   │   └── IMineGenerator.cs                     #     地雷生成器接口 (internal)
 │   │   ├── Models/                                   #   领域模型
 │   │   │   ├── Cell.cs                               #     游戏格子 (INotifyPropertyChanged)
 │   │   │   └── Records/                              #     记录类型
@@ -98,8 +97,7 @@ MineClearance/
 │   │   │   ├── GameManager.cs                        #     游戏管理器实现
 │   │   │   ├── GameTimer.cs                          #     游戏计时器实现
 │   │   │   ├── MineField.cs                          #     地雷场实现
-│   │   │   ├── MineGenerator.cs                      #     地雷生成器实现 (含可解性检查)
-│   │   │   └── SolvabilityChecker.cs                 #     可解性检查器实现
+│   │   │   └── MineGenerator.cs                      #     地雷生成器实现 (纯随机, 首点及邻域排除)
 │   │   └── IServiceCollectionExtensions.cs           # DI 注册扩展
 │   ├── MineClearance.Infrastructure/                 # 基础设施层 — 数据访问、外部服务实现
 │   │   ├── MineClearance.Infrastructure.csproj       #   项目文件 (引用 Core + Downloader)

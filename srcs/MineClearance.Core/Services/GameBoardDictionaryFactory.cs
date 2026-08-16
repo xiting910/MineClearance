@@ -8,8 +8,8 @@ namespace MineClearance.Core.Services;
 internal sealed class GameBoardDictionaryFactory : IGameBoardDictionaryFactory
 {
     /// <inheritdoc/>
-    public IGameBoardDictionary CreateGameBoardDictionary(int rows, int columns, int[] adjacentMineCounts)
+    public IGameBoardDictionary CreateGameBoardDictionary(int rows, int columns)
     {
-        return new GameBoardDictionary(rows, columns, adjacentMineCounts);
+        return new GameBoardDictionary(rows, columns);
     }
 }
