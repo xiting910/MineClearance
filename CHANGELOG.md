@@ -9,6 +9,17 @@
 
 ## [Unreleased]
 
+**xunit.v3 4.0.0 适配与测试稳定性修复**: 适配 xunit.v3 4.0.0 过时 API (CollectionBehaviorAttribute.DisableTestParallelization → ParallelizationAttribute.Mode), 修复 CI 构建错误; 单实例服务器客户端断开场景测试等待时长提升, 修复偶发超时; Program.cs 引导更新调用局部变量重命名简化.
+
+### Changed
+
+- 测试: 程序集级并行配置迁移至 xunit.v3 4.0.0 新 API (CollectionBehaviorAttribute.DisableTestParallelization 在 4.0.0 过时, 改用 ParallelizationAttribute.Mode = ParallelMode.None 禁用并行, 修复 CI 构建错误 CS0619)
+- UI 层: Program.cs 引导更新检查与执行局部变量重命名 (originalDirectory/originalVersion → dir/version) 并单行化
+
+### Fixed
+
+- 测试: 单实例服务器客户端断开后继续等待激活请求测试偶发超时修复 (等待服务器复位管道时长由 300ms 提升至 1000ms, 两处)
+
 ---
 
 ## [1.2.0] - 2026-08-16

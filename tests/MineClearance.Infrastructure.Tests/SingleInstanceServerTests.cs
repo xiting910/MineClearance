@@ -55,7 +55,7 @@ public sealed class SingleInstanceServerTests
             client.WriteByte(1);
         }
 
-        await Task.Delay(300, TestContext.Current.CancellationToken);
+        await Task.Delay(1000, TestContext.Current.CancellationToken);
         Assert.False(tcs.Task.IsCompleted);
 
         cts.Cancel();
@@ -87,7 +87,7 @@ public sealed class SingleInstanceServerTests
         }
 
         // 等待服务器处理完客户端断开并重新监听, 避免后续连接与断开处理竞速
-        await Task.Delay(300, TestContext.Current.CancellationToken);
+        await Task.Delay(1000, TestContext.Current.CancellationToken);
 
         // 第二个客户端发送激活请求
         SingleInstanceServer.SendActivateRequest(pipeName);

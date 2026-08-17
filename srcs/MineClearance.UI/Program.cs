@@ -30,10 +30,9 @@ file static class Program
             }
         };
 
-        if (BootstrapUpdateHelper.IsBootstrapUpdateRequested(
-            args, out var originalDirectory, out var originalVersion))
+        if (BootstrapUpdateHelper.IsBootstrapUpdateRequested(args, out var dir, out var version))
         {
-            return BootstrapUpdateHelper.ExecuteBootstrapUpdate(originalDirectory, originalVersion);
+            return BootstrapUpdateHelper.ExecuteBootstrapUpdate(dir, version);
         }
 
         var pipeName = $"{AppMetadata.Get(AppMetadata.ProductKey)}_{AppMetadata.Get(AppMetadata.AuthorKey)}";
