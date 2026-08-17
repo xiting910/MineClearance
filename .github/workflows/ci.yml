@@ -45,12 +45,11 @@ jobs:
       - name: Build solution (Release)
         run: dotnet build --no-restore --configuration Release
 
-      # 5. 运行所有单元测试并收集代码覆盖率
-      - name: Run tests with coverage
+      # 5. 运行所有单元测试并生成 TRX 测试报告
+      - name: Run tests
         run: |
-          dotnet test --configuration Release --verbosity normal \
-            --logger "trx;LogFileName=test-results.trx" \
-            --collect "XPlat Code Coverage" \
+          dotnet test --solution MineClearance.slnx --configuration Release --verbosity normal \
+            --report-xunit-trx --report-xunit-trx-filename test-results.trx \
             --results-directory ./TestResults
 
       # 6. 上传测试结果

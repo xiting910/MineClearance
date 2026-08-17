@@ -54,7 +54,7 @@ jobs:
 
       # 4. 运行全部单元测试
       - name: Run tests
-        run: dotnet test --configuration Release --verbosity normal
+        run: dotnet test --solution MineClearance.slnx --configuration Release --verbosity normal
 
       # 5. 发布 UI 项目
       - name: Publish application

@@ -36,13 +36,12 @@
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
-  <!-- 仅测试项目: 设置输出类型为 Exe, 启用不可打包, 启用隐式 using, 忽略特定警告, 启用 .NET 测试平台支持 -->
+  <!-- 仅测试项目: 设置输出类型为 Exe, 启用不可打包, 启用隐式 using, 忽略特定警告 -->
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>$(NoWarn);CA1707;MTP0001</NoWarn>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <!-- 仅测试项目: 引用测试相关的 NuGet 包 -->

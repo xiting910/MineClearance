@@ -13,17 +13,23 @@ namespace MineClearance.Infrastructure;
 public sealed class SingleInstanceServer : IDisposable
 {
     /// <summary>
+    /// 管道名称, 用于连接异常时重建管道实例
+    /// </summary>
+    private readonly string _pipeName;
+
+    /// <summary>
     /// 命名管道服务端, 用于保证应用程序的单实例运行和跨进程通信
     /// </summary>
-    private readonly NamedPipeServerStream _server;
+    private NamedPipeServerStream _server;
 
     /// <summary>
     /// 私有构造函数, 仅允许通过 <see cref="TryCreate"/> 创建实例
     /// </summary>
-    /// <param name="server">命名管道服务端</param>
-    private SingleInstanceServer(NamedPipeServerStream server)
+    /// <param name="pipeName">管道名称</param>
+    private SingleInstanceServer(string pipeName)
     {
-        _server = server;
+        _pipeName = pipeName;
+        _server = new(pipeName);
     }
 
     /// <summary>
@@ -37,9 +43,9 @@ public sealed class SingleInstanceServer : IDisposable
         {
             try
             {
-                await _server.WaitForConnectionAsync(token);
                 try
                 {
+                    await _server.WaitForConnectionAsync(token);
                     if (_server.ReadByte() == Constants.ActivateRequestByte)
                     {
                         onActivated();
@@ -47,10 +53,14 @@ public sealed class SingleInstanceServer : IDisposable
                 }
                 finally
                 {
-                    _server.Disconnect();
+                    try { _server.Disconnect(); } catch (InvalidOperationException) { }
                 }
             }
-            catch (IOException) { /* 客户端异常断开或复位失败, 继续等待下一个 */ }
+            catch (IOException)
+            {
+                _server.Dispose();
+                _server = new(_pipeName);
+            }
             catch (Exception ex) when (ex is OperationCanceledException or ObjectDisposedException)
             {
                 break;
@@ -75,7 +85,7 @@ public sealed class SingleInstanceServer : IDisposable
     {
         try
         {
-            server = new(new(pipeName));
+            server = new(pipeName);
             return true;
         }
         catch (IOException)

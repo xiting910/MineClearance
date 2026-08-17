@@ -14,10 +14,12 @@
 ### Changed
 
 - 测试: 程序集级并行配置迁移至 xunit.v3 4.0.0 新 API (CollectionBehaviorAttribute.DisableTestParallelization 在 4.0.0 过时, 改用 ParallelizationAttribute.Mode = ParallelMode.None 禁用并行, 修复 CI 构建错误 CS0619)
+- 工程化: dotnet test 切换 Microsoft.Testing.Platform 新体验 (新增 global.json 的 test.runner 配置, 移除 TestingPlatformDotnetTestSupport 属性, CI 与发布工作流测试命令改用 --solution / --report-xunit-trx 等 MTP 原生参数, 修复 .NET 10 SDK 下 MTP 应用不再支持 VSTest target 导致的测试阶段失败)
 - UI 层: Program.cs 引导更新检查与执行局部变量重命名 (originalDirectory/originalVersion → dir/version) 并单行化
 
 ### Fixed
 
+- Infrastructure 层: 单实例服务器客户端在连接建立前断开时管道实例不可恢复修复 (客户端在服务器接受连接前断开会使 WaitForConnectionAsync 持续抛 IOException 且 Disconnect 无法复位, 服务器陷入死循环导致后续激活请求全部超时; 连接异常时释放并重建管道实例, 客户端断开后继续等待后续激活请求)
 - 测试: 单实例服务器客户端断开后继续等待激活请求测试偶发超时修复 (等待服务器复位管道时长由 300ms 提升至 1000ms, 两处)
 
 ---
