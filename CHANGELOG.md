@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.2.1] - 2026-08-20
+
 **历史记录排序修复与 xunit.v3 4.0.0 适配**: 修复历史记录表格完成度列排序异常 (胜利时 Result.Completion 为 null 导致排序失效, 新增 CompletionForSort 属性胜利固定 1.0 排在失败前); 统计行排序改用 Difficulty 枚举值代替 DifficultyText 文本排序; 宽度/高度列补充 SortMemberPath 支持列头排序; 百分比常量统一迁入 Core 层; 适配 xunit.v3 4.0.0 过时 API, 修复 CI 构建错误; 单实例服务器客户端断开场景测试等待时长提升, 修复偶发超时.
 
 ### Changed
@@ -400,7 +404,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.1
 [1.2.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.0
 [1.1.11]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.11
 [1.1.10]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.10
