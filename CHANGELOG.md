@@ -9,9 +9,16 @@
 
 ## [Unreleased]
 
+---
+
+## [1.2.2] - 2026-08-20
+
+** 优化日志和 UI 显示**: GameDataRepository 游戏存档保存日志添加删除状态标识; UI 层操作提示帮助文本优化.
+
 ### Changed
 
 - Infrastructure 层: GameDataRepository 游戏存档保存日志添加删除状态标识 (LogGameSaveDataSaved 新增 isDeleted 参数, 日志消息记录存档是否被删除)
+- UI 层: 操作提示帮助文本优化 (右键操作限制说明合并至首次点击描述, 新增显示索引热键/首点复制索引/无猜挽救机制说明)
 
 ---
 
@@ -30,7 +37,6 @@
 - 测试: 程序集级并行配置迁移至 xunit.v3 4.0.0 新 API (CollectionBehaviorAttribute.DisableTestParallelization 在 4.0.0 过时, 改用 ParallelizationAttribute.Mode = ParallelMode.None 禁用并行, 修复 CI 构建错误 CS0619)
 - 工程化: dotnet test 切换 Microsoft.Testing.Platform 新体验 (新增 global.json 的 test.runner 配置, 移除 TestingPlatformDotnetTestSupport 属性, CI 与发布工作流测试命令改用 --solution / --report-xunit-trx 等 MTP 原生参数, 修复 .NET 10 SDK 下 MTP 应用不再支持 VSTest target 导致的测试阶段失败)
 - UI 层: Program.cs 引导更新检查与执行局部变量重命名 (originalDirectory/originalVersion → dir/version) 并单行化
-- UI 层: 操作提示帮助文本优化 (右键操作限制说明合并至首次点击描述, 新增显示索引热键/首点复制索引/无猜挽救机制说明)
 
 ### Fixed
 
@@ -409,7 +415,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.2
 [1.2.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.1
 [1.2.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.0
 [1.1.11]: https://github.com/xiting910/MineClearance/releases/tag/v1.1.11
