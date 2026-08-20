@@ -61,9 +61,9 @@ internal partial class GameDataRepository
         EventId = 5,
         EventName = "GameSaveDataSaved",
         Level = LogLevel.Information,
-        Message = "Game save data saved"
+        Message = "Game save data saved, isDeleted: {IsDeleted}"
     )]
-    private partial void LogGameSaveDataSaved();
+    private partial void LogGameSaveDataSaved(bool isDeleted);
 
     /// <summary>
     /// 记录游戏结果成功保存的日志信息

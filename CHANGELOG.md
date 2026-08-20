@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Infrastructure 层: GameDataRepository 游戏存档保存日志添加删除状态标识 (LogGameSaveDataSaved 新增 isDeleted 参数, 日志消息记录存档是否被删除)
+
 ---
 
 ## [1.2.1] - 2026-08-20

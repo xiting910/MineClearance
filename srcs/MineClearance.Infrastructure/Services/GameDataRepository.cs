@@ -132,7 +132,7 @@ internal sealed partial class GameDataRepository : IGameDataRepository
         {
             await using var stream = File.Create(Constants.GameSaveDataFilePath);
             await JsonSerializer.SerializeAsync(stream, SaveData, _jsonOptions, ct).ConfigureAwait(false);
-            LogGameSaveDataSaved();
+            LogGameSaveDataSaved(SaveData is null);
             return true;
         }
         catch (Exception ex)
