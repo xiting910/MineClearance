@@ -30,6 +30,7 @@
 - 测试: 程序集级并行配置迁移至 xunit.v3 4.0.0 新 API (CollectionBehaviorAttribute.DisableTestParallelization 在 4.0.0 过时, 改用 ParallelizationAttribute.Mode = ParallelMode.None 禁用并行, 修复 CI 构建错误 CS0619)
 - 工程化: dotnet test 切换 Microsoft.Testing.Platform 新体验 (新增 global.json 的 test.runner 配置, 移除 TestingPlatformDotnetTestSupport 属性, CI 与发布工作流测试命令改用 --solution / --report-xunit-trx 等 MTP 原生参数, 修复 .NET 10 SDK 下 MTP 应用不再支持 VSTest target 导致的测试阶段失败)
 - UI 层: Program.cs 引导更新检查与执行局部变量重命名 (originalDirectory/originalVersion → dir/version) 并单行化
+- UI 层: 操作提示帮助文本优化 (右键操作限制说明合并至首次点击描述, 新增显示索引热键/首点复制索引/无猜挽救机制说明)
 
 ### Fixed
 
