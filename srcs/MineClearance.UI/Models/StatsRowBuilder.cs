@@ -1,3 +1,5 @@
+using MineClearance.Core;
+using MineClearance.Core.Enums;
 using MineClearance.Core.Models.Records;
 using System;
 
@@ -8,6 +10,11 @@ namespace MineClearance.UI.Models;
 /// </summary>
 public struct StatsRowBuilder()
 {
+    /// <summary>
+    /// 全部难度范围的难度文本
+    /// </summary>
+    private const string AllDifficultyText = "全部";
+
     /// <summary>
     /// 空统计行文本, 用于无数据时显示
     /// </summary>
@@ -60,19 +67,22 @@ public struct StatsRowBuilder()
     /// <summary>
     /// 将累计统计转换为统计行
     /// </summary>
-    /// <param name="text">统计行显示的难度文本</param>
+    /// <param name="difficulty">难度范围, 全部难度范围时为 <see langword="null"/></param>
     /// <returns>统计行</returns>
-    public readonly StatsRow ToRow(string text)
+    public readonly StatsRow ToRow(GameDifficulty? difficulty)
     {
+        var text = difficulty is null ? AllDifficultyText : difficulty.Value.GetDescription();
         var losses = _games - _wins;
         return new(
+            Difficulty: difficulty,
             DifficultyText: text,
             Games: _games,
             Wins: _wins,
             WinRateText: _games == 0
                 ? EmptyStatsText
-                : $"{_wins * Infrastructure.Constants.PercentBase / _games:0.##}%",
-            WinRate: _games == 0 ? -1 : _wins * Infrastructure.Constants.PercentBase / _games,
+                : (_wins * Core.Constants.PercentBase / _games).ToString(Core.Constants.FloatFormat)
+                + Core.Constants.PercentSign,
+            WinRate: _games == 0 ? -1 : _wins * Core.Constants.PercentBase / _games,
             AvgWinDurationText: _wins == 0
                 ? EmptyStatsText
                 : FormatTimeSpan(TimeSpan.FromTicks(_winTicks / _wins)),
@@ -81,7 +91,8 @@ public struct StatsRowBuilder()
             MinWinDuration: _wins == 0 ? null : TimeSpan.FromTicks(_minWinTicks),
             AvgCompletionText: losses == 0
                 ? EmptyStatsText
-                : $"{_lossCompletion / losses * Infrastructure.Constants.PercentBase:0.##}%",
+                : (_lossCompletion * Core.Constants.PercentBase / losses).ToString(Core.Constants.FloatFormat)
+                + Core.Constants.PercentSign,
             AvgCompletion: losses == 0 ? -1 : _lossCompletion / losses
         );
     }

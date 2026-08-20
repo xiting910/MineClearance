@@ -403,7 +403,7 @@ public sealed partial class UpdateViewModel : ObservableObject
     /// <param name="state">当前状态</param>
     private void RefreshFromDownloadProgress(UpdateState state)
     {
-        var percent = _updateService.ProgressPercentage / Infrastructure.Constants.PercentBase;
+        var percent = _updateService.ProgressPercentage / Core.Constants.PercentBase;
         IsBallVisible = _uiOptions.ShowDownloadBall && state is UpdateState.Downloading;
         BallFillHeight = percent * Constants.DownloadBallSize;
         DrawerProgress = percent;

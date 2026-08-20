@@ -293,7 +293,7 @@ internal sealed partial class UpdateService(
 
             State = UpdateState.DownloadCompleted;
             DownloadedBytes = TotalBytes;
-            ProgressPercentage = Constants.PercentBase;
+            ProgressPercentage = Core.Constants.PercentBase;
             SpeedBytesPerSecond = 0;
             LogDownloadCompleted(LatestVersion);
         }

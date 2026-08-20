@@ -174,7 +174,7 @@
               <TextBlock Text="结果"/>
             </DataGridTextColumn.Header>
           </DataGridTextColumn>
-          <DataGridTextColumn SortMemberPath="Result.Completion" Binding="{Binding CompletionText}">
+          <DataGridTextColumn SortMemberPath="CompletionForSort" Binding="{Binding CompletionText}">
             <DataGridTextColumn.Header>
               <TextBlock Text="完成度"/>
             </DataGridTextColumn.Header>
@@ -184,12 +184,12 @@
               <TextBlock Text="用时"/>
             </DataGridTextColumn.Header>
           </DataGridTextColumn>
-          <DataGridTextColumn Binding="{Binding WidthText}">
+          <DataGridTextColumn SortMemberPath="Config.BoardWidth" Binding="{Binding WidthText}">
             <DataGridTextColumn.Header>
               <TextBlock Text="宽度"/>
             </DataGridTextColumn.Header>
           </DataGridTextColumn>
-          <DataGridTextColumn Binding="{Binding HeightText}">
+          <DataGridTextColumn SortMemberPath="Config.BoardHeight" Binding="{Binding HeightText}">
             <DataGridTextColumn.Header>
               <TextBlock Text="高度"/>
             </DataGridTextColumn.Header>

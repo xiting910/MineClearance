@@ -13,6 +13,21 @@ public static class Constants
     public const double MaxCompletion = 1.0;
 
     /// <summary>
+    /// 百分比基数, 用于百分比和比例的转换
+    /// </summary>
+    public const double PercentBase = 100.0;
+
+    /// <summary>
+    /// 百分号符号
+    /// </summary>
+    public const string PercentSign = "%";
+
+    /// <summary>
+    /// 浮点数格式化字符串, 保留两位小数
+    /// </summary>
+    public const string FloatFormat = "0.##";
+
+    /// <summary>
     /// 周围地雷数量数组中表示地雷的特殊值
     /// </summary>
     public const int MineValue = -1;

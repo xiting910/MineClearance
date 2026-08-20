@@ -54,6 +54,16 @@ public sealed class GameResultRowTests
     }
 
     [Fact]
+    public void CompletionForSort_胜利为1_失败为实际完成度()
+    {
+        var win = GameResult.CreateWin(1, GameDifficulty.Beginner, StartTime, TimeSpan.FromMinutes(1));
+        var loss = GameResult.CreateLoss(2, GameDifficulty.Beginner, StartTime, TimeSpan.FromMinutes(1), 0.345);
+
+        Assert.Equal(1.0, new GameResultRow(win).CompletionForSort);
+        Assert.Equal(0.345, new GameResultRow(loss).CompletionForSort);
+    }
+
+    [Fact]
     public void CompletionText_胜利为100_失败为实际完成度()
     {
         var win = GameResult.CreateWin(1, GameDifficulty.Beginner, StartTime, TimeSpan.FromMinutes(1));

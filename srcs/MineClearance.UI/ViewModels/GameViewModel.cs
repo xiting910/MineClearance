@@ -103,7 +103,7 @@ public sealed partial class GameViewModel : ObservableObject
     /// 完成度文本
     /// </summary>
     [ObservableProperty]
-    public partial string CompletionText { get; set; } = "0%";
+    public partial string CompletionText { get; set; } = "0" + Core.Constants.PercentSign;
 
     /// <summary>
     /// 游戏时间文本
@@ -503,7 +503,8 @@ public sealed partial class GameViewModel : ObservableObject
         IsGameEnded = game.Status is GameStatus.Won or GameStatus.Lost;
         IsWin = game.Status is GameStatus.Won;
         PauseButtonText = IsPaused ? "继续" : "暂停";
-        CompletionText = $"{game.Completion * 100:0.##}%";
+        CompletionText = (game.Completion * Core.Constants.PercentBase).ToString(Core.Constants.FloatFormat)
+            + Core.Constants.PercentSign;
         RemainingMines = game.Config.MineCount - game.Board.FlagCount;
         OpenedCount = game.Board.OpenedCount;
 
@@ -519,9 +520,11 @@ public sealed partial class GameViewModel : ObservableObject
             var result = game.Result;
             if (result is not null)
             {
-                var completion = result.Completion is null
-                    ? string.Empty
-                    : $", 完成度: {result.Completion.Value * 100:0.##}%";
+                var completion = result.Completion is double value
+                    ? ", 完成度: "
+                    + (value * Core.Constants.PercentBase).ToString(Core.Constants.FloatFormat)
+                    + Core.Constants.PercentSign
+                    : string.Empty;
                 _toast.Show(IsWin
                     ? $"🎉 游戏胜利! 用时: {FormatTime(result.Duration)}"
                     : $"💣 游戏失败, 用时: {FormatTime(result.Duration)}{completion}"
@@ -574,7 +577,14 @@ public sealed partial class GameViewModel : ObservableObject
         {
             case nameof(IGame.Status): UpdateStatus(); break;
             case nameof(IGame.Result): UpdateStatus(); break;
-            case nameof(IGame.Completion): CompletionText = $"{_gameManager.Game?.Completion * 100:0.##}%"; break;
+            case nameof(IGame.Completion):
+                if (_gameManager.Game is { } game)
+                {
+                    CompletionText = (game.Completion * Core.Constants.PercentBase)
+                        .ToString(Core.Constants.FloatFormat)
+                        + Core.Constants.PercentSign;
+                }
+                break;
         }
     }
 

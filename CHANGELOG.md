@@ -9,16 +9,25 @@
 
 ## [Unreleased]
 
-**xunit.v3 4.0.0 适配与测试稳定性修复**: 适配 xunit.v3 4.0.0 过时 API (CollectionBehaviorAttribute.DisableTestParallelization → ParallelizationAttribute.Mode), 修复 CI 构建错误; 单实例服务器客户端断开场景测试等待时长提升, 修复偶发超时; Program.cs 引导更新调用局部变量重命名简化.
+**历史记录排序修复与 xunit.v3 4.0.0 适配**: 修复历史记录表格完成度列排序异常 (胜利时 Result.Completion 为 null 导致排序失效, 新增 CompletionForSort 属性胜利固定 1.0 排在失败前); 统计行排序改用 Difficulty 枚举值代替 DifficultyText 文本排序; 宽度/高度列补充 SortMemberPath 支持列头排序; 百分比常量统一迁入 Core 层; 适配 xunit.v3 4.0.0 过时 API, 修复 CI 构建错误; 单实例服务器客户端断开场景测试等待时长提升, 修复偶发超时.
 
 ### Changed
 
+- Core 层: Constants 新增百分比公共常量 (PercentBase 百分比基数 / PercentSign 百分号符号 / FloatFormat 浮点两位小数格式), Infrastructure 层 PercentBase 迁移至 Core 层消除重复定义
+- UI 层: 全部百分比显示改用 Core 常量格式化 (GameResultRow / GameViewModel / StatsRowBuilder / UpdateViewModel, 消除硬编码 $"{... * 100:0.##}%" 插值)
+- UI 层: StatsRow 新增 GameDifficulty? Difficulty 属性, StatsRowBuilder.ToRow 参数由 string 改为 GameDifficulty?, 全部难度文本由枚举 Description 驱动
+- UI 层: GameResultRow 新增 CompletionForSort 排序属性 (胜利固定 1.0, 失败取实际完成度)
+- UI 层: GameResultRow Config 属性 switch 异常改为含参数名/值/消息的详细 ArgumentOutOfRangeException
+- 测试: StatsRowBuilder 测试适配 ToRow 参数变更 (string → GameDifficulty?), 补充 Difficulty 断言; GameResultRow 测试新增 CompletionForSort 测试用例
 - 测试: 程序集级并行配置迁移至 xunit.v3 4.0.0 新 API (CollectionBehaviorAttribute.DisableTestParallelization 在 4.0.0 过时, 改用 ParallelizationAttribute.Mode = ParallelMode.None 禁用并行, 修复 CI 构建错误 CS0619)
 - 工程化: dotnet test 切换 Microsoft.Testing.Platform 新体验 (新增 global.json 的 test.runner 配置, 移除 TestingPlatformDotnetTestSupport 属性, CI 与发布工作流测试命令改用 --solution / --report-xunit-trx 等 MTP 原生参数, 修复 .NET 10 SDK 下 MTP 应用不再支持 VSTest target 导致的测试阶段失败)
 - UI 层: Program.cs 引导更新检查与执行局部变量重命名 (originalDirectory/originalVersion → dir/version) 并单行化
 
 ### Fixed
 
+- UI 层: 历史记录表格完成度列排序异常修复 (SortMemberPath 由 Result.Completion 改为 CompletionForSort, 胜利时 Completion 为 null 导致排序失效; CompletionForSort 胜利固定 1.0 排在失败前)
+- UI 层: 历史记录统计行排序修复 (排序键由 DifficultyText 文本改为 Difficulty 枚举值, 文本排序不符合难度顺序预期)
+- UI 层: 历史记录表格宽度/高度列排序修复 (补充 SortMemberPath 为 Config.BoardWidth / Config.BoardHeight, 此前列头点击错误排序)
 - Infrastructure 层: 单实例服务器客户端在连接建立前断开时管道实例不可恢复修复 (客户端在服务器接受连接前断开会使 WaitForConnectionAsync 持续抛 IOException 且 Disconnect 无法复位, 服务器陷入死循环导致后续激活请求全部超时; 连接异常时释放并重建管道实例, 客户端断开后继续等待后续激活请求)
 - 测试: 单实例服务器客户端断开后继续等待激活请求测试偶发超时修复 (等待服务器复位管道时长由 300ms 提升至 1000ms, 两处)
 

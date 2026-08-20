@@ -185,9 +185,4 @@ public static class Constants
     /// 发生激活请求的 byte 值
     /// </summary>
     public const byte ActivateRequestByte = 91;
-
-    /// <summary>
-    /// 百分比基数, 用于百分比和比例的转换
-    /// </summary>
-    public const double PercentBase = 100.0;
 }

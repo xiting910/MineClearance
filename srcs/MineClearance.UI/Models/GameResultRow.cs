@@ -19,6 +19,7 @@ public sealed class GameResultRow(GameResult result)
     /// <summary>
     /// 棋盘配置, 内置难度取预设值, 自定义难度取结果中的实际值
     /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">当游戏结果的难度值不在枚举范围内时抛出</exception>
     public GameConfig Config { get; } = result.Difficulty switch
     {
         GameDifficulty.Beginner => Core.Constants.BeginnerConfig,
@@ -30,7 +31,11 @@ public sealed class GameResultRow(GameResult result)
             result.BoardWidth!.Value,
             result.MineCount!.Value
         ),
-        _ => throw new ArgumentOutOfRangeException(nameof(result))
+        _ => throw new ArgumentOutOfRangeException(
+            nameof(result.Difficulty),
+            result.Difficulty,
+            $"Unknown difficulty: {result.Difficulty}"
+        )
     };
 
     /// <summary>
@@ -49,9 +54,18 @@ public sealed class GameResultRow(GameResult result)
     public string ResultText => Result.IsWin ? "胜利" : "失败";
 
     /// <summary>
+    /// 完成度排序值, 胜利时为 1.0, 失败时为实际完成度
+    /// </summary>
+    public double CompletionForSort => Result.IsWin
+        ? Core.Constants.MaxCompletion
+        : (Result.Completion ?? Core.Constants.MaxCompletion);
+
+    /// <summary>
     /// 完成度文本, 胜利显示 100%, 失败显示实际完成度
     /// </summary>
-    public string CompletionText => Result.IsWin ? "100%" : $"{Result.Completion * 100:0.##}%";
+    public string CompletionText => (CompletionForSort * Core.Constants.PercentBase)
+        .ToString(Core.Constants.FloatFormat) +
+        Core.Constants.PercentSign;
 
     /// <summary>
     /// 用时文本 (MM:SS.xx)

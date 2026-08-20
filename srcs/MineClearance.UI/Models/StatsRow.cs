@@ -1,3 +1,4 @@
+using MineClearance.Core.Enums;
 using System;
 
 namespace MineClearance.UI.Models;
@@ -5,6 +6,7 @@ namespace MineClearance.UI.Models;
 /// <summary>
 /// 统计行, 展示一组难度范围下的汇总统计, 数值字段用于排序
 /// </summary>
+/// <param name="Difficulty">难度范围, 全部难度范围时为 <see langword="null"/></param>
 /// <param name="DifficultyText">难度范围文本</param>
 /// <param name="Games">游戏次数</param>
 /// <param name="Wins">胜利次数</param>
@@ -17,6 +19,7 @@ namespace MineClearance.UI.Models;
 /// <param name="AvgCompletionText">平均完成度文本, 无失败局时为 --</param>
 /// <param name="AvgCompletion">平均完成度数值 (0-1), 无失败局时为 -1</param>
 public sealed record StatsRow(
+    GameDifficulty? Difficulty,
     string DifficultyText,
     int Games,
     int Wins,

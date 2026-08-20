@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MineClearance.Core;
 using MineClearance.Core.Enums;
 using MineClearance.Core.Interfaces;
 using MineClearance.Core.Models.Records;
@@ -382,14 +381,13 @@ public sealed partial class HistoryViewModel : ObservableObject
         if (_allStats is not { Count: > 0 } allStats) { return; }
 
         // "全部"行固定置顶, 只对剩余行排序
-        var fixedRow = allStats[0];
-        var others = allStats.Skip(1);
+        var others = allStats[1..];
         var descending = _statsSortDescending;
         var sorted = _statsSortKey switch
         {
             SortKeys.DifficultyText => descending
-                ? others.OrderByDescending(static row => row.DifficultyText)
-                : others.OrderBy(static row => row.DifficultyText),
+                ? others.OrderByDescending(static row => row.Difficulty)
+                : others.OrderBy(static row => row.Difficulty),
             SortKeys.Games => descending
                 ? others.OrderByDescending(static row => row.Games)
                 : others.OrderBy(static row => row.Games),
@@ -413,7 +411,7 @@ public sealed partial class HistoryViewModel : ObservableObject
             _ => null
         };
 
-        StatsRows = sorted is null ? allStats : [fixedRow, .. sorted];
+        StatsRows = sorted is null ? allStats : [allStats[0], .. sorted];
     }
 
     /// <summary>
@@ -487,12 +485,12 @@ public sealed partial class HistoryViewModel : ObservableObject
         }
 
         return [
-            all.ToRow("全部"),
-            beginner.ToRow(GameDifficulty.Beginner.GetDescription()),
-            intermediate.ToRow(GameDifficulty.Intermediate.GetDescription()),
-            expert.ToRow(GameDifficulty.Expert.GetDescription()),
-            master.ToRow(GameDifficulty.Master.GetDescription()),
-            custom.ToRow(GameDifficulty.Custom.GetDescription())
+            all.ToRow(null),
+            beginner.ToRow(GameDifficulty.Beginner),
+            intermediate.ToRow(GameDifficulty.Intermediate),
+            expert.ToRow(GameDifficulty.Expert),
+            master.ToRow(GameDifficulty.Master),
+            custom.ToRow(GameDifficulty.Custom)
         ];
     }
 }

@@ -17,8 +17,9 @@ public sealed class StatsRowBuilderTests
     [Fact]
     public void ToRow_无任何结果_显示空统计文本()
     {
-        var row = new StatsRowBuilder().ToRow("全部");
+        var row = new StatsRowBuilder().ToRow(null);
 
+        Assert.Null(row.Difficulty);
         Assert.Equal("全部", row.DifficultyText);
         Assert.Equal(0, row.Games);
         Assert.Equal(0, row.Wins);
@@ -39,8 +40,9 @@ public sealed class StatsRowBuilderTests
         builder.Add(GameResult.CreateWin(1, GameDifficulty.Beginner, StartTime, TimeSpan.FromMinutes(1)));
         builder.Add(GameResult.CreateWin(2, GameDifficulty.Beginner, StartTime, TimeSpan.FromMinutes(2)));
 
-        var row = builder.ToRow("初级");
+        var row = builder.ToRow(GameDifficulty.Beginner);
 
+        Assert.Equal(GameDifficulty.Beginner, row.Difficulty);
         Assert.Equal(2, row.Games);
         Assert.Equal(2, row.Wins);
         Assert.Equal("100%", row.WinRateText);
@@ -59,8 +61,9 @@ public sealed class StatsRowBuilderTests
         builder.Add(GameResult.CreateWin(1, GameDifficulty.Beginner, StartTime, TimeSpan.FromMinutes(1)));
         builder.Add(GameResult.CreateLoss(2, GameDifficulty.Beginner, StartTime, TimeSpan.FromMinutes(2), 0.5));
 
-        var row = builder.ToRow("初级");
+        var row = builder.ToRow(GameDifficulty.Beginner);
 
+        Assert.Equal(GameDifficulty.Beginner, row.Difficulty);
         Assert.Equal(2, row.Games);
         Assert.Equal(1, row.Wins);
         Assert.Equal("50%", row.WinRateText);
@@ -81,8 +84,9 @@ public sealed class StatsRowBuilderTests
             GameResult.CreateLoss(2, GameDifficulty.Beginner, StartTime, TimeSpan.FromMinutes(2), 0.75)
         );
 
-        var row = builder.ToRow("初级");
+        var row = builder.ToRow(GameDifficulty.Beginner);
 
+        Assert.Equal(GameDifficulty.Beginner, row.Difficulty);
         Assert.Equal(2, row.Games);
         Assert.Equal(0, row.Wins);
         Assert.Equal("0%", row.WinRateText);
@@ -104,7 +108,7 @@ public sealed class StatsRowBuilderTests
         // 1/3 = 33.33%
         builder.Add(GameResult.CreateLoss(3, GameDifficulty.Beginner, StartTime, TimeSpan.FromMinutes(3), 0.5));
 
-        Assert.Equal("33.33%", builder.ToRow("初级").WinRateText);
+        Assert.Equal("33.33%", builder.ToRow(GameDifficulty.Beginner).WinRateText);
     }
 
     [Fact]
@@ -114,7 +118,7 @@ public sealed class StatsRowBuilderTests
         builder.Add(GameResult.CreateWin(1, GameDifficulty.Beginner, StartTime, TimeSpan.FromMinutes(12)));
         builder.Add(GameResult.CreateWin(2, GameDifficulty.Beginner, StartTime, TimeSpan.FromMinutes(3)));
 
-        Assert.Equal("07:30", builder.ToRow("初级").AvgWinDurationText);
-        Assert.Equal("03:00", builder.ToRow("初级").MinWinDurationText);
+        Assert.Equal("07:30", builder.ToRow(GameDifficulty.Beginner).AvgWinDurationText);
+        Assert.Equal("03:00", builder.ToRow(GameDifficulty.Beginner).MinWinDurationText);
     }
 }

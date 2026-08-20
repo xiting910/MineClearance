@@ -227,7 +227,10 @@ public sealed record GameResult(
     public override string ToString()
     {
         // 结果信息
-        var result = IsWin ? "胜利" : $"失败, 完成度: {Completion * 100:0.##}%";
+        var result = IsWin
+            ? "胜利"
+            : "失败, 完成度: " + (Completion!.Value * Constants.PercentBase).ToString(Constants.FloatFormat)
+            + Constants.PercentSign;
 
         // 自定义难度信息
         var custom = Difficulty is GameDifficulty.Custom ? $", 大小: {BoardHeight}x{BoardWidth}, 地雷数: {MineCount}" : "";
