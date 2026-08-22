@@ -9,6 +9,12 @@
 
 ## [Unreleased]
 
+---
+
+## [1.2.3] - 2026-08-23
+
+**全局异常处理与数据根目录解析修复, 代码风格优化**: 修复 UI 层全局异常处理静默忽略非 Exception 类型异常对象的问题 (新增 UnknownException 包装非 Exception 异常对象后统一处理); 修复应用数据根目录在目录缺失时解析为相对路径的问题 (GetFolderPath 启用 SpecialFolderOption.Create 自动创建目录并返回绝对路径); 代码风格优化与测试数据根目录环境变量常量重命名.
+
 ### Changed
 
 - 代码风格优化 (BootstrapUpdateHelper 模式匹配语法, App.axaml.cs 缩进格式, KeyExtensions 集合初始化简化, Program.cs 注释精简)
@@ -425,7 +431,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.2.3...HEAD
+[1.2.3]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.3
 [1.2.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.2
 [1.2.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.1
 [1.2.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.0
