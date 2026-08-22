@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- UI 层: Program.cs 未处理异常处理修复 (ExceptionObject 非 Exception 类型时静默忽略, 新增 UnknownException 包装非 Exception 异常对象后统一传递给 HandleException)
+
 ---
 
 ## [1.2.2] - 2026-08-20

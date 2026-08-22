@@ -17,6 +17,12 @@ namespace MineClearance.UI;
 file static class Program
 {
     /// <summary>
+    /// 未知异常的类型
+    /// </summary>
+    /// <param name="message">异常消息</param>
+    private sealed class UnknownException(string? message) : Exception(message);
+
+    /// <summary>
     /// 应用程序入口点
     /// </summary>
     [STAThread]
@@ -24,10 +30,8 @@ file static class Program
     {
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
         {
-            if (e.ExceptionObject is Exception ex)
-            {
-                UnhandledExceptionHelper.HandleException(e.IsTerminating, ex);
-            }
+            var ex = e.ExceptionObject as Exception ?? new UnknownException(e.ExceptionObject.ToString());
+            UnhandledExceptionHelper.HandleException(e.IsTerminating, ex);
         };
 
         if (BootstrapUpdateHelper.IsBootstrapUpdateRequested(args, out var dir, out var version))
