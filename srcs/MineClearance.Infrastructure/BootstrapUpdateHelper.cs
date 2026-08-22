@@ -390,7 +390,7 @@ public static class BootstrapUpdateHelper
         DeleteFile(Constants.UpdateInfoFilePath);
 
         // 如果更新成功, 删除各种临时文件和目录
-        if (info?.IsSuccess == true)
+        if (info is { IsSuccess: true })
         {
             DeleteFile(Constants.NewVersionFilePath);
             DeleteFile(Constants.UpdatePackageFilePath);

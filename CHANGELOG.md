@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 代码风格优化 (BootstrapUpdateHelper 模式匹配语法, App.axaml.cs 缩进格式, KeyExtensions 集合初始化简化, Program.cs 注释精简)
+
 ### Fixed
 
 - UI 层: Program.cs 未处理异常处理修复 (ExceptionObject 非 Exception 类型时静默忽略, 新增 UnknownException 包装非 Exception 异常对象后统一传递给 HandleException)

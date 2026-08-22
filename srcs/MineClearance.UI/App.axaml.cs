@@ -82,25 +82,27 @@ public sealed partial class App : Application
             };
             desktop.Exit += (_, _) => ExitCts.Cancel();
             _ = Services.GetRequiredService<SingleInstanceServer>().WaitForActivationRequestsAsync(() =>
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                if (desktop.MainWindow is { } window)
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
-                    if (window.WindowState is WindowState.Minimized)
+                    if (desktop.MainWindow is { } window)
                     {
-                        window.WindowState = WindowState.Normal;
+                        if (window.WindowState is WindowState.Minimized)
+                        {
+                            window.WindowState = WindowState.Normal;
+                        }
+                        window.Show();
+                        if (OperatingSystem.IsWindows())
+                        {
+                            WindowsHelper.BringToFront(window);
+                        }
+                        else
+                        {
+                            window.Activate();
+                        }
                     }
-                    window.Show();
-                    if (OperatingSystem.IsWindows())
-                    {
-                        WindowsHelper.BringToFront(window);
-                    }
-                    else
-                    {
-                        window.Activate();
-                    }
-                }
-            }), ExitCts.Token);
+                }),
+                ExitCts.Token
+            );
         }
         else
         {
