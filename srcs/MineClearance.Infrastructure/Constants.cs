@@ -37,17 +37,19 @@ public static class Constants
     /// <summary>
     /// 定义程序数据目录的环境变量名
     /// </summary>
-    internal const string AppDataRootDirectoryEnvironmentVariableName =
+    internal const string AppDataRootDirectoryEnvironmentVariable =
         $"Test_{nameof(MineClearance)}_Data_Root_Dir";
 
     /// <summary>
     /// 程序数据根目录
     /// </summary>
     public static readonly string AppDataRootDirectory =
-        Environment.GetEnvironmentVariable(AppDataRootDirectoryEnvironmentVariableName) is { Length: > 0 } dir
+        Environment.GetEnvironmentVariable(AppDataRootDirectoryEnvironmentVariable) is { Length: > 0 } dir
         ? dir : Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            nameof(MineClearance)
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.ApplicationData,
+                Environment.SpecialFolderOption.Create
+            ), nameof(MineClearance)
         );
 
     /// <summary>

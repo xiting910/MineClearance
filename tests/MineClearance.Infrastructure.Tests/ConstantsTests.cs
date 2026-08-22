@@ -9,7 +9,7 @@ public sealed class ConstantsTests
     public void AppDataRootDirectory_测试环境变量已设置_返回环境变量值()
     {
         var expected = Environment.GetEnvironmentVariable(
-            Constants.AppDataRootDirectoryEnvironmentVariableName
+            Constants.AppDataRootDirectoryEnvironmentVariable
         );
         Assert.Equal(expected, Constants.AppDataRootDirectory);
     }

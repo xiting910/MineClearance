@@ -20,7 +20,7 @@ public sealed class TestEnvironmentFixture : IDisposable
         );
         _ = Directory.CreateDirectory(DataRootDirectory);
         Environment.SetEnvironmentVariable(
-            Infrastructure.Constants.AppDataRootDirectoryEnvironmentVariableName, DataRootDirectory
+            Infrastructure.Constants.AppDataRootDirectoryEnvironmentVariable, DataRootDirectory
         );
     }
 
@@ -29,7 +29,7 @@ public sealed class TestEnvironmentFixture : IDisposable
     /// </summary>
     public void Dispose()
     {
-        Environment.SetEnvironmentVariable(Infrastructure.Constants.AppDataRootDirectoryEnvironmentVariableName, null);
+        Environment.SetEnvironmentVariable(Infrastructure.Constants.AppDataRootDirectoryEnvironmentVariable, null);
         try
         {
             Directory.Delete(DataRootDirectory, recursive: true);

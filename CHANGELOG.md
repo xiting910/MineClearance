@@ -12,10 +12,12 @@
 ### Changed
 
 - 代码风格优化 (BootstrapUpdateHelper 模式匹配语法, App.axaml.cs 缩进格式, KeyExtensions 集合初始化简化, Program.cs 注释精简)
+- Infrastructure 层: AppDataRootDirectoryEnvironmentVariableName 内部常量重命名为 AppDataRootDirectoryEnvironmentVariable (测试数据根目录环境变量名, 测试引用同步更新)
 
 ### Fixed
 
 - UI 层: Program.cs 未处理异常处理修复 (ExceptionObject 非 Exception 类型时静默忽略, 新增 UnknownException 包装非 Exception 异常对象后统一传递给 HandleException)
+- Infrastructure 层: 应用数据根目录路径解析修复 (GetFolderPath 改用 SpecialFolderOption.Create, ApplicationData 目录不存在时自动创建并返回绝对路径, 避免返回空字符串导致 AppDataRootDirectory 退化为相对路径)
 
 ---
 
