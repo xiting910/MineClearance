@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.3.0] - 2026-08-23
+
 **自定义背景图片功能**: 新增背景图片支持 (将图片放入程序目录 Pictures 文件夹, 设置抽屉中可选择背景图片/拉伸方式/透明度, 壳视图底层显示); 背景透明度拖动实时预览, 配置保存节流防滑块抖动频繁写文件; 打开文件夹/链接逻辑重构为共用辅助方法.
 
 ### Added
@@ -445,7 +449,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.2.3...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.3.0
 [1.2.3]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.3
 [1.2.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.2
 [1.2.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.1
