@@ -1,5 +1,6 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.Logging;
 using MineClearance.UI.Models;
 using System;
 using System.Collections.ObjectModel;
@@ -20,14 +21,19 @@ public sealed partial class ToastViewModel : ObservableObject
     );
 
     /// <summary>
-    /// 进度条刷新计时器, 驱动所有条目的剩余时间扣减与进度条更新, 集合为空时停止
+    /// 日志记录器
     /// </summary>
-    private readonly DispatcherTimer _refreshTimer;
+    private readonly ILogger<ToastViewModel> _logger;
 
     /// <summary>
     /// UI 配置, 每次显示时读取提示时长与最大条数
     /// </summary>
     private readonly UIOptions _uiOptions;
+
+    /// <summary>
+    /// 进度条刷新计时器, 驱动所有条目的剩余时间扣减与进度条更新, 集合为空时停止
+    /// </summary>
+    private readonly DispatcherTimer _refreshTimer;
 
     /// <summary>
     /// 上一次刷新计时的时间点, 用于计算实际经过的时间
@@ -47,9 +53,11 @@ public sealed partial class ToastViewModel : ObservableObject
     /// <summary>
     /// 创建短暂提示视图模型
     /// </summary>
+    /// <param name="logger">日志记录器</param>
     /// <param name="uiOptions">UI 配置</param>
-    public ToastViewModel(UIOptions uiOptions)
+    public ToastViewModel(ILogger<ToastViewModel> logger, UIOptions uiOptions)
     {
+        _logger = logger;
         _uiOptions = uiOptions;
         _refreshTimer = new(RefreshInterval, DispatcherPriority.Background, OnRefreshTimerTick);
         Items.CollectionChanged += OnItemsCollectionChanged;
@@ -86,6 +94,9 @@ public sealed partial class ToastViewModel : ObservableObject
         // 启动计时器驱动进度条扣减
         _lastTickTime = DateTime.Now;
         _refreshTimer.Start();
+
+        // 记录日志
+        LogToastShown(message);
     }
 
     /// <summary>
@@ -133,4 +144,16 @@ public sealed partial class ToastViewModel : ObservableObject
             }
         }
     }
+
+    /// <summary>
+    /// 记录提示显示日志
+    /// </summary>
+    /// <param name="message">提示文本</param>
+    [LoggerMessage(
+        EventId = 1,
+        EventName = "ToastShown",
+        Level = LogLevel.Information,
+        Message = "Toast shown: {Message}"
+    )]
+    private partial void LogToastShown(string message);
 }

@@ -9,13 +9,14 @@
 
 ## [Unreleased]
 
-**内置背景图片与来源开关**: 新增 3 张内置背景图片打包为应用资源; 设置抽屉新增"使用自定义背景图片"开关, 勾选后从程序目录 Pictures 文件夹加载图片, 取消勾选恢复内置图片列表; 背景图片加载按来源区分 (内置走 avares 资源, 自定义走文件路径), 加载失败 Toast 提示.
+**内置背景图片与来源开关, Toast 显示结构化日志**: 新增 3 张内置背景图片打包为应用资源; 设置抽屉新增"使用自定义背景图片"开关, 勾选后从程序目录 Pictures 文件夹加载图片, 取消勾选恢复内置图片列表; 背景图片加载按来源区分 (内置走 avares 资源, 自定义走文件路径), 加载失败 Toast 提示; Toast 显示记录结构化日志 (ToastViewModel 注入 ILogger, Show 时经 LoggerMessage 源生成器记录 ToastShown 日志事件).
 
 ### Added
 
 - UI 层: 内置背景图片 (Constants 新增 BuiltInBackgroundImageUriPrefix avares 资源 URI 前缀 / BuiltInBackgroundImageFileNames 内置图片文件名列表 / DefaultBackgroundImageFileName 默认图片, Assets/Backgrounds 新增 3 张内置图片资源)
 - UI 层: 背景来源开关 (UIOptions 新增 UseCustomBackgroundImage 配置项, 设置抽屉新增"使用自定义背景图片"开关, 勾选后从自定义图片文件夹加载图片, 取消勾选恢复内置图片列表)
 - 测试: UI 层单元测试适配 (SettingsViewModel 内置图片列表/来源开关切换与配置同步, UIOptions 来源开关默认值/解析/持久化, Constants 目录常量重命名)
+- UI 层: Toast 显示日志 (ToastViewModel 构造函数新增 ILogger 注入, Show 方法经 LoggerMessage 源生成器记录 ToastShown 事件, 日志级别 Information)
 
 ### Changed
 
