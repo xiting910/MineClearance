@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+---
+
+### [1.3.1] - 2026-08-23
+
 **内置背景图片与来源开关, Toast 显示结构化日志**: 新增 3 张内置背景图片打包为应用资源; 设置抽屉新增"使用自定义背景图片"开关, 勾选后从程序目录 Pictures 文件夹加载图片, 取消勾选恢复内置图片列表; 背景图片加载按来源区分 (内置走 avares 资源, 自定义走文件路径), 加载失败 Toast 提示; Toast 显示记录结构化日志 (ToastViewModel 注入 ILogger, Show 时经 LoggerMessage 源生成器记录 ToastShown 日志事件).
 
 ### Added
@@ -464,7 +468,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.3.1
 [1.3.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.3.0
 [1.2.3]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.3
 [1.2.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.2.2
