@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using MineClearance.Infrastructure;
 using MineClearance.Infrastructure.Models;
 using MineClearance.UI.Models;
@@ -38,7 +39,7 @@ public sealed class UpdateViewModelTests
     public UpdateViewModelTests()
     {
         _uiOptions = new(new ConfigurationBuilder().Build());
-        _toast = new(_uiOptions);
+        _toast = new(NullLogger<ToastViewModel>.Instance, _uiOptions);
         // 检查请求默认立即完成, 各测试按需覆盖 State 等属性
         _ = _updateService
             .Setup(s =>

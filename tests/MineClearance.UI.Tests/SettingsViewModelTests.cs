@@ -2,6 +2,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using MineClearance.Infrastructure;
 using MineClearance.Infrastructure.Models;
 using MineClearance.UI.Models;
@@ -47,7 +48,7 @@ public sealed class SettingsViewModelTests
     {
         _uiOptions = new(new ConfigurationBuilder().Build());
         _loggerOptions = new(new ConfigurationBuilder().Build());
-        _toast = new(_uiOptions);
+        _toast = new(NullLogger<ToastViewModel>.Instance, _uiOptions);
         _update = new(new Mock<IUpdateService>().Object, _toast, _uiOptions);
         _viewModel = new(_uiOptions, _loggerOptions, _toast, _update);
     }

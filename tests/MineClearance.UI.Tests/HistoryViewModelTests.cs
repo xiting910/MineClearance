@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using MineClearance.Core;
 using MineClearance.Core.Enums;
 using MineClearance.Core.Interfaces;
@@ -46,7 +47,10 @@ public sealed class HistoryViewModelTests
         _ = _repository.Setup(
             r => r.ClearGameResultsAsync(It.IsAny<CancellationToken>())
         ).ReturnsAsync(true);
-        _viewModel = new(_repository.Object, new(new(new ConfigurationBuilder().Build())));
+        _viewModel = new(
+            _repository.Object,
+            new(NullLogger<ToastViewModel>.Instance, new(new ConfigurationBuilder().Build()))
+        );
     }
 
     [Fact]

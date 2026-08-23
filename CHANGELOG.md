@@ -27,6 +27,7 @@
 - UI 层: BackgroundImageOption FileName 改为非空 (不使用背景图片以空字符串表示), BackgroundImageChanged 事件新增是否使用自定义图片参数
 - UI 层: 背景图片加载支持内置资源 (ShellViewModel 按来源使用 AssetLoader 加载 avares 资源或文件路径加载, 加载失败 Toast 提示)
 - UI 层: BackgroundImageDirectory 重命名为 CustomBackgroundImageDirectory, 设置抽屉"创建并打开图片文件夹"按钮文案与 ToolTip 同步更新
+- 测试: ToastViewModelTests 适配 ILogger 注入
 
 ---
 
