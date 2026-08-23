@@ -25,6 +25,8 @@ file static class Program
     /// <summary>
     /// 应用程序入口点
     /// </summary>
+    /// <param name="args">命令行参数</param>
+    /// <returns>应用程序退出码</returns>
     [STAThread]
     private static int Main(string[] args)
     {

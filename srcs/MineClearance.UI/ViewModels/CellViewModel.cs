@@ -23,6 +23,7 @@ public sealed partial class CellViewModel : ObservableObject
     private static readonly IBrush MineBrush = new SolidColorBrush(Color.Parse("#FF6B6B"));
     private static readonly IBrush HitMineBrush = new SolidColorBrush(Color.Parse("#B71C1C"));
     private static readonly IBrush ErrorFlagBrush = new SolidColorBrush(Color.Parse("#FFCDD2"));
+    private static readonly IBrush GuaranteedSafeBrush = new SolidColorBrush(Color.Parse("#A5D6A7"));
     private static readonly IBrush TextBrush = new SolidColorBrush(Color.Parse("#1A1D24"));
 
     /// <summary>
@@ -191,6 +192,12 @@ public sealed partial class CellViewModel : ObservableObject
             case CellType.OpenedMine:
                 DisplayText = "💣";
                 Background = HitMineBrush;
+                Foreground = TextBrush;
+                break;
+
+            case CellType.GuaranteedSafe:
+                DisplayText = "✓";
+                Background = GuaranteedSafeBrush;
                 Foreground = TextBrush;
                 break;
         }

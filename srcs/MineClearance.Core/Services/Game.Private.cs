@@ -74,7 +74,8 @@ internal partial class Game
         if (_mineField.IsMine(position))
         {
             // 尝试安全打开格子
-            if (_mineSolver.TrySafeOpen(Config, Board, _mineField, position) is not { } newMineMap)
+            if (!_mineSolver.TrySafeOpen(position, Config, _mineField, Board,
+                out var newMineMap, out var guaranteedSafePositions))
             {
                 // 如果是地雷, 则游戏失败
                 Timer.Pause();
@@ -82,17 +83,23 @@ internal partial class Game
                 foreach (var (p, c) in Board)
                 {
                     var isMine = _mineField.IsMine(p);
-                    if (c.Type is CellType.Unopened && isMine)
+                    switch (c.Type)
                     {
-                        c.Type = CellType.Mine;
-                    }
-                    else if (c.Type is CellType.Flagged && !isMine)
-                    {
-                        c.Type = CellType.ErrorFlag;
-                    }
-                    else if (c.Type is CellType.Question)
-                    {
-                        c.Type = isMine ? CellType.Mine : CellType.Unopened;
+                        case CellType.Unopened when isMine:
+                            c.Type = CellType.Mine;
+                            break;
+                        case CellType.Unopened when guaranteedSafePositions.Contains(p):
+                            c.Type = CellType.GuaranteedSafe;
+                            break;
+                        case CellType.Flagged when !isMine:
+                            c.Type = CellType.ErrorFlag;
+                            break;
+                        case CellType.Question when guaranteedSafePositions.Contains(p):
+                            c.Type = CellType.GuaranteedSafe;
+                            break;
+                        case CellType.Question:
+                            c.Type = isMine ? CellType.Mine : CellType.Unopened;
+                            break;
                     }
                 }
                 Status = GameStatus.Lost;

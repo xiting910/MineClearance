@@ -4,6 +4,7 @@ using MineClearance.Core.Models.Records;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace MineClearance.Core.Services;
@@ -40,14 +41,22 @@ internal sealed class MineSolver : IMineSolver
     }
 
     /// <inheritdoc/>
-    public BitArray? TrySafeOpen(
-        GameConfig config, IGameBoardDictionary board, IMineField mineField, Position target)
+    public bool TrySafeOpen(
+        Position target,
+        GameConfig config,
+        IMineField mineField,
+        IGameBoardDictionary board,
+        [NotNullWhen(true)] out BitArray? rearrangedMines,
+        [NotNullWhen(false)] out HashSet<Position>? guaranteedSafePositions)
     {
-        var (height, width, mineCount) = config;
+        rearrangedMines = default;
+        guaranteedSafePositions = default;
 
+        var (height, width, mineCount) = config;
         var constraints = new List<(Position Position, int Count)>();
         var frontier = new List<Position>();
         var frontierSet = new HashSet<Position>();
+
         foreach (var (position, cell) in board)
         {
             if (cell.Type is not (CellType.Number or CellType.WarningNumber)) { continue; }
@@ -106,7 +115,11 @@ internal sealed class MineSolver : IMineSolver
         }
 
         var freeCapacity = freeCells.Count - (frontierSet.Contains(target) ? 0 : 1);
-        if (freeCapacity < 0) { return null; }
+        if (freeCapacity < 0)
+        {
+            guaranteedSafePositions = [];
+            return false;
+        }
 
         var baseRem = new int[constraintCount];
         for (var c = 0; c < constraintCount; c++)
@@ -115,9 +128,18 @@ internal sealed class MineSolver : IMineSolver
         }
 
         var checkNodes = 0L;
+        var safePositions = new HashSet<Position>();
         for (var i = 0; i < variableCount; i++)
         {
-            if (!CanBeMine(i)) { return null; }
+            if (!CanBeMine(i))
+            {
+                _ = safePositions.Add(frontier[i]);
+            }
+        }
+        if (safePositions.Count > 0)
+        {
+            guaranteedSafePositions = safePositions;
+            return false;
         }
 
         if (!frontierSet.Contains(target))
@@ -130,7 +152,8 @@ internal sealed class MineSolver : IMineSolver
                 var newMap = mineField.GetMineMap();
                 newMap[target.ToIndex(width)] = false;
                 newMap[position.ToIndex(width)] = true;
-                return newMap;
+                rearrangedMines = newMap;
+                return true;
             }
         }
 
@@ -219,7 +242,11 @@ internal sealed class MineSolver : IMineSolver
             return originalMines[v] ? TryMine(v) || TrySafe(v) : TrySafe(v) || TryMine(v);
         }
 
-        if (!Search()) { return null; }
+        if (!Search())
+        {
+            guaranteedSafePositions = [];
+            return false;
+        }
 
         var result = new BitArray(mineField.GetMineMap());
         for (var i = 0; i < variableCount; i++)
@@ -261,7 +288,8 @@ internal sealed class MineSolver : IMineSolver
                 }
             }
         }
-        return result;
+        rearrangedMines = result;
+        return true;
 
         bool CanBeMine(int fixedIndex)
         {

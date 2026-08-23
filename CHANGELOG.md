@@ -9,6 +9,17 @@
 
 ## [Unreleased]
 
+**失败时揭示必安全格**: 游戏失败揭示雷局时, 将可推定为必定安全的格子标记为绿色 ✓, 提示玩家本有确定动作; MineSolver.TrySafeOpen 重构为 bool 返回值 + out 参数, 存在必安全格时输出必安全格集合供失败揭示使用 (不挽救玩家猜测, 拒救行为不变).
+
+### Changed
+
+- Core 层: CellType 新增 GuaranteedSafe 必安全格枚举
+- Core 层: IMineSolver.TrySafeOpen 重构 (返回 BitArray? 改为 bool + rearrangedMines/guaranteedSafePositions 两个 out 参数, 参数顺序 target 置前, 补充 [NotNullWhen] 流分析注解与参数文档)
+- Core 层: MineSolver 存在必安全格时输出全部必安全格集合 (此前直接返回 null), 其余失败分支同步补齐 out 参数
+- Core 层: Game 失败揭示适配 (Unopened/Question 的必安全格标记为 GuaranteedSafe, 失败分支重构为 switch 模式匹配)
+- UI 层: CellViewModel 新增必安全格显示 (绿色背景 + ✓ 符号)
+- 测试: GameTests 新增 CreateMineSolverMock 模拟 (按接口契约失败时输出非空安全格集合); MineSolverTests 适配新签名并新增必安全格集合内容断言
+
 ---
 
 ## [1.3.2] - 2026-08-23

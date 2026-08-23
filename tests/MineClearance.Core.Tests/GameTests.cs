@@ -97,6 +97,57 @@ public sealed class GameTests
     }
 
     /// <summary>
+    /// 创建地雷求解器模拟, 默认安全打开失败, 按接口契约在失败时输出非空的安全格集合
+    /// </summary>
+    private static Mock<IMineSolver> CreateMineSolverMock()
+    {
+        var mock = new Mock<IMineSolver>();
+        _ = mock.Setup(m => m.TrySafeOpen(
+            It.IsAny<Position>(),
+            It.IsAny<GameConfig>(),
+            It.IsAny<IMineField>(),
+            It.IsAny<IGameBoardDictionary>(),
+            out It.Ref<BitArray?>.IsAny,
+            out It.Ref<HashSet<Position>?>.IsAny))
+            .Returns(false)
+            .Callback(new TrySafeOpenCallback(TrySafeOpenFailed));
+        return mock;
+    }
+
+    /// <summary>
+    /// 安全打开失败的模拟行为, 为 out 参数提供默认值, 保持接口契约有效
+    /// </summary>
+    /// <param name="target">玩家要翻开的格子</param>
+    /// <param name="config">游戏配置</param>
+    /// <param name="mineField">地雷场</param>
+    /// <param name="board">当前棋盘</param>
+    /// <param name="rearrangedMines">重排后的雷位图</param>
+    /// <param name="guaranteedSafePositions">可以推定为必定安全的格子集合</param>
+    private static void TrySafeOpenFailed(
+        Position target,
+        GameConfig config,
+        IMineField mineField,
+        IGameBoardDictionary board,
+        out BitArray? rearrangedMines,
+        out HashSet<Position>? guaranteedSafePositions)
+    {
+        rearrangedMines = null;
+        guaranteedSafePositions = [];
+    }
+
+    /// <summary>
+    /// <see cref="IMineSolver.TrySafeOpen"/> 的模拟回调委托
+    /// </summary>
+    private delegate void TrySafeOpenCallback(
+        Position target,
+        GameConfig config,
+        IMineField mineField,
+        IGameBoardDictionary board,
+        out BitArray? rearrangedMines,
+        out HashSet<Position>? guaranteedSafePositions
+    );
+
+    /// <summary>
     /// 创建计时器模拟, 固定返回开始时间和已用时, 可通过参数模拟尚未开始的计时器
     /// </summary>
     /// <param name="hasStarted">计时器是否已经开始过</param>
@@ -122,7 +173,7 @@ public sealed class GameTests
             new Mock<IServiceScope>().Object,
             NullLogger<Game>.Instance,
             mineField.Object,
-            new Mock<IMineSolver>().Object,
+            CreateMineSolverMock().Object,
             BoardFactory.CreateGameBoardDictionary(Rows, Columns),
             timer.Object,
             GameDifficulty.Custom,
@@ -143,7 +194,7 @@ public sealed class GameTests
             (scopeMock ?? new Mock<IServiceScope>()).Object,
             NullLogger<Game>.Instance,
             CreateMineFieldMock().Object,
-            new Mock<IMineSolver>().Object,
+            CreateMineSolverMock().Object,
             BoardFactory.CreateGameBoardDictionary(Rows, Columns),
             CreateTimerMock().Object,
             GameDifficulty.Custom,
@@ -265,7 +316,7 @@ public sealed class GameTests
             new Mock<IServiceScope>().Object,
             NullLogger<Game>.Instance,
             mineField.Object,
-            new Mock<IMineSolver>().Object,
+            CreateMineSolverMock().Object,
             BoardFactory.CreateGameBoardDictionary(Rows, Columns),
             timer.Object,
             GameDifficulty.Custom,
@@ -570,7 +621,7 @@ public sealed class GameTests
             new Mock<IServiceScope>().Object,
             NullLogger<Game>.Instance,
             mineField.Object,
-            new Mock<IMineSolver>().Object,
+            CreateMineSolverMock().Object,
             BoardFactory.CreateGameBoardDictionary(Rows, Columns),
             timer.Object,
             Config,

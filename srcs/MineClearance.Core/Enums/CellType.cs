@@ -48,5 +48,10 @@ public enum CellType
     /// <summary>
     /// 被打开的地雷格子
     /// </summary>
-    OpenedMine
+    OpenedMine,
+
+    /// <summary>
+    /// 可以推定为必定安全的格子
+    /// </summary>
+    GuaranteedSafe
 }

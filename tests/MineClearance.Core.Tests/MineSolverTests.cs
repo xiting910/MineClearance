@@ -8,7 +8,7 @@ using System.Collections;
 namespace MineClearance.Core.Tests;
 
 /// <summary>
-/// <see cref="MineSolver"/> 的单元测试, 覆盖二选一僵局、必死格判定、快速路径与雷位重排合法性
+/// <see cref="MineSolver"/> 的单元测试, 覆盖二选一僵局、必死格判定、必安全格输出、快速路径与雷位重排合法性
 /// </summary>
 public sealed class MineSolverTests
 {
@@ -26,7 +26,7 @@ public sealed class MineSolverTests
         var mineField = CreateMineField(3, 3, [new(1, 1)]);
         var target = new Position(1, 1);
 
-        var newMap = Solver.TrySafeOpen(config, board, mineField, target);
+        Assert.True(Solver.TrySafeOpen(target, config, mineField, board, out var newMap, out _));
 
         Assert.NotNull(newMap);
         AssertValidRelayout(config, board, mineField, target, newMap);
@@ -41,14 +41,14 @@ public sealed class MineSolverTests
         var mineField = CreateMineField(3, 3, [new(0, 1)]);
         var target = new Position(0, 1);
 
-        var newMap = Solver.TrySafeOpen(config, board, mineField, target);
+        Assert.True(Solver.TrySafeOpen(target, config, mineField, board, out var newMap, out _));
 
         Assert.NotNull(newMap);
         AssertValidRelayout(config, board, mineField, target, newMap);
     }
 
     [Fact]
-    public void TrySafeOpen_必死格_唯一解中该格必为雷_返回null()
+    public void TrySafeOpen_必死格_唯一解中该格必为雷_返回false()
     {
         // 布局: 4x4, 3 颗雷; 已开 (0,0)=3, 其邻域三格必须全雷; 点 (0,1) 安全则邻域最多 2 雷, 约束无解
         var config = new GameConfig(4, 4, 3);
@@ -56,7 +56,7 @@ public sealed class MineSolverTests
         var mineField = CreateMineField(4, 4, [new(0, 1), new(1, 0), new(1, 1)]);
         var target = new Position(0, 1);
 
-        Assert.Null(Solver.TrySafeOpen(config, board, mineField, target));
+        Assert.False(Solver.TrySafeOpen(target, config, mineField, board, out _, out _));
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class MineSolverTests
         var mineField = CreateMineField(5, 5, [new(0, 0), new(3, 3)]);
         var target = new Position(0, 0);
 
-        var newMap = Solver.TrySafeOpen(config, board, mineField, target);
+        Assert.True(Solver.TrySafeOpen(target, config, mineField, board, out var newMap, out _));
 
         Assert.NotNull(newMap);
         AssertValidRelayout(config, board, mineField, target, newMap);
@@ -77,7 +77,7 @@ public sealed class MineSolverTests
     }
 
     [Fact]
-    public void TrySafeOpen_存在必安全格_不挽救猜测()
+    public void TrySafeOpen_存在必安全格_不挽救猜测并输出全部必安全格()
     {
         // 布局: 5x5, 1 颗雷在 (0,0); 数字格 (2,2)=0, 邻域 8 格必安全, 玩家有确定动作; 点远处雷格不挽救
         var config = new GameConfig(5, 5, 1);
@@ -85,7 +85,14 @@ public sealed class MineSolverTests
         var mineField = CreateMineField(5, 5, [new(0, 0)]);
         var target = new Position(0, 0);
 
-        Assert.Null(Solver.TrySafeOpen(config, board, mineField, target));
+        Assert.False(Solver.TrySafeOpen(target, config, mineField, board, out _, out var safePositions));
+        Assert.NotNull(safePositions);
+        Assert.True(safePositions.SetEquals(
+        [
+            new(1, 1), new(1, 2), new(1, 3),
+            new(2, 1), new(2, 3),
+            new(3, 1), new(3, 2), new(3, 3)
+        ]));
     }
 
     [Fact]
@@ -97,7 +104,7 @@ public sealed class MineSolverTests
         var mineField = CreateMineField(3, 3, [new(0, 1)]);
         var target = new Position(0, 1);
 
-        var newMap = Solver.TrySafeOpen(config, board, mineField, target);
+        Assert.True(Solver.TrySafeOpen(target, config, mineField, board, out var newMap, out _));
 
         Assert.NotNull(newMap);
         AssertValidRelayout(config, board, mineField, target, newMap);
@@ -112,7 +119,7 @@ public sealed class MineSolverTests
         var mineField = CreateMineField(3, 3, [new(0, 0)]);
         var target = new Position(0, 0);
 
-        var newMap = Solver.TrySafeOpen(config, board, mineField, target);
+        Assert.True(Solver.TrySafeOpen(target, config, mineField, board, out var newMap, out _));
 
         Assert.NotNull(newMap);
         AssertValidRelayout(config, board, mineField, target, newMap);
@@ -127,8 +134,8 @@ public sealed class MineSolverTests
         var target = new Position(0, 1);
         Position[] mines = [new(0, 1), new(2, 3), new(4, 4)];
 
-        var first = Solver.TrySafeOpen(config, board, CreateMineField(5, 5, mines), target);
-        var second = Solver.TrySafeOpen(config, board, CreateMineField(5, 5, mines), target);
+        Assert.True(Solver.TrySafeOpen(target, config, CreateMineField(5, 5, mines), board, out var first, out _));
+        Assert.True(Solver.TrySafeOpen(target, config, CreateMineField(5, 5, mines), board, out var second, out _));
 
         Assert.NotNull(first);
         Assert.NotNull(second);
