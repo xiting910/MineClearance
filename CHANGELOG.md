@@ -9,6 +9,20 @@
 
 ## [Unreleased]
 
+**内置背景图片与来源开关**: 新增 3 张内置背景图片打包为应用资源; 设置抽屉新增"使用自定义背景图片"开关, 勾选后从程序目录 Pictures 文件夹加载图片, 取消勾选恢复内置图片列表; 背景图片加载按来源区分 (内置走 avares 资源, 自定义走文件路径), 加载失败 Toast 提示.
+
+### Added
+
+- UI 层: 内置背景图片 (Constants 新增 BuiltInBackgroundImageUriPrefix avares 资源 URI 前缀 / BuiltInBackgroundImageFileNames 内置图片文件名列表 / DefaultBackgroundImageFileName 默认图片, Assets/Backgrounds 新增 3 张内置图片资源)
+- UI 层: 背景来源开关 (UIOptions 新增 UseCustomBackgroundImage 配置项, 设置抽屉新增"使用自定义背景图片"开关, 勾选后从自定义图片文件夹加载图片, 取消勾选恢复内置图片列表)
+- 测试: UI 层单元测试适配 (SettingsViewModel 内置图片列表/来源开关切换与配置同步, UIOptions 来源开关默认值/解析/持久化, Constants 目录常量重命名)
+
+### Changed
+
+- UI 层: BackgroundImageOption FileName 改为非空 (不使用背景图片以空字符串表示), BackgroundImageChanged 事件新增是否使用自定义图片参数
+- UI 层: 背景图片加载支持内置资源 (ShellViewModel 按来源使用 AssetLoader 加载 avares 资源或文件路径加载, 加载失败 Toast 提示)
+- UI 层: BackgroundImageDirectory 重命名为 CustomBackgroundImageDirectory, 设置抽屉"创建并打开图片文件夹"按钮文案与 ToolTip 同步更新
+
 ---
 
 ## [1.3.0] - 2026-08-23

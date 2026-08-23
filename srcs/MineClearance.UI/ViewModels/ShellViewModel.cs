@@ -1,5 +1,6 @@
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
@@ -183,10 +184,6 @@ public sealed partial class ShellViewModel : ObservableObject
         ToastViewModel toast,
         UpdateViewModel update)
     {
-        RefreshBackgroundImage(uiOptions.BackgroundImageFileName);
-        RefreshBackgroundImageStretch(uiOptions.BackgroundImageStretch);
-        RefreshBackgroundImageOpacity(uiOptions.BackgroundImageOpacity);
-
         Main = main;
         Game = game;
         History = history;
@@ -208,6 +205,11 @@ public sealed partial class ShellViewModel : ObservableObject
 
         // 订阅下载抽屉的打开/关闭, 同步共用遮布状态
         update.PropertyChanged += OnUpdatePropertyChanged;
+
+        // 初始化背景图片
+        RefreshBackgroundImage(uiOptions.UseCustomBackgroundImage, uiOptions.BackgroundImageFileName);
+        RefreshBackgroundImageStretch(uiOptions.BackgroundImageStretch);
+        RefreshBackgroundImageOpacity(uiOptions.BackgroundImageOpacity);
     }
 
     /// <summary>
@@ -313,27 +315,30 @@ public sealed partial class ShellViewModel : ObservableObject
     /// <summary>
     /// 刷新背景图片
     /// </summary>
+    /// <param name="useCustom">是否使用自定义背景图片</param>
     /// <param name="fileName">背景图片文件名</param>
-    private async void RefreshBackgroundImage(string? fileName)
+    private async void RefreshBackgroundImage(bool useCustom, string fileName)
     {
         var version = ++_backgroundImageVersion;
         if (!string.IsNullOrWhiteSpace(fileName))
         {
-            var filePath = Path.Combine(Constants.BackgroundImageDirectory, fileName);
-            if (File.Exists(filePath))
+            var uri = useCustom
+                ? Path.Combine(Constants.CustomBackgroundImageDirectory, fileName)
+                : Constants.BuiltInBackgroundImageUriPrefix + fileName;
+
+            try
             {
-                var bitmap = await Task.Run(() => new Bitmap(filePath));
-                if (version == _backgroundImageVersion)
-                {
-                    BackgroundImage = bitmap;
-                }
-                return;
+                await using var stream = useCustom ? File.OpenRead(uri) : AssetLoader.Open(new(uri));
+                var bitmap = await Task.Run(() => new Bitmap(stream));
+                if (version == _backgroundImageVersion) { BackgroundImage = bitmap; }
             }
+            catch (Exception ex)
+            {
+                Toast.Show($"加载背景图片 {uri} 失败: {ex.Message}");
+            }
+            return;
         }
-        if (version == _backgroundImageVersion)
-        {
-            BackgroundImage = null;
-        }
+        if (version == _backgroundImageVersion) { BackgroundImage = null; }
     }
 
     /// <summary>
@@ -466,7 +471,6 @@ public sealed partial class ShellViewModel : ObservableObject
     {
         if (e.PropertyName is nameof(UpdateViewModel.IsDrawerOpen))
         {
-            // 下载抽屉打开时暂停游戏, 关闭时恢复
             if (Update.IsDrawerOpen)
             {
                 PauseGameForDrawer();

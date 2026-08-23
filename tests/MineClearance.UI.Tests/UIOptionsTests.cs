@@ -57,7 +57,8 @@ public sealed class UIOptionsTests
         Assert.True(options.ShowFirstLaunchTip);
         Assert.False(options.CopyIndexOnFirstClick);
         Assert.Equal(Key.None, options.ShowIndexHotKey);
-        Assert.Null(options.BackgroundImageFileName);
+        Assert.False(options.UseCustomBackgroundImage);
+        Assert.Equal(Constants.DefaultBackgroundImageFileName, options.BackgroundImageFileName);
         Assert.Equal(Stretch.UniformToFill, options.BackgroundImageStretch);
         Assert.Equal(Constants.MaxRatio, options.BackgroundImageOpacity);
     }
@@ -73,6 +74,7 @@ public sealed class UIOptionsTests
             (nameof(UIOptions.ShowFirstLaunchTip), "false"),
             (nameof(UIOptions.CopyIndexOnFirstClick), "true"),
             (nameof(UIOptions.ShowIndexHotKey), Key.F7.ToString()),
+            (nameof(UIOptions.UseCustomBackgroundImage), "true"),
             (nameof(UIOptions.BackgroundImageFileName), "pic.png"),
             (nameof(UIOptions.BackgroundImageStretch), Stretch.Fill.ToString()),
             (nameof(UIOptions.BackgroundImageOpacity), "0.5")
@@ -85,6 +87,7 @@ public sealed class UIOptionsTests
         Assert.False(options.ShowFirstLaunchTip);
         Assert.True(options.CopyIndexOnFirstClick);
         Assert.Equal(Key.F7, options.ShowIndexHotKey);
+        Assert.True(options.UseCustomBackgroundImage);
         Assert.Equal("pic.png", options.BackgroundImageFileName);
         Assert.Equal(Stretch.Fill, options.BackgroundImageStretch);
         Assert.Equal(0.5, options.BackgroundImageOpacity);
@@ -155,6 +158,14 @@ public sealed class UIOptionsTests
     }
 
     [Fact]
+    public void 构造_使用自定义但无文件名_文件名回退为空()
+    {
+        var options = CreateWith((nameof(UIOptions.UseCustomBackgroundImage), "true"));
+
+        Assert.Equal(string.Empty, options.BackgroundImageFileName);
+    }
+
+    [Fact]
     public void 修改属性_保存到设置文件()
     {
         EnsureSettingsDirectory();
@@ -165,6 +176,7 @@ public sealed class UIOptionsTests
         options.ShowDownloadBall = false;
         options.CopyIndexOnFirstClick = true;
         options.ShowIndexHotKey = Key.F9;
+        options.UseCustomBackgroundImage = true;
         options.BackgroundImageFileName = "pic.png";
         options.BackgroundImageStretch = Stretch.Fill;
         options.BackgroundImageOpacity = 0.5;
@@ -177,6 +189,7 @@ public sealed class UIOptionsTests
         Assert.False(node[nameof(options.ShowDownloadBall)]!.GetValue<bool>());
         Assert.True(node[nameof(options.CopyIndexOnFirstClick)]!.GetValue<bool>());
         Assert.Equal(Key.F9.ToString(), node[nameof(options.ShowIndexHotKey)]!.GetValue<string>());
+        Assert.True(node[nameof(options.UseCustomBackgroundImage)]!.GetValue<bool>());
         Assert.Equal("pic.png", node[nameof(options.BackgroundImageFileName)]!.GetValue<string>());
         Assert.Equal(Stretch.Fill.ToString(), node[nameof(options.BackgroundImageStretch)]!.GetValue<string>());
         Assert.Equal(0.5, node[nameof(options.BackgroundImageOpacity)]!.GetValue<double>());
@@ -189,6 +202,7 @@ public sealed class UIOptionsTests
         var options = CreateEmpty();
         options.Theme = ThemeMode.Light;
         options.MaxToastCount = 5;
+        options.UseCustomBackgroundImage = true;
         options.BackgroundImageStretch = Stretch.Uniform;
         options.BackgroundImageOpacity = 0.75;
 
@@ -200,6 +214,7 @@ public sealed class UIOptionsTests
 
         Assert.Equal(ThemeMode.Light, loaded.Theme);
         Assert.Equal(5, loaded.MaxToastCount);
+        Assert.True(loaded.UseCustomBackgroundImage);
         Assert.Equal(Stretch.Uniform, loaded.BackgroundImageStretch);
         Assert.Equal(0.75, loaded.BackgroundImageOpacity);
     }

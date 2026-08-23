@@ -62,6 +62,7 @@ public sealed class SettingsViewModelTests
         Assert.Equal(_uiOptions.CopyIndexOnFirstClick, _viewModel.CopyIndexOnFirstClick);
         Assert.Equal(_uiOptions.ShowIndexHotKey, _viewModel.ShowIndexHotKey);
         Assert.Equal(_loggerOptions.Level, _viewModel.Level);
+        Assert.Equal(_uiOptions.UseCustomBackgroundImage, _viewModel.UseCustomBackgroundImage);
         Assert.Equal(_uiOptions.BackgroundImageFileName, _viewModel.SelectedBackgroundImage.FileName);
         Assert.Equal(_uiOptions.BackgroundImageStretch, _viewModel.BackgroundImageStretch);
         Assert.Equal(_uiOptions.BackgroundImageOpacity, _viewModel.BackgroundImageOpacity);
@@ -193,23 +194,43 @@ public sealed class SettingsViewModelTests
     }
 
     [Fact]
-    public void 构造_背景图片目录不存在_仅含不使用项()
+    public void 构造_默认使用内置背景_列表含不使用项和全部内置项()
     {
-        var option = Assert.Single(_viewModel.BackgroundImages);
-        Assert.Equal("不使用背景图片", option.DisplayName);
-        Assert.Null(option.FileName);
+        Assert.False(_viewModel.UseCustomBackgroundImage);
+        Assert.Equal(
+            Constants.BuiltInBackgroundImageFileNames.Length + 1, _viewModel.BackgroundImages.Count
+        );
+        Assert.Equal("不使用背景图片", _viewModel.BackgroundImages[0].DisplayName);
+        Assert.Equal(string.Empty, _viewModel.BackgroundImages[0].FileName);
+        Assert.Equal(
+            Constants.BuiltInBackgroundImageFileNames,
+            _viewModel.BackgroundImages.Skip(1).Select(option => option.FileName)
+        );
     }
 
     [Fact]
-    public void 构造_背景图片目录存在_识别图片并按名称排序()
+    public void 构造_使用自定义且目录不存在_仅含不使用项()
     {
-        var directory = Constants.BackgroundImageDirectory;
+        _uiOptions.UseCustomBackgroundImage = true;
+
+        var viewModel = new SettingsViewModel(_uiOptions, _loggerOptions, _toast, _update);
+
+        var option = Assert.Single(viewModel.BackgroundImages);
+        Assert.Equal("不使用背景图片", option.DisplayName);
+        Assert.Equal(string.Empty, option.FileName);
+    }
+
+    [Fact]
+    public void 构造_自定义图片目录存在_识别图片并按名称排序()
+    {
+        var directory = Constants.CustomBackgroundImageDirectory;
         try
         {
             _ = Directory.CreateDirectory(directory);
             File.WriteAllText(Path.Combine(directory, "b.png"), "test");
             File.WriteAllText(Path.Combine(directory, "a.jpg"), "test");
             File.WriteAllText(Path.Combine(directory, "note.txt"), "test");
+            _uiOptions.UseCustomBackgroundImage = true;
 
             var viewModel = new SettingsViewModel(_uiOptions, _loggerOptions, _toast, _update);
 
@@ -227,13 +248,14 @@ public sealed class SettingsViewModelTests
     }
 
     [Fact]
-    public void 构造_配置存在的背景图片_选中对应选项()
+    public void 构造_配置存在的自定义背景图片_选中对应选项()
     {
-        var directory = Constants.BackgroundImageDirectory;
+        var directory = Constants.CustomBackgroundImageDirectory;
         try
         {
             _ = Directory.CreateDirectory(directory);
             File.WriteAllText(Path.Combine(directory, "pic.png"), "test");
+            _uiOptions.UseCustomBackgroundImage = true;
             _uiOptions.BackgroundImageFileName = "pic.png";
 
             var viewModel = new SettingsViewModel(_uiOptions, _loggerOptions, _toast, _update);
@@ -250,15 +272,62 @@ public sealed class SettingsViewModelTests
     }
 
     [Fact]
+    public void 构造_配置的内置背景_选中对应选项()
+    {
+        _uiOptions.BackgroundImageFileName = "2.png";
+
+        var viewModel = new SettingsViewModel(_uiOptions, _loggerOptions, _toast, _update);
+
+        Assert.Equal("2.png", viewModel.SelectedBackgroundImage.FileName);
+    }
+
+    [Fact]
     public void 修改背景图片_同步配置并触发事件()
     {
+        bool? changedUseCustom = null;
         string? changedFileName = null;
-        _viewModel.BackgroundImageChanged += value => changedFileName = value;
+        _viewModel.BackgroundImageChanged += (useCustom, fileName) =>
+        {
+            changedUseCustom = useCustom;
+            changedFileName = fileName;
+        };
 
         _viewModel.SelectedBackgroundImage = new BackgroundImageOption("pic.png", "pic.png");
 
+        Assert.False(changedUseCustom);
         Assert.Equal("pic.png", changedFileName);
         Assert.Equal("pic.png", _uiOptions.BackgroundImageFileName);
+    }
+
+    [Fact]
+    public void 打开使用自定义开关_切换列表并同步配置()
+    {
+        bool? changedUseCustom = null;
+        _viewModel.BackgroundImageChanged += (useCustom, _) => changedUseCustom = useCustom;
+
+        _viewModel.UseCustomBackgroundImage = true;
+
+        Assert.True(_uiOptions.UseCustomBackgroundImage);
+        Assert.True(changedUseCustom);
+        // 自定义目录不存在时仅含不使用项
+        var option = Assert.Single(_viewModel.BackgroundImages);
+        Assert.Equal("不使用背景图片", option.DisplayName);
+    }
+
+    [Fact]
+    public void 关闭使用自定义开关_恢复内置列表()
+    {
+        _viewModel.UseCustomBackgroundImage = true;
+        _viewModel.UseCustomBackgroundImage = false;
+
+        Assert.False(_uiOptions.UseCustomBackgroundImage);
+        Assert.Equal(
+            Constants.BuiltInBackgroundImageFileNames.Length + 1, _viewModel.BackgroundImages.Count
+        );
+        Assert.Equal(
+            Constants.BuiltInBackgroundImageFileNames,
+            _viewModel.BackgroundImages.Skip(1).Select(option => option.FileName)
+        );
     }
 
     [Fact]

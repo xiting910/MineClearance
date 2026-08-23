@@ -19,6 +19,12 @@ public static class Constants
     public const string ViewSuffix = "View";
 
     /// <summary>
+    /// 内置背景图片资源 URI 前缀
+    /// </summary>
+    public const string BuiltInBackgroundImageUriPrefix =
+        $"avares://{nameof(MineClearance)}.{nameof(UI)}/Assets/Backgrounds/";
+
+    /// <summary>
     /// 最大比例 (0-1 区间的最大值)
     /// </summary>
     public const double MaxRatio = 1.0;
@@ -143,9 +149,19 @@ public static class Constants
     );
 
     /// <summary>
-    /// 加载背景图片的目录
+    /// 自定义背景图片的目录
     /// </summary>
-    public static readonly string BackgroundImageDirectory = Path.Combine(
+    public static readonly string CustomBackgroundImageDirectory = Path.Combine(
         AppContext.BaseDirectory, "Pictures"
     );
+
+    /// <summary>
+    /// 内置背景图片列表
+    /// </summary>
+    public static readonly string[] BuiltInBackgroundImageFileNames = ["1.png", "2.png", "3.png"];
+
+    /// <summary>
+    /// 默认背景图片文件名
+    /// </summary>
+    public static readonly string DefaultBackgroundImageFileName = BuiltInBackgroundImageFileNames[0];
 }

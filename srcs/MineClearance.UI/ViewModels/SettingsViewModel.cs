@@ -33,7 +33,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>
     /// 不使用背景图片选项
     /// </summary>
-    private static readonly BackgroundImageOption NoBackgroundImageOption = new("不使用背景图片", null);
+    private static readonly BackgroundImageOption NoImageOption = new("不使用背景图片", string.Empty);
 
     /// <summary>
     /// 允许的图片扩展名列表, 用于扫描背景图片目录
@@ -42,6 +42,13 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         ".png", ".jpg", ".jpeg", ".bmp", ".gif"
     };
+
+    /// <summary>
+    /// 内置图片的选项列表
+    /// </summary>
+    private static readonly IReadOnlyList<BackgroundImageOption> BuiltInImageOptions = [NoImageOption, ..
+        Constants.BuiltInBackgroundImageFileNames.Select(f => new BackgroundImageOption(f, f))
+    ];
 
     /// <summary>
     /// UI 配置
@@ -67,6 +74,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// 透明度保存节流版本号, 每次变化累加, 只有最新版本的延迟保存任务才允许写配置
     /// </summary>
     private volatile int _opacitySaveVersion;
+
+    /// <summary>
+    /// 是否使用自定义背景图片
+    /// </summary>
+    [ObservableProperty]
+    public partial bool UseCustomBackgroundImage { get; set; }
 
     /// <summary>
     /// 主题模式
@@ -197,7 +210,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>
     /// 背景图片选项变化的事件, 由壳视图模型订阅以刷新背景
     /// </summary>
-    public event Action<string?>? BackgroundImageChanged;
+    public event Action<bool, string>? BackgroundImageChanged;
 
     /// <summary>
     /// 背景图片拉伸方式变化的事件, 由壳视图模型订阅以刷新背景
@@ -233,6 +246,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _update = updateViewModel;
 
         Theme = uiOptions.Theme;
+        UseCustomBackgroundImage = uiOptions.UseCustomBackgroundImage;
         RefreshBackgroundImageProperties();
         BackgroundImageStretch = uiOptions.BackgroundImageStretch;
         BackgroundImageOpacity = uiOptions.BackgroundImageOpacity;
@@ -269,13 +283,24 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
+    /// 是否使用自定义背景图片变化时同步配置并刷新背景图片列表
+    /// </summary>
+    /// <param name="value">新的开关状态</param>
+    partial void OnUseCustomBackgroundImageChanged(bool value)
+    {
+        RefreshBackgroundImageProperties();
+        BackgroundImageChanged?.Invoke(value, SelectedBackgroundImage.FileName);
+        _uiOptions.UseCustomBackgroundImage = value;
+    }
+
+    /// <summary>
     /// 背景图片选择变化时同步配置并触发背景刷新
     /// </summary>
     /// <param name="value">新选择的背景图片选项, 下拉框同步期间可能为 <see langword="null"/></param>
     partial void OnSelectedBackgroundImageChanged(BackgroundImageOption value)
     {
         if (value is null) { return; }
-        BackgroundImageChanged?.Invoke(value.FileName);
+        BackgroundImageChanged?.Invoke(UseCustomBackgroundImage, value.FileName);
         _uiOptions.BackgroundImageFileName = value.FileName;
     }
 
@@ -368,21 +393,21 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 打开背景图片文件夹, 失败时通过 Toast 提示
+    /// 创建并打开自定义背景图片文件夹, 失败时通过 Toast 提示
     /// </summary>
     [RelayCommand]
-    private void OpenBackgroundImagesFolder()
+    private void OpenCustomBackgroundImagesFolder()
     {
         try
         {
-            _ = Directory.CreateDirectory(Constants.BackgroundImageDirectory);
+            _ = Directory.CreateDirectory(Constants.CustomBackgroundImageDirectory);
         }
         catch (Exception ex)
         {
             _toast.Show($"创建背景图片目录时失败: {ex.Message}");
             return;
         }
-        OpenPath(Constants.BackgroundImageDirectory);
+        OpenPath(Constants.CustomBackgroundImageDirectory);
     }
 
     /// <summary>
@@ -392,7 +417,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private void RefreshBackgroundImages()
     {
         RefreshBackgroundImageProperties();
-        BackgroundImageChanged?.Invoke(SelectedBackgroundImage.FileName);
+        BackgroundImageChanged?.Invoke(UseCustomBackgroundImage, SelectedBackgroundImage.FileName);
     }
 
     /// <summary>
@@ -489,10 +514,10 @@ public sealed partial class SettingsViewModel : ObservableObject
     [MemberNotNull(nameof(BackgroundImages), nameof(SelectedBackgroundImage))]
     private void RefreshBackgroundImageProperties()
     {
-        BackgroundImages = LoadBackgroundImages();
+        BackgroundImages = UseCustomBackgroundImage ? LoadCustomBackgroundImages() : BuiltInImageOptions;
         SelectedBackgroundImage = BackgroundImages.FirstOrDefault(option =>
             Infrastructure.Constants.PathComparer.Equals(option.FileName, _uiOptions.BackgroundImageFileName
-        )) ?? NoBackgroundImageOption;
+        )) ?? NoImageOption;
     }
 
     /// <summary>
@@ -529,16 +554,16 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 扫描背景图片目录, 生成可选择的图片选项列表, 目录不存在时仅返回不使用项
+    /// 加载自定义背景图片列表, 包含不使用背景图片选项, 按文件名排序
     /// </summary>
     /// <returns>背景图片选项列表</returns>
-    private static List<BackgroundImageOption> LoadBackgroundImages()
+    private static List<BackgroundImageOption> LoadCustomBackgroundImages()
     {
-        List<BackgroundImageOption> options = [NoBackgroundImageOption];
-        if (Directory.Exists(Constants.BackgroundImageDirectory))
+        List<BackgroundImageOption> options = [NoImageOption];
+        if (Directory.Exists(Constants.CustomBackgroundImageDirectory))
         {
             options.AddRange(
-                Directory.EnumerateFiles(Constants.BackgroundImageDirectory)
+                Directory.EnumerateFiles(Constants.CustomBackgroundImageDirectory)
                     .Where(path => AllowedImageExtensions.Contains(Path.GetExtension(path)))
                     .Select(path => Path.GetFileName(path))
                     .Order(Infrastructure.Constants.PathComparer)

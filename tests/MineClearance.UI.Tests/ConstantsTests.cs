@@ -14,10 +14,10 @@ public sealed class ConstantsTests
     }
 
     [Fact]
-    public void BackgroundImageDirectory_位于程序基目录的Pictures子目录()
+    public void CustomBackgroundImageDirectory_位于程序基目录的Pictures子目录()
     {
         Assert.Equal(
-            Path.Combine(AppContext.BaseDirectory, "Pictures"), Constants.BackgroundImageDirectory
+            Path.Combine(AppContext.BaseDirectory, "Pictures"), Constants.CustomBackgroundImageDirectory
         );
     }
 }

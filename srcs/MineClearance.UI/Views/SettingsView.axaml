@@ -22,7 +22,7 @@
       <!-- UI 配置 (主题/Toast 时长与数量/悬浮球) -->
       <TextBlock Text="UI 配置" FontWeight="Bold"
                  Foreground="{DynamicResource TitleForegroundBrush}"/>
-      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
         <TextBlock Text="主题:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
         <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
@@ -34,21 +34,26 @@
             </DataTemplate>
           </ComboBox.ItemTemplate>
         </ComboBox>
-        <TextBlock Grid.Row="1" Text="背景图片:" VerticalAlignment="Center"
+        <TextBlock Grid.Row="1" Text="背景来源:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
-        <ComboBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch"
+        <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding UseCustomBackgroundImage}"
+                  Content="使用自定义背景图片" VerticalAlignment="Center"
+                  ToolTip.Tip="勾选后从自定义图片文件夹选择图片, 取消勾选使用内置背景图片"/>
+        <TextBlock Grid.Row="2" Text="背景图片:" VerticalAlignment="Center"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+        <ComboBox Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch"
                   ItemsSource="{Binding BackgroundImages}" SelectedItem="{Binding SelectedBackgroundImage}"
                   PlaceholderText="选择背景图片"
-                  ToolTip.Tip="从图片文件夹加载背景图片, 放入图片后重新打开设置或者点击刷新按钮即可被识别">
+                  ToolTip.Tip="根据上方开关选择内置或自定义图片, 在自定义图片文件夹放入新图片后点击刷新按钮或者重新打开设置即可识别">
           <ComboBox.ItemTemplate>
             <DataTemplate x:DataType="models:BackgroundImageOption">
               <TextBlock Text="{Binding DisplayName}"/>
             </DataTemplate>
           </ComboBox.ItemTemplate>
         </ComboBox>
-        <TextBlock Grid.Row="2" Text="背景拉伸:" VerticalAlignment="Center"
+        <TextBlock Grid.Row="3" Text="背景拉伸:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
-        <ComboBox Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch"
+        <ComboBox Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch"
                   ItemsSource="{Binding StretchModes}" SelectedItem="{Binding BackgroundImageStretch}">
           <ComboBox.ItemTemplate>
             <DataTemplate x:DataType="media:Stretch">
@@ -64,44 +69,44 @@
             </StackPanel>
           </ToolTip.Tip>
         </ComboBox>
-        <TextBlock Grid.Row="3" Text="背景透明度:" VerticalAlignment="Center"
+        <TextBlock Grid.Row="4" Text="背景透明度:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
-        <Slider Grid.Row="3" Grid.Column="1" Value="{Binding BackgroundImageOpacity}"
+        <Slider Grid.Row="4" Grid.Column="1" Value="{Binding BackgroundImageOpacity}"
                 Minimum="0" Maximum="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                 ToolTip.Tip="滑动调节背景图片的透明度"/>
-        <TextBlock Grid.Row="4" Grid.RowSpan="2" Text="操作:" VerticalAlignment="Center"
+        <TextBlock Grid.Row="5" Grid.RowSpan="2" Text="操作:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
-        <Button Grid.Row="4" Grid.Column="1" Content="刷新背景图片" Command="{Binding RefreshBackgroundImagesCommand}"
+        <Button Grid.Row="5" Grid.Column="1" Content="刷新背景图片" Command="{Binding RefreshBackgroundImagesCommand}"
                 HorizontalAlignment="Stretch" Padding="12,6"
-                ToolTip.Tip="重新扫描图片文件夹并重新加载当前背景图片"
+                ToolTip.Tip="重新扫描可用的图片列表并重新加载当前选择的背景图片"
                 Background="{DynamicResource PrimaryButtonBackgroundBrush}" Foreground="{DynamicResource PrimaryButtonForegroundBrush}"/>
-        <Button Grid.Row="5" Grid.Column="1" Content="创建并打开图片文件夹" Command="{Binding OpenBackgroundImagesFolderCommand}"
+        <Button Grid.Row="6" Grid.Column="1" Content="创建并打开自定义图片文件夹" Command="{Binding OpenCustomBackgroundImagesFolderCommand}"
                 HorizontalAlignment="Stretch" Padding="12,6"
-                ToolTip.Tip="{x:Static shared:Constants.BackgroundImageDirectory}"
+                ToolTip.Tip="{x:Static shared:Constants.CustomBackgroundImageDirectory}"
                 Background="{DynamicResource NeutralButtonBackgroundBrush}" Foreground="{DynamicResource NeutralButtonForegroundBrush}"/>
-        <TextBlock Grid.Row="6" Text="Toast 显示时间 (秒):" VerticalAlignment="Center"
+        <TextBlock Grid.Row="7" Text="Toast 显示时间 (秒):" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
-        <NumericUpDown Grid.Row="6" Grid.Column="1" Value="{Binding ToastDurationSeconds}"
+        <NumericUpDown Grid.Row="7" Grid.Column="1" Value="{Binding ToastDurationSeconds}"
                        Minimum="0" Maximum="20" Increment="0.5" FormatString="0.0"
                        ToolTip.Tip="右下角提示的显示时间 (秒)"/>
-        <TextBlock Grid.Row="7" Text="Toast 数量:" VerticalAlignment="Center"
+        <TextBlock Grid.Row="8" Text="Toast 数量:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
-        <NumericUpDown Grid.Row="7" Grid.Column="1" Value="{Binding MaxToastCount}"
+        <NumericUpDown Grid.Row="8" Grid.Column="1" Value="{Binding MaxToastCount}"
                        Minimum="1" Maximum="5" Increment="1" FormatString="0"
                        ToolTip.Tip="右下角提示的同时显示最大条数"/>
-        <TextBlock Grid.Row="8" Text="下载悬浮球:" VerticalAlignment="Center"
+        <TextBlock Grid.Row="9" Text="下载悬浮球:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
-        <CheckBox Grid.Row="8" Grid.Column="1" IsChecked="{Binding ShowDownloadBall}"
+        <CheckBox Grid.Row="9" Grid.Column="1" IsChecked="{Binding ShowDownloadBall}"
                   Content="下载时在左下角显示进度悬浮球" VerticalAlignment="Center"
                   ToolTip.Tip="下载更新时是否在左下角显示进度悬浮球"/>
-        <TextBlock Grid.Row="9" Text="首点复制索引:" VerticalAlignment="Center"
+        <TextBlock Grid.Row="10" Text="首点复制索引:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
-        <CheckBox Grid.Row="9" Grid.Column="1" IsChecked="{Binding CopyIndexOnFirstClick}"
+        <CheckBox Grid.Row="10" Grid.Column="1" IsChecked="{Binding CopyIndexOnFirstClick}"
                   Content="首次点击格子时复制索引到剪贴板" VerticalAlignment="Center"
                   ToolTip.Tip="将游戏开始时首次点击的格子索引复制到剪贴板并提示"/>
-        <TextBlock Grid.Row="10" Text="显示索引快捷键:" VerticalAlignment="Center"
+        <TextBlock Grid.Row="11" Text="显示索引快捷键:" VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"/>
-        <Button Grid.Row="10" Grid.Column="1" Content="{Binding HotkeyButtonText}"
+        <Button Grid.Row="11" Grid.Column="1" Content="{Binding HotkeyButtonText}"
                 Command="{Binding BeginListenHotkeyCommand}" HorizontalAlignment="Stretch" Padding="12,6"
                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                 ToolTip.Tip="点击后按下按键设置热键, Backspace/Delete 清除, 游戏等待开始时按住显示格子索引"/>
