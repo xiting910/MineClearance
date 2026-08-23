@@ -47,7 +47,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// 内置图片的选项列表
     /// </summary>
     private static readonly IReadOnlyList<BackgroundImageOption> BuiltInImageOptions = [NoImageOption, ..
-        Constants.BuiltInBackgroundImageFileNames.Select(f => new BackgroundImageOption(f, f))
+        Constants.BuiltInBackgroundImageFileNames.Index().Select(obj =>
+            new BackgroundImageOption($"内置背景图片 {obj.Index + 1}", obj.Item)
+        )
     ];
 
     /// <summary>

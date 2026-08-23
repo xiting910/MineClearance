@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- UI 层: 内置背景图片选项显示名由文件名改为序号 (SettingsViewModel 使用 Index() 生成"内置背景图片 N"显示名, FileName 保持不变)
+
 ---
 
 ### [1.3.1] - 2026-08-23
