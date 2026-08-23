@@ -4,7 +4,7 @@
              xmlns:vm="using:MineClearance.UI.ViewModels"
              xmlns:models="using:MineClearance.UI.Models"
              x:DataType="vm:HistoryViewModel"
-             Background="{DynamicResource WindowBackgroundBrush}">
+             Background="Transparent">
 
   <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Margin="16" RowSpacing="8">
 

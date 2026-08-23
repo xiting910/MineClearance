@@ -1,4 +1,5 @@
 using Avalonia.Input;
+using Avalonia.Media;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
@@ -124,6 +125,54 @@ public sealed class UIOptions
     }
 
     /// <summary>
+    /// 要使用的背景图片文件名
+    /// </summary>
+    public string? BackgroundImageFileName
+    {
+        get;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                SaveToFile();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 背景图片拉伸方式
+    /// </summary>
+    public Stretch BackgroundImageStretch
+    {
+        get;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                SaveToFile();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 背景图片透明度
+    /// </summary>
+    public double BackgroundImageOpacity
+    {
+        get;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                SaveToFile();
+            }
+        }
+    }
+
+    /// <summary>
     /// 构造函数, 从应用程序配置对象中获取 UI 配置
     /// </summary>
     /// <param name="configuration">应用程序配置对象</param>
@@ -143,6 +192,11 @@ public sealed class UIOptions
         CopyIndexOnFirstClick = bool.TryParse(section[nameof(CopyIndexOnFirstClick)], out var copy) && copy;
         ShowIndexHotKey = Enum.TryParse(section[nameof(ShowIndexHotKey)], out Key hotKey)
             && hotKey.IsValidHotKey() ? hotKey : Key.None;
+        BackgroundImageFileName = section[nameof(BackgroundImageFileName)];
+        BackgroundImageStretch = Enum.TryParse(section[nameof(BackgroundImageStretch)], out Stretch stretch)
+            ? stretch : Stretch.UniformToFill;
+        BackgroundImageOpacity = double.TryParse(section[nameof(BackgroundImageOpacity)], out var opacity)
+            ? Math.Clamp(opacity, 0, Constants.MaxRatio) : Constants.MaxRatio;
     }
 
     /// <summary>
@@ -162,7 +216,10 @@ public sealed class UIOptions
                     [nameof(ShowDownloadBall)] = ShowDownloadBall,
                     [nameof(ShowFirstLaunchTip)] = ShowFirstLaunchTip,
                     [nameof(CopyIndexOnFirstClick)] = CopyIndexOnFirstClick,
-                    [nameof(ShowIndexHotKey)] = ShowIndexHotKey.ToString()
+                    [nameof(ShowIndexHotKey)] = ShowIndexHotKey.ToString(),
+                    [nameof(BackgroundImageFileName)] = BackgroundImageFileName,
+                    [nameof(BackgroundImageStretch)] = BackgroundImageStretch.ToString(),
+                    [nameof(BackgroundImageOpacity)] = BackgroundImageOpacity
                 }
             }.ToJsonString(Infrastructure.Constants.JsonSerializerOptions));
         }

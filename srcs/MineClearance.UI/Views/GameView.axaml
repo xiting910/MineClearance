@@ -4,7 +4,7 @@
              xmlns:vm="using:MineClearance.UI.ViewModels"
              xmlns:shared="using:MineClearance.UI"
              x:DataType="vm:GameViewModel"
-             Background="{DynamicResource WindowBackgroundBrush}">
+             Background="Transparent">
 
   <Panel>
 

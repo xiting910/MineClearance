@@ -32,6 +32,8 @@
           <SolidColorBrush x:Key="AccentButtonForegroundBrush" Color="#FFFFFF"/>
           <SolidColorBrush x:Key="NeutralButtonBackgroundBrush" Color="#5E35B1"/>
           <SolidColorBrush x:Key="NeutralButtonForegroundBrush" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="InfoButtonBackgroundBrush" Color="#00838F"/>
+          <SolidColorBrush x:Key="InfoButtonForegroundBrush" Color="#FFFFFF"/>
           <SolidColorBrush x:Key="DangerButtonBackgroundBrush" Color="#FCE8E6"/>
           <SolidColorBrush x:Key="DangerButtonForegroundBrush" Color="#B3261E"/>
           <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
@@ -58,6 +60,8 @@
           <SolidColorBrush x:Key="AccentButtonForegroundBrush" Color="#1A1D24"/>
           <SolidColorBrush x:Key="NeutralButtonBackgroundBrush" Color="#7E57C2"/>
           <SolidColorBrush x:Key="NeutralButtonForegroundBrush" Color="#1A1D24"/>
+          <SolidColorBrush x:Key="InfoButtonBackgroundBrush" Color="#80DEEA"/>
+          <SolidColorBrush x:Key="InfoButtonForegroundBrush" Color="#1A1D24"/>
           <SolidColorBrush x:Key="DangerButtonBackgroundBrush" Color="#4A2222"/>
           <SolidColorBrush x:Key="DangerButtonForegroundBrush" Color="#FF8A80"/>
           <SolidColorBrush x:Key="CardBackgroundBrush" Color="#232733"/>

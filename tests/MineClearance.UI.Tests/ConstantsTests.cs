@@ -12,4 +12,12 @@ public sealed class ConstantsTests
             Infrastructure.Constants.AppDataRootDirectory, Constants.UIOptionsSettingsFilePath
         );
     }
+
+    [Fact]
+    public void BackgroundImageDirectory_位于程序基目录的Pictures子目录()
+    {
+        Assert.Equal(
+            Path.Combine(AppContext.BaseDirectory, "Pictures"), Constants.BackgroundImageDirectory
+        );
+    }
 }

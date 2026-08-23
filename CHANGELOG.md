@@ -9,6 +9,20 @@
 
 ## [Unreleased]
 
+**自定义背景图片功能**: 新增背景图片支持 (将图片放入程序目录 Pictures 文件夹, 设置抽屉中可选择背景图片/拉伸方式/透明度, 壳视图底层显示); 背景透明度拖动实时预览, 配置保存节流防滑块抖动频繁写文件; 打开文件夹/链接逻辑重构为共用辅助方法.
+
+### Added
+
+- UI 层: 背景图片功能 (Constants 新增 BackgroundImageDirectory 程序目录 Pictures 文件夹; BackgroundImageOption 背景图片选项模型; UIOptions 新增背景图片文件名/拉伸方式/透明度配置, 透明度读取钳制到 0-1, 拉伸无效值回退 UniformToFill; ShellView 底层新增 Image 显示背景图片, Game/History/Main 视图背景改为透明露出背景; 设置抽屉新增背景图片选择/拉伸方式/透明度滑块/刷新背景图片/创建并打开图片文件夹按钮)
+- UI 层: 背景透明度保存节流 (Constants 新增 OpacitySaveThrottleMilliseconds 节流延迟, 滑块停止变化 300ms 后才写入配置文件, 版本号丢弃过期保存任务)
+- 测试: UI 层单元测试新增背景图片覆盖 (Constants 背景图片目录断言; SettingsViewModel 背景图片列表识别与排序/配置选中同步/修改触发事件/透明度节流保存; UIOptions 背景配置解析/钳制/持久化)
+
+### Changed
+
+- UI 层: 打开文件夹与链接共用 OpenPath 辅助方法 (日志文件夹/背景图片文件夹/GitHub 链接, 打开背景图片文件夹前自动创建目录)
+- UI 层: 抽屉关闭版本号字段 volatile 修饰 (ShellViewModel/UpdateViewModel, 跨线程读写安全)
+- UI 层: App.axaml 新增 InfoButton 主题色资源 (亮/暗主题各一组), 设置抽屉日志文件夹按钮改用该样式
+
 ---
 
 ## [1.2.3] - 2026-08-23

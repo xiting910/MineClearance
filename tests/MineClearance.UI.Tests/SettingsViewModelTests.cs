@@ -1,4 +1,5 @@
 using Avalonia.Input;
+using Avalonia.Media;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MineClearance.Infrastructure;
@@ -10,7 +11,7 @@ using Moq;
 namespace MineClearance.UI.Tests;
 
 /// <summary>
-/// <see cref="SettingsViewModel"/> 的单元测试, 覆盖配置同步, 热键录制与关于信息
+/// <see cref="SettingsViewModel"/> 的单元测试, 覆盖配置同步, 背景图片, 热键录制与关于信息
 /// </summary>
 public sealed class SettingsViewModelTests
 {
@@ -61,6 +62,9 @@ public sealed class SettingsViewModelTests
         Assert.Equal(_uiOptions.CopyIndexOnFirstClick, _viewModel.CopyIndexOnFirstClick);
         Assert.Equal(_uiOptions.ShowIndexHotKey, _viewModel.ShowIndexHotKey);
         Assert.Equal(_loggerOptions.Level, _viewModel.Level);
+        Assert.Equal(_uiOptions.BackgroundImageFileName, _viewModel.SelectedBackgroundImage.FileName);
+        Assert.Equal(_uiOptions.BackgroundImageStretch, _viewModel.BackgroundImageStretch);
+        Assert.Equal(_uiOptions.BackgroundImageOpacity, _viewModel.BackgroundImageOpacity);
     }
 
     [Fact]
@@ -186,5 +190,114 @@ public sealed class SettingsViewModelTests
         _viewModel.ShowDownloadBall = false;
 
         Assert.False(_uiOptions.ShowDownloadBall);
+    }
+
+    [Fact]
+    public void 构造_背景图片目录不存在_仅含不使用项()
+    {
+        var option = Assert.Single(_viewModel.BackgroundImages);
+        Assert.Equal("不使用背景图片", option.DisplayName);
+        Assert.Null(option.FileName);
+    }
+
+    [Fact]
+    public void 构造_背景图片目录存在_识别图片并按名称排序()
+    {
+        var directory = Constants.BackgroundImageDirectory;
+        try
+        {
+            _ = Directory.CreateDirectory(directory);
+            File.WriteAllText(Path.Combine(directory, "b.png"), "test");
+            File.WriteAllText(Path.Combine(directory, "a.jpg"), "test");
+            File.WriteAllText(Path.Combine(directory, "note.txt"), "test");
+
+            var viewModel = new SettingsViewModel(_uiOptions, _loggerOptions, _toast, _update);
+
+            Assert.Equal(
+                ["a.jpg", "b.png"], viewModel.BackgroundImages.Skip(1).Select(option => option.FileName)
+            );
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void 构造_配置存在的背景图片_选中对应选项()
+    {
+        var directory = Constants.BackgroundImageDirectory;
+        try
+        {
+            _ = Directory.CreateDirectory(directory);
+            File.WriteAllText(Path.Combine(directory, "pic.png"), "test");
+            _uiOptions.BackgroundImageFileName = "pic.png";
+
+            var viewModel = new SettingsViewModel(_uiOptions, _loggerOptions, _toast, _update);
+
+            Assert.Equal("pic.png", viewModel.SelectedBackgroundImage.FileName);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void 修改背景图片_同步配置并触发事件()
+    {
+        string? changedFileName = null;
+        _viewModel.BackgroundImageChanged += value => changedFileName = value;
+
+        _viewModel.SelectedBackgroundImage = new BackgroundImageOption("pic.png", "pic.png");
+
+        Assert.Equal("pic.png", changedFileName);
+        Assert.Equal("pic.png", _uiOptions.BackgroundImageFileName);
+    }
+
+    [Fact]
+    public void 修改背景拉伸_同步配置并触发事件()
+    {
+        var changedStretch = Stretch.None;
+        _viewModel.BackgroundImageStretchChanged += value => changedStretch = value;
+
+        _viewModel.BackgroundImageStretch = Stretch.Fill;
+
+        Assert.Equal(Stretch.Fill, changedStretch);
+        Assert.Equal(Stretch.Fill, _uiOptions.BackgroundImageStretch);
+    }
+
+    [Fact]
+    public async Task 修改背景透明度_立即触发事件_延迟后保存配置()
+    {
+        var changedOpacity = -1.0;
+        _viewModel.BackgroundImageOpacityChanged += value => changedOpacity = value;
+
+        _viewModel.BackgroundImageOpacity = 0.5;
+
+        // 事件立即触发以实时刷新显示, 配置在节流延迟后才保存
+        Assert.Equal(0.5, changedOpacity);
+        Assert.NotEqual(0.5, _uiOptions.BackgroundImageOpacity);
+
+        await Task.Delay(Constants.OpacitySaveThrottleMilliseconds + 100, TestContext.Current.CancellationToken);
+
+        Assert.Equal(0.5, _uiOptions.BackgroundImageOpacity);
+    }
+
+    [Fact]
+    public async Task 修改背景透明度_节流期间再次修改_只保存最终值()
+    {
+        _viewModel.BackgroundImageOpacity = 0.2;
+        _viewModel.BackgroundImageOpacity = 0.8;
+
+        await Task.Delay(Constants.OpacitySaveThrottleMilliseconds + 100, TestContext.Current.CancellationToken);
+
+        Assert.Equal(0.8, _uiOptions.BackgroundImageOpacity);
     }
 }

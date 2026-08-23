@@ -1,4 +1,5 @@
 using Avalonia.Input;
+using Avalonia.Media;
 using Microsoft.Extensions.Configuration;
 using MineClearance.UI.Models;
 using System.Text.Json.Nodes;
@@ -56,6 +57,9 @@ public sealed class UIOptionsTests
         Assert.True(options.ShowFirstLaunchTip);
         Assert.False(options.CopyIndexOnFirstClick);
         Assert.Equal(Key.None, options.ShowIndexHotKey);
+        Assert.Null(options.BackgroundImageFileName);
+        Assert.Equal(Stretch.UniformToFill, options.BackgroundImageStretch);
+        Assert.Equal(Constants.MaxRatio, options.BackgroundImageOpacity);
     }
 
     [Fact]
@@ -68,7 +72,10 @@ public sealed class UIOptionsTests
             (nameof(UIOptions.ShowDownloadBall), "false"),
             (nameof(UIOptions.ShowFirstLaunchTip), "false"),
             (nameof(UIOptions.CopyIndexOnFirstClick), "true"),
-            (nameof(UIOptions.ShowIndexHotKey), Key.F7.ToString())
+            (nameof(UIOptions.ShowIndexHotKey), Key.F7.ToString()),
+            (nameof(UIOptions.BackgroundImageFileName), "pic.png"),
+            (nameof(UIOptions.BackgroundImageStretch), Stretch.Fill.ToString()),
+            (nameof(UIOptions.BackgroundImageOpacity), "0.5")
         );
 
         Assert.Equal(ThemeMode.Dark, options.Theme);
@@ -78,6 +85,9 @@ public sealed class UIOptionsTests
         Assert.False(options.ShowFirstLaunchTip);
         Assert.True(options.CopyIndexOnFirstClick);
         Assert.Equal(Key.F7, options.ShowIndexHotKey);
+        Assert.Equal("pic.png", options.BackgroundImageFileName);
+        Assert.Equal(Stretch.Fill, options.BackgroundImageStretch);
+        Assert.Equal(0.5, options.BackgroundImageOpacity);
     }
 
     [Fact]
@@ -121,6 +131,30 @@ public sealed class UIOptionsTests
     }
 
     [Fact]
+    public void 构造_背景图片透明度超上限_钳制到最大值()
+    {
+        var options = CreateWith((nameof(UIOptions.BackgroundImageOpacity), "2"));
+
+        Assert.Equal(Constants.MaxRatio, options.BackgroundImageOpacity);
+    }
+
+    [Fact]
+    public void 构造_背景图片透明度低于下限_钳制到最小值()
+    {
+        var options = CreateWith((nameof(UIOptions.BackgroundImageOpacity), "-1"));
+
+        Assert.Equal(0, options.BackgroundImageOpacity);
+    }
+
+    [Fact]
+    public void 构造_背景图片拉伸枚举无效_回退到UniformToFill()
+    {
+        var options = CreateWith((nameof(UIOptions.BackgroundImageStretch), "NotAStretch"));
+
+        Assert.Equal(Stretch.UniformToFill, options.BackgroundImageStretch);
+    }
+
+    [Fact]
     public void 修改属性_保存到设置文件()
     {
         EnsureSettingsDirectory();
@@ -131,6 +165,9 @@ public sealed class UIOptionsTests
         options.ShowDownloadBall = false;
         options.CopyIndexOnFirstClick = true;
         options.ShowIndexHotKey = Key.F9;
+        options.BackgroundImageFileName = "pic.png";
+        options.BackgroundImageStretch = Stretch.Fill;
+        options.BackgroundImageOpacity = 0.5;
 
         Assert.True(File.Exists(Constants.UIOptionsSettingsFilePath));
         var node = JsonNode.Parse(File.ReadAllText(Constants.UIOptionsSettingsFilePath))![nameof(UIOptions)]!;
@@ -140,6 +177,9 @@ public sealed class UIOptionsTests
         Assert.False(node[nameof(options.ShowDownloadBall)]!.GetValue<bool>());
         Assert.True(node[nameof(options.CopyIndexOnFirstClick)]!.GetValue<bool>());
         Assert.Equal(Key.F9.ToString(), node[nameof(options.ShowIndexHotKey)]!.GetValue<string>());
+        Assert.Equal("pic.png", node[nameof(options.BackgroundImageFileName)]!.GetValue<string>());
+        Assert.Equal(Stretch.Fill.ToString(), node[nameof(options.BackgroundImageStretch)]!.GetValue<string>());
+        Assert.Equal(0.5, node[nameof(options.BackgroundImageOpacity)]!.GetValue<double>());
     }
 
     [Fact]
@@ -149,6 +189,8 @@ public sealed class UIOptionsTests
         var options = CreateEmpty();
         options.Theme = ThemeMode.Light;
         options.MaxToastCount = 5;
+        options.BackgroundImageStretch = Stretch.Uniform;
+        options.BackgroundImageOpacity = 0.75;
 
         // 与真实应用一致: 从设置文件加载配置再构造
         var config = new ConfigurationBuilder()
@@ -158,5 +200,7 @@ public sealed class UIOptionsTests
 
         Assert.Equal(ThemeMode.Light, loaded.Theme);
         Assert.Equal(5, loaded.MaxToastCount);
+        Assert.Equal(Stretch.Uniform, loaded.BackgroundImageStretch);
+        Assert.Equal(0.75, loaded.BackgroundImageOpacity);
     }
 }

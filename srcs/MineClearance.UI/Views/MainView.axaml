@@ -4,7 +4,7 @@
              xmlns:vm="using:MineClearance.UI.ViewModels"
              xmlns:enums="using:MineClearance.Core.Enums"
              x:DataType="vm:MainViewModel"
-             Background="{DynamicResource WindowBackgroundBrush}">
+             Background="Transparent">
 
   <Grid RowDefinitions="Auto,*,Auto">
 

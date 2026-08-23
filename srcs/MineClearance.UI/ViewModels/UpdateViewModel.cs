@@ -65,7 +65,7 @@ public sealed partial class UpdateViewModel : ObservableObject
     /// <summary>
     /// 抽屉关闭动画的版本号, 防止过期的延迟隐藏任务误关重新打开的抽屉
     /// </summary>
-    private int _closeDrawerVersion;
+    private volatile int _closeDrawerVersion;
 
     /// <summary>
     /// 下载悬浮球是否可见, 仅下载中且配置允许时显示

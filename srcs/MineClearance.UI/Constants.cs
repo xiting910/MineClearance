@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 
 namespace MineClearance.UI;
@@ -21,6 +22,11 @@ public static class Constants
     /// 最大比例 (0-1 区间的最大值)
     /// </summary>
     public const double MaxRatio = 1.0;
+
+    /// <summary>
+    /// 透明度保存节流延迟 (毫秒), 滑块停止变化后延迟该时间才写入配置文件
+    /// </summary>
+    public const int OpacitySaveThrottleMilliseconds = 300;
 
     /// <summary>
     /// 界面状态轮询刷新间隔 (毫秒), 用于游戏计时显示
@@ -134,5 +140,12 @@ public static class Constants
         Infrastructure.Constants.AppDataRootDirectory,
         Infrastructure.Constants.SettingsDirectoryName,
         $"UISettings{Infrastructure.Constants.JsonFileSuffix}"
+    );
+
+    /// <summary>
+    /// 加载背景图片的目录
+    /// </summary>
+    public static readonly string BackgroundImageDirectory = Path.Combine(
+        AppContext.BaseDirectory, "Pictures"
     );
 }

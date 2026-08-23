@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,7 +10,9 @@ using MineClearance.UI.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MineClearance.UI.ViewModels;
@@ -26,6 +29,19 @@ public sealed partial class SettingsViewModel : ObservableObject
         Infrastructure.Constants.AppDataRootDirectory,
         Infrastructure.Constants.LogDirectoryName
     );
+
+    /// <summary>
+    /// 不使用背景图片选项
+    /// </summary>
+    private static readonly BackgroundImageOption NoBackgroundImageOption = new("不使用背景图片", null);
+
+    /// <summary>
+    /// 允许的图片扩展名列表, 用于扫描背景图片目录
+    /// </summary>
+    private static readonly HashSet<string> AllowedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".png", ".jpg", ".jpeg", ".bmp", ".gif"
+    };
 
     /// <summary>
     /// UI 配置
@@ -48,10 +64,39 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly UpdateViewModel _update;
 
     /// <summary>
+    /// 透明度保存节流版本号, 每次变化累加, 只有最新版本的延迟保存任务才允许写配置
+    /// </summary>
+    private volatile int _opacitySaveVersion;
+
+    /// <summary>
     /// 主题模式
     /// </summary>
     [ObservableProperty]
     public partial ThemeMode Theme { get; set; }
+
+    /// <summary>
+    /// 可选择的背景图片列表
+    /// </summary>
+    [ObservableProperty]
+    public partial IReadOnlyList<BackgroundImageOption> BackgroundImages { get; set; }
+
+    /// <summary>
+    /// 当前选择的背景图片选项
+    /// </summary>
+    [ObservableProperty]
+    public partial BackgroundImageOption SelectedBackgroundImage { get; set; }
+
+    /// <summary>
+    /// 背景图片拉伸方式
+    /// </summary>
+    [ObservableProperty]
+    public partial Stretch BackgroundImageStretch { get; set; }
+
+    /// <summary>
+    /// 背景图片透明度
+    /// </summary>
+    [ObservableProperty]
+    public partial double BackgroundImageOpacity { get; set; }
 
     /// <summary>
     /// Toast 提示显示时间秒数
@@ -101,6 +146,11 @@ public sealed partial class SettingsViewModel : ObservableObject
     public IReadOnlyList<ThemeMode> Themes { get; } = Enum.GetValues<ThemeMode>();
 
     /// <summary>
+    /// 可选择的背景图片拉伸方式列表
+    /// </summary>
+    public IReadOnlyList<Stretch> StretchModes { get; } = Enum.GetValues<Stretch>();
+
+    /// <summary>
     /// 可选择的日志级别列表
     /// </summary>
     public IReadOnlyList<LogLevel> Levels { get; } = Enum.GetValues<LogLevel>();
@@ -145,6 +195,21 @@ public sealed partial class SettingsViewModel : ObservableObject
         : ShowIndexHotKey.ToString();
 
     /// <summary>
+    /// 背景图片选项变化的事件, 由壳视图模型订阅以刷新背景
+    /// </summary>
+    public event Action<string?>? BackgroundImageChanged;
+
+    /// <summary>
+    /// 背景图片拉伸方式变化的事件, 由壳视图模型订阅以刷新背景
+    /// </summary>
+    public event Action<Stretch>? BackgroundImageStretchChanged;
+
+    /// <summary>
+    /// 背景图片透明度变化的事件, 由壳视图模型订阅以刷新背景
+    /// </summary>
+    public event Action<double>? BackgroundImageOpacityChanged;
+
+    /// <summary>
     /// 请求关闭设置抽屉的事件, 由壳视图模型处理
     /// </summary>
     public event Action? CloseRequested;
@@ -168,6 +233,9 @@ public sealed partial class SettingsViewModel : ObservableObject
         _update = updateViewModel;
 
         Theme = uiOptions.Theme;
+        RefreshBackgroundImageProperties();
+        BackgroundImageStretch = uiOptions.BackgroundImageStretch;
+        BackgroundImageOpacity = uiOptions.BackgroundImageOpacity;
         ToastDurationSeconds = uiOptions.ToastDurationSeconds;
         MaxToastCount = uiOptions.MaxToastCount;
         ShowDownloadBall = uiOptions.ShowDownloadBall;
@@ -198,6 +266,40 @@ public sealed partial class SettingsViewModel : ObservableObject
             ThemeMode.Dark => ThemeVariant.Dark,
             _ => ThemeVariant.Default
         };
+    }
+
+    /// <summary>
+    /// 背景图片选择变化时同步配置并触发背景刷新
+    /// </summary>
+    /// <param name="value">新选择的背景图片选项, 下拉框同步期间可能为 <see langword="null"/></param>
+    partial void OnSelectedBackgroundImageChanged(BackgroundImageOption value)
+    {
+        if (value is null) { return; }
+        BackgroundImageChanged?.Invoke(value.FileName);
+        _uiOptions.BackgroundImageFileName = value.FileName;
+    }
+
+    /// <summary>
+    /// 背景图片拉伸方式变化时同步配置并触发背景刷新
+    /// </summary>
+    /// <param name="value">新的拉伸方式</param>
+    partial void OnBackgroundImageStretchChanged(Stretch value)
+    {
+        BackgroundImageStretchChanged?.Invoke(value);
+        _uiOptions.BackgroundImageStretch = value;
+    }
+
+    /// <summary>
+    /// 背景图片透明度变化时立即触发背景刷新, 配置保存进行节流
+    /// </summary>
+    /// <param name="value">新的透明度</param>
+    partial void OnBackgroundImageOpacityChanged(double value)
+    {
+        // 立即刷新显示, 保证拖动过程 UI 实时响应
+        BackgroundImageOpacityChanged?.Invoke(value);
+
+        // 节流保存: 版本号递增, 只有停止变化后最新版本的延迟任务才写配置
+        _ = SaveOpacityAfterThrottleAsync(++_opacitySaveVersion);
     }
 
     /// <summary>
@@ -266,23 +368,40 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
+    /// 打开背景图片文件夹, 失败时通过 Toast 提示
+    /// </summary>
+    [RelayCommand]
+    private void OpenBackgroundImagesFolder()
+    {
+        try
+        {
+            _ = Directory.CreateDirectory(Constants.BackgroundImageDirectory);
+        }
+        catch (Exception ex)
+        {
+            _toast.Show($"创建背景图片目录时失败: {ex.Message}");
+            return;
+        }
+        OpenPath(Constants.BackgroundImageDirectory);
+    }
+
+    /// <summary>
+    /// 刷新背景图片列表并重新加载当前图片, 由设置抽屉的刷新按钮触发, 用于手动同步新放入的图片
+    /// </summary>
+    [RelayCommand]
+    private void RefreshBackgroundImages()
+    {
+        RefreshBackgroundImageProperties();
+        BackgroundImageChanged?.Invoke(SelectedBackgroundImage.FileName);
+    }
+
+    /// <summary>
     /// 打开日志文件夹, 失败时通过 Toast 提示
     /// </summary>
     [RelayCommand]
     private void OpenLogsFolder()
     {
-        try
-        {
-            _ = Process.Start(new ProcessStartInfo
-            {
-                FileName = LogsFolderPath,
-                UseShellExecute = true
-            });
-        }
-        catch (Exception ex)
-        {
-            _toast.Show($"打开日志文件夹失败: {ex.Message}");
-        }
+        OpenPath(LogsFolderPath);
     }
 
     /// <summary>
@@ -317,18 +436,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// </summary>
     public void OpenGitHub()
     {
-        try
-        {
-            _ = Process.Start(new ProcessStartInfo
-            {
-                FileName = GitHubUrl,
-                UseShellExecute = true
-            });
-        }
-        catch (Exception ex)
-        {
-            _toast.Show($"打开链接失败: {ex.Message}");
-        }
+        OpenPath(GitHubUrl);
     }
 
     /// <summary>
@@ -373,5 +481,70 @@ public sealed partial class SettingsViewModel : ObservableObject
     public void NotifyDisallowedHotKey(Key key)
     {
         _toast.Show($"该按键 ({key}) 不能用作快捷键");
+    }
+
+    /// <summary>
+    /// 刷新背景图片相关属性
+    /// </summary>
+    [MemberNotNull(nameof(BackgroundImages), nameof(SelectedBackgroundImage))]
+    private void RefreshBackgroundImageProperties()
+    {
+        BackgroundImages = LoadBackgroundImages();
+        SelectedBackgroundImage = BackgroundImages.FirstOrDefault(option =>
+            Infrastructure.Constants.PathComparer.Equals(option.FileName, _uiOptions.BackgroundImageFileName
+        )) ?? NoBackgroundImageOption;
+    }
+
+    /// <summary>
+    /// 打开指定文件夹或链接, 失败时通过 Toast 提示
+    /// </summary>
+    /// <param name="path">文件夹或链接路径</param>
+    private void OpenPath(string path)
+    {
+        try
+        {
+            _ = Process.Start(new ProcessStartInfo
+            {
+                FileName = path,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            _toast.Show($"打开 {path} 时失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 等待节流延迟后保存透明度到配置, 期间透明度再次变化时由版本号丢弃本次保存
+    /// </summary>
+    /// <param name="version">启动本次延迟时的版本号, 与最新版本号不一致时丢弃</param>
+    private async Task SaveOpacityAfterThrottleAsync(int version)
+    {
+        await Task.Delay(Constants.OpacitySaveThrottleMilliseconds);
+        if (version == _opacitySaveVersion)
+        {
+            _uiOptions.BackgroundImageOpacity = BackgroundImageOpacity;
+        }
+    }
+
+    /// <summary>
+    /// 扫描背景图片目录, 生成可选择的图片选项列表, 目录不存在时仅返回不使用项
+    /// </summary>
+    /// <returns>背景图片选项列表</returns>
+    private static List<BackgroundImageOption> LoadBackgroundImages()
+    {
+        List<BackgroundImageOption> options = [NoBackgroundImageOption];
+        if (Directory.Exists(Constants.BackgroundImageDirectory))
+        {
+            options.AddRange(
+                Directory.EnumerateFiles(Constants.BackgroundImageDirectory)
+                    .Where(path => AllowedImageExtensions.Contains(Path.GetExtension(path)))
+                    .Select(path => Path.GetFileName(path))
+                    .Order(Infrastructure.Constants.PathComparer)
+                    .Select(fileName => new BackgroundImageOption(fileName, fileName))
+            );
+        }
+        return options;
     }
 }

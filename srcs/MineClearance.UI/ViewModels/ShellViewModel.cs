@@ -1,9 +1,12 @@
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using MineClearance.UI.Models;
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace MineClearance.UI.ViewModels;
@@ -26,7 +29,30 @@ public sealed partial class ShellViewModel : ObservableObject
     /// <summary>
     /// 设置抽屉关闭动画的版本号, 防止过期的延迟隐藏任务误关重新打开的抽屉
     /// </summary>
-    private int _closeSettingsVersion;
+    private volatile int _closeSettingsVersion;
+
+    /// <summary>
+    /// 背景图片加载的版本号, 防止过期的异步加载任务误覆盖新设置的背景图片
+    /// </summary>
+    private volatile int _backgroundImageVersion;
+
+    /// <summary>
+    /// 背景图片
+    /// </summary>
+    [ObservableProperty]
+    public partial IImage? BackgroundImage { get; set; }
+
+    /// <summary>
+    /// 背景图片拉伸模式
+    /// </summary>
+    [ObservableProperty]
+    public partial Stretch BackgroundImageStretch { get; set; }
+
+    /// <summary>
+    /// 背景图片透明度
+    /// </summary>
+    [ObservableProperty]
+    public partial double BackgroundImageOpacity { get; set; }
 
     /// <summary>
     /// 当前可见的视图
@@ -143,18 +169,24 @@ public sealed partial class ShellViewModel : ObservableObject
     /// <summary>
     /// 创建壳视图模型
     /// </summary>
+    /// <param name="uiOptions">UI 配置</param>
     /// <param name="main">主视图模型</param>
     /// <param name="game">游戏视图模型</param>
     /// <param name="history">历史记录视图模型</param>
     /// <param name="toast">全局短暂提示视图模型</param>
     /// <param name="update">更新视图模型</param>
     public ShellViewModel(
+        UIOptions uiOptions,
         MainViewModel main,
         GameViewModel game,
         HistoryViewModel history,
         ToastViewModel toast,
         UpdateViewModel update)
     {
+        RefreshBackgroundImage(uiOptions.BackgroundImageFileName);
+        RefreshBackgroundImageStretch(uiOptions.BackgroundImageStretch);
+        RefreshBackgroundImageOpacity(uiOptions.BackgroundImageOpacity);
+
         Main = main;
         Game = game;
         History = history;
@@ -279,6 +311,50 @@ public sealed partial class ShellViewModel : ObservableObject
     }
 
     /// <summary>
+    /// 刷新背景图片
+    /// </summary>
+    /// <param name="fileName">背景图片文件名</param>
+    private async void RefreshBackgroundImage(string? fileName)
+    {
+        var version = ++_backgroundImageVersion;
+        if (!string.IsNullOrWhiteSpace(fileName))
+        {
+            var filePath = Path.Combine(Constants.BackgroundImageDirectory, fileName);
+            if (File.Exists(filePath))
+            {
+                var bitmap = await Task.Run(() => new Bitmap(filePath));
+                if (version == _backgroundImageVersion)
+                {
+                    BackgroundImage = bitmap;
+                }
+                return;
+            }
+        }
+        if (version == _backgroundImageVersion)
+        {
+            BackgroundImage = null;
+        }
+    }
+
+    /// <summary>
+    /// 刷新背景图片拉伸模式
+    /// </summary>
+    /// <param name="stretch">背景图片拉伸模式</param>
+    private void RefreshBackgroundImageStretch(Stretch stretch)
+    {
+        BackgroundImageStretch = stretch;
+    }
+
+    /// <summary>
+    /// 刷新背景图片透明度
+    /// </summary>
+    /// <param name="opacity">背景图片透明度</param>
+    private void RefreshBackgroundImageOpacity(double opacity)
+    {
+        BackgroundImageOpacity = opacity;
+    }
+
+    /// <summary>
     /// 切换到游戏视图
     /// </summary>
     private void ShowGameView()
@@ -317,6 +393,9 @@ public sealed partial class ShellViewModel : ObservableObject
         PauseGameForDrawer();
 
         Settings = App.Services.GetRequiredService<SettingsViewModel>();
+        Settings.BackgroundImageChanged += RefreshBackgroundImage;
+        Settings.BackgroundImageStretchChanged += RefreshBackgroundImageStretch;
+        Settings.BackgroundImageOpacityChanged += RefreshBackgroundImageOpacity;
         Settings.CloseRequested += CloseSettings;
 
         IsSettingsOpen = true;
@@ -370,6 +449,9 @@ public sealed partial class ShellViewModel : ObservableObject
         // 版本不匹配或抽屉已重新打开时不隐藏
         if (version != _closeSettingsVersion || IsSettingsOpen) { return; }
         IsSettingsVisible = false;
+        Settings?.BackgroundImageChanged -= RefreshBackgroundImage;
+        Settings?.BackgroundImageStretchChanged -= RefreshBackgroundImageStretch;
+        Settings?.BackgroundImageOpacityChanged -= RefreshBackgroundImageOpacity;
         Settings?.CloseRequested -= CloseSettings;
         Settings = null;
         RefreshMask();
