@@ -9,6 +9,12 @@
 
 ## [Unreleased]
 
+---
+
+## [1.4.0] - 2026-08-23
+
+---
+
 **失败时揭示必安全格**: 游戏失败揭示雷局时, 将可推定为必定安全的格子标记为绿色 ✓, 提示玩家本有确定动作; MineSolver.TrySafeOpen 重构为 bool 返回值 + out 参数, 存在必安全格时输出必安全格集合供失败揭示使用 (不挽救玩家猜测, 拒救行为不变).
 
 ### Changed
@@ -490,7 +496,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.3.2...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.4.0
 [1.3.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.3.2
 [1.3.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.3.1
 [1.3.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.3.0
