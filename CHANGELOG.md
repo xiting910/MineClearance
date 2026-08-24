@@ -9,9 +9,15 @@
 
 ## [Unreleased]
 
+### Added
+
+- UI 层: 窗口最小化时自动暂停游戏 (OnPropertyChanged 监听 WindowState 变化, 最小化时调用 PauseIfPerformable)
+- UI 层: 窗口失去焦点时自动暂停游戏 (OnDeactivated 事件处理, 失焦时调用 PauseIfPerformable)
+
 ### Changed
 
 - Core 层: MineSolver 搜索逻辑重构 (TrySafeOpen 内部搜索逻辑提取为 SearchState 内部类, 封装赋值状态/约束计数/搜索节点计数等中间变量与回溯逻辑; CollectConstraints 收集数字格约束与前沿格, CollectFreeCells 收集自由格, BuildSolverIndex 构建变量索引与约束邻接结构; CanBeMine 提取为独立私有静态方法)
+- UI 层: 退出请求处理简化 (移除 OnExitRequested 中间方法, ExitRequested 事件直接订阅 Close; ShellWindow 方法按功能重排)
 
 ---
 

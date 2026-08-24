@@ -53,9 +53,10 @@ public sealed partial class ShellWindow : Window
     {
         base.OnDataContextChanged(e);
 
+        // 订阅壳视图模型事件, 并按当前视图更新最小窗口尺寸
         if (DataContext is ShellViewModel viewModel)
         {
-            viewModel.ExitRequested += OnExitRequested;
+            viewModel.ExitRequested += Close;
             viewModel.PropertyChanged += OnShellPropertyChanged;
             viewModel.Game.PropertyChanged += OnGamePropertyChanged;
 
@@ -63,41 +64,67 @@ public sealed partial class ShellWindow : Window
         }
     }
 
-    /// <summary>
-    /// 壳视图模型属性变化时按当前视图更新最小窗口尺寸: 主视图/历史视图用常量, 游戏视图按棋盘动态计算
-    /// </summary>
-    /// <param name="sender">壳视图模型</param>
-    /// <param name="e">属性变化事件参数</param>
-    private void OnShellPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    /// <inheritdoc/>
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        if (DataContext is not ShellViewModel viewModel) { return; }
+        base.OnPropertyChanged(change);
 
-        switch (e.PropertyName)
+        // 窗口最小化时暂停游戏
+        if (DataContext is ShellViewModel viewModel
+            && change.Property == WindowStateProperty
+            && change.NewValue is WindowState.Minimized)
         {
-            case nameof(ShellViewModel.IsMainViewVisible) when viewModel.IsMainViewVisible:
-                ApplyMinSize(Constants.MainViewMinWidth, Constants.MainViewMinHeight);
-                break;
-
-            case nameof(ShellViewModel.IsHistoryViewVisible) when viewModel.IsHistoryViewVisible:
-                ApplyMinSize(Constants.HistoryViewMinWidth, Constants.HistoryViewMinHeight);
-                break;
-
-            case nameof(ShellViewModel.IsGameViewVisible) when viewModel.IsGameViewVisible:
-                UpdateMinSizeIfInGameView();
-                break;
+            viewModel.Game.PauseIfPerformable();
         }
     }
 
     /// <summary>
-    /// 游戏视图模型属性变化时更新最小窗口尺寸 (游戏视图中切换难度时)
+    /// 关闭前自动保存进行中的游戏, 并在必要时执行引导更新
     /// </summary>
-    /// <param name="sender">游戏视图模型</param>
-    /// <param name="e">属性变化事件参数</param>
-    private void OnGamePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    /// <param name="sender">窗口</param>
+    /// <param name="e">关闭事件参数</param>
+    private async void OnClosing(object? sender, WindowClosingEventArgs e)
     {
-        if (e.PropertyName is nameof(GameViewModel.BoardPixelWidth) or nameof(GameViewModel.BoardPixelHeight))
+        // 仅在第一次关闭时检查游戏进度, 避免保存完成后再次触发关闭事件导致死循环
+        if (!_isSaving)
         {
-            UpdateMinSizeIfInGameView();
+            // 获取游戏管理器
+            var manager = App.Services.GetRequiredService<IGameManager>();
+
+            // 检查当前游戏是否有进度
+            if (manager.Game is { HasProgress: true })
+            {
+                // 有进度时取消本次关闭, 等待保存完成后再关闭
+                e.Cancel = true;
+
+                // 保存当前游戏
+                _ = await manager.SaveAndExitAsync();
+
+                // 标记正在执行保存后的关闭, 放行第二次关闭请求
+                _isSaving = true;
+
+                // 真正关闭窗口
+                Close();
+
+                // 返回以避免继续执行后续代码
+                return;
+            }
+        }
+
+        // 真正执行关闭时, 执行引导更新
+        App.Services.GetRequiredService<IUpdateService>().PerformBootstrapUpdateIfNecessary();
+    }
+
+    /// <summary>
+    /// 窗口失去焦点时暂停游戏
+    /// </summary>
+    /// <param name="sender">窗口</param>
+    /// <param name="e">事件参数</param>
+    private void OnDeactivated(object? sender, EventArgs e)
+    {
+        if (DataContext is ShellViewModel viewModel)
+        {
+            viewModel.Game.PauseIfPerformable();
         }
     }
 
@@ -131,7 +158,7 @@ public sealed partial class ShellWindow : Window
     }
 
     /// <summary>
-    /// 按下 Esc 键时由壳视图模型处理: 下载抽屉可见时隐藏它, 否则呼出或隐藏设置抽屉; 等待开始时按下热键显示所有格子索引
+    /// 按下键盘时处理 Esc 键和游戏视图热键
     /// </summary>
     /// <param name="sender">窗口</param>
     /// <param name="e">键盘事件参数</param>
@@ -177,40 +204,42 @@ public sealed partial class ShellWindow : Window
     }
 
     /// <summary>
-    /// 关闭前自动保存进行中的游戏, 并在必要时执行引导更新
+    /// 壳视图模型属性变化时按当前视图更新最小窗口尺寸: 主视图/历史视图用常量, 游戏视图按棋盘动态计算
     /// </summary>
-    /// <param name="sender">窗口</param>
-    /// <param name="e">关闭事件参数</param>
-    private async void OnClosing(object? sender, WindowClosingEventArgs e)
+    /// <param name="sender">壳视图模型</param>
+    /// <param name="e">属性变化事件参数</param>
+    private void OnShellPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        // 仅在第一次关闭时检查游戏进度, 避免保存完成后再次触发关闭事件导致死循环
-        if (!_isSaving)
+        if (DataContext is not ShellViewModel viewModel) { return; }
+
+        switch (e.PropertyName)
         {
-            // 获取游戏管理器
-            var manager = App.Services.GetRequiredService<IGameManager>();
+            case nameof(ShellViewModel.IsMainViewVisible) when viewModel.IsMainViewVisible:
+                ApplyMinSize(Constants.MainViewMinWidth, Constants.MainViewMinHeight);
+                break;
 
-            // 检查当前游戏是否有进度
-            if (manager.Game is { HasProgress: true })
-            {
-                // 有进度时取消本次关闭, 等待保存完成后再关闭
-                e.Cancel = true;
+            case nameof(ShellViewModel.IsHistoryViewVisible) when viewModel.IsHistoryViewVisible:
+                ApplyMinSize(Constants.HistoryViewMinWidth, Constants.HistoryViewMinHeight);
+                break;
 
-                // 保存当前游戏
-                _ = await manager.SaveAndExitAsync();
-
-                // 标记正在执行保存后的关闭, 放行第二次关闭请求
-                _isSaving = true;
-
-                // 真正关闭窗口
-                Close();
-
-                // 返回以避免继续执行后续代码
-                return;
-            }
+            case nameof(ShellViewModel.IsGameViewVisible) when viewModel.IsGameViewVisible:
+                UpdateMinSizeIfInGameView();
+                break;
         }
+    }
 
-        // 真正执行关闭时, 执行引导更新
-        App.Services.GetRequiredService<IUpdateService>().PerformBootstrapUpdateIfNecessary();
+    /// <summary>
+    /// 游戏视图模型属性变化时按当前棋盘尺寸更新最小窗口宽高
+    /// </summary>
+    /// <param name="sender">游戏视图模型</param>
+    /// <param name="e">属性变化事件参数</param>
+    private void OnGamePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(GameViewModel.BoardPixelWidth)
+            or nameof(GameViewModel.BoardPixelHeight))
+        {
+            UpdateMinSizeIfInGameView();
+        }
     }
 
     /// <summary>
@@ -286,13 +315,5 @@ public sealed partial class ShellWindow : Window
         {
             _isAdjustingPosition = false;
         }
-    }
-
-    /// <summary>
-    /// 退出程序: 关闭本窗口, 进行中的游戏由关闭事件自动保存
-    /// </summary>
-    private void OnExitRequested()
-    {
-        Close();
     }
 }

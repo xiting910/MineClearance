@@ -6,6 +6,7 @@
         Title="MineClearance"
         WindowStartupLocation="CenterScreen"
         Closing="OnClosing"
+        Deactivated="OnDeactivated"
         SizeChanged="OnSizeChanged"
         PositionChanged="OnPositionChanged"
         KeyDown="OnKeyDown"
