@@ -9,6 +9,12 @@
 
 ## [Unreleased]
 
+---
+
+## [1.5.0] - 2026-08-24
+
+**窗口失焦/最小化自动暂停游戏**: 游戏进行中窗口最小化或失去焦点时自动暂停游戏, 避免玩家离开时游戏继续计时.
+
 ### Added
 
 - UI 层: 窗口最小化时自动暂停游戏 (OnPropertyChanged 监听 WindowState 变化, 最小化时调用 PauseIfPerformable)
@@ -504,7 +510,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.0
 [1.4.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.4.0
 [1.3.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.3.2
 [1.3.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.3.1
