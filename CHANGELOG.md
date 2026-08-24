@@ -9,11 +9,13 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Core 层: MineSolver 搜索逻辑重构 (TrySafeOpen 内部搜索逻辑提取为 SearchState 内部类, 封装赋值状态/约束计数/搜索节点计数等中间变量与回溯逻辑; CollectConstraints 收集数字格约束与前沿格, CollectFreeCells 收集自由格, BuildSolverIndex 构建变量索引与约束邻接结构; CanBeMine 提取为独立私有静态方法)
+
 ---
 
 ## [1.4.0] - 2026-08-23
-
----
 
 **失败时揭示必安全格**: 游戏失败揭示雷局时, 将可推定为必定安全的格子标记为绿色 ✓, 提示玩家本有确定动作; MineSolver.TrySafeOpen 重构为 bool 返回值 + out 参数, 存在必安全格时输出必安全格集合供失败揭示使用 (不挽救玩家猜测, 拒救行为不变).
 
