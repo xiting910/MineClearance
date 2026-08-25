@@ -1,4 +1,5 @@
 using Downloader;
+using MineClearance.Infrastructure.Models;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -56,6 +57,11 @@ internal sealed partial class UpdateService
     /// 检查更新使用的 <see cref="HttpClient"/> 实例
     /// </summary>
     private readonly HttpClient _httpClient = httpClient ?? CreateHttpClient();
+
+    /// <summary>
+    /// 当前状态
+    /// </summary>
+    private AtomicEnum<UpdateState> _state = new(UpdateState.Idle);
 
     /// <summary>
     /// 当前版本号

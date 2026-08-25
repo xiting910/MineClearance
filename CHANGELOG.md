@@ -9,6 +9,16 @@
 
 ## [Unreleased]
 
+**更新服务状态守卫原子化**: 新增 AtomicEnum 枚举原子操作封装结构体, UpdateService 检查/下载入口的状态守卫由"读取-判断-写入"改为自旋谓词条件交换原子置位, 消除并发调用时的竞态窗口; 下载入口根据更新包完整性原子置为下载中或下载完成状态.
+
+### Added
+
+- Infrastructure 层: 新增 AtomicEnum<TEnum> 原子枚举封装结构体 (Value 原子读取 / Set 原子写入返回是否变更 / SpinPredicateAndSet 自旋谓词条件交换, 固定值与工厂生成值两个重载)
+
+### Changed
+
+- Infrastructure 层: UpdateService 状态守卫原子化 (CheckNewestAsync / DownloadAsync 入口的读取-判断-写入改为 SpinPredicateAndSet 原子条件交换, 消除并发检查/下载请求通过守卫的竞态窗口; 下载入口按更新包完整性由工厂生成下载中或下载完成状态, 下载完成分支统一清空异常; State 属性读写改用 AtomicEnum 封装, 状态通知语义不变)
+
 ---
 
 ## [1.5.0] - 2026-08-24

@@ -111,6 +111,7 @@ MineClearance/
 │   │   ├── IServiceCollectionExtensions.cs           #   DI 注册扩展 (AddInfrastructure)
 │   │   ├── IUpdateService.cs                         #   更新服务接口
 │   │   ├── Models/                                   #   基础设施模型
+│   │   │   ├── AtomicEnum.cs                         #     原子枚举操作封装 (Interlocked 原子读写/自旋谓词条件交换)
 │   │   │   ├── FileLoggerOptions.cs                  #     文件日志选项
 │   │   │   ├── UpdateInfo.cs                         #     更新信息记录
 │   │   │   └── UpdateState.cs                        #     更新状态枚举

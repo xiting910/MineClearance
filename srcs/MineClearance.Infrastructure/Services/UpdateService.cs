@@ -28,10 +28,10 @@ internal sealed partial class UpdateService(
     /// <inheritdoc/>
     public UpdateState State
     {
-        get => Interlocked.CompareExchange(ref field, default, default);
+        get => _state.Value;
         private set
         {
-            if (Interlocked.Exchange(ref field, value) != value)
+            if (_state.Set(value))
             {
                 PropertyChanged?.Invoke(this, new(nameof(State)));
             }
@@ -114,16 +114,16 @@ internal sealed partial class UpdateService(
         string author, string repository, string version,
         CancellationToken ct = default)
     {
-        // 缓存之前的状态
-        var previousState = State;
-        if (previousState is UpdateState.Checking or UpdateState.Downloading)
-        {
-            return;
-        }
+        // 只有不是检查中或下载中的状态才能发起检查请求, 否则忽略
+        if (!_state.SpinPredicateAndSet(
+            state => state is not UpdateState.Checking and not UpdateState.Downloading,
+            UpdateState.Checking,
+            out var previousState
+        )) { return; }
 
-        // 清空异常信息, 并设置为检查中状态
+        // 清空异常信息, 触发属性变更通知, 并记录检查更新日志
         Exception = null;
-        State = UpdateState.Checking;
+        PropertyChanged?.Invoke(this, new(nameof(State)));
         LogCheckingForUpdates(author, repository, version);
 
         // 保存当前版本号
@@ -206,23 +206,23 @@ internal sealed partial class UpdateService(
     /// <inheritdoc/>
     public async Task DownloadAsync(CancellationToken ct = default)
     {
-        // 只有在需要更新或者下载失败状态下才能发起下载请求, 否则忽略
-        if (State is not UpdateState.NeedUpdate and not UpdateState.DownloadFailed)
-        {
-            return;
-        }
+        // 只有在需要更新或者下载失败状态下才能发起下载请求, 并且根据下载包是否完整设置为下载中或下载完成状态
+        if (!_state.SpinPredicateAndSet(
+            state => state is UpdateState.NeedUpdate or UpdateState.DownloadFailed,
+            () => IsUpdatePackageComplete() ? UpdateState.DownloadCompleted : UpdateState.Downloading,
+            out var newState
+        )) { return; }
 
-        // 更新包已存在且大小与服务器资产一致: 无需重新下载, 直接完成 (恢复已完成的下载)
-        if (IsUpdatePackageComplete())
+        // 重置异常信息, 并触发属性变更通知
+        Exception = null;
+        PropertyChanged?.Invoke(this, new(nameof(State)));
+
+        // 如果更新包已经下载完整, 则记录日志后直接返回
+        if (newState is UpdateState.DownloadCompleted)
         {
-            State = UpdateState.DownloadCompleted;
             LogUpdatePackageAlreadyComplete(Constants.UpdatePackageFilePath);
             return;
         }
-
-        // 重置异常并更新状态为下载中
-        Exception = null;
-        State = UpdateState.Downloading;
 
         // 重置下载进度信息
         DownloadedBytes = 0;
