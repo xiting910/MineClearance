@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+---
+
+## [1.5.1] - 2026-08-25
+
 **更新服务状态守卫原子化**: 新增 AtomicEnum 枚举原子操作封装结构体, UpdateService 检查/下载入口的状态守卫由"读取-判断-写入"改为自旋谓词条件交换原子置位, 消除并发调用时的竞态窗口; 下载入口根据更新包完整性原子置为下载中或下载完成状态.
 
 ### Added
@@ -520,7 +524,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.5.1...HEAD
+[1.5.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.1
 [1.5.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.0
 [1.4.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.4.0
 [1.3.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.3.2
