@@ -9,9 +9,11 @@
 
 ## [Unreleased]
 
-**应用图标现代化**: 应用图标从通用 @ 符号升级为地雷造型, 背景由纯色平涂改为靛蓝对角渐变 + 球面径向渐变 + 柔和投影, 整体风格更现代精致; 16/24px 小尺寸手工逐像素绘制保证清晰辨识.
+---
 
-**移除窗口位置钳制**: 修复窗口最大化时内容区与屏幕左边缘之间出现缝隙的问题 (位置钳制在最大化瞬间把系统定位到屏幕外的窗口外框拉回工作区原点, 使非客户边框区暴露在屏幕内, 顶部标题栏仍可填满); 同时移除拖动时的位置钳制逻辑与钳制边距常量, 窗口位置交由系统管理, 拖动行为与标准 Windows 窗口一致, 最小窗口尺寸仍按当前屏幕工作区钳制上限.
+## [1.5.2] - 2026-08-28
+
+**应用图标现代化与窗口布局修复**: 应用图标从通用符号升级为地雷造型, 背景由纯色平涂改为靛蓝对角渐变 + 球面径向渐变 + 柔和投影, 整体风格更现代精致, 16/24px 小尺寸手工逐像素绘制保证清晰辨识; 修复窗口最大化时内容区与屏幕左边缘之间的缝隙问题; 移除窗口位置钳制逻辑, 窗口位置交由系统管理, 拖动行为与标准 Windows 窗口一致, 最小窗口尺寸仍按当前屏幕工作区钳制上限.
 
 ### Changed
 
@@ -540,7 +542,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.5.1...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.5.2...HEAD
+[1.5.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.2
 [1.5.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.1
 [1.5.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.0
 [1.4.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.4.0
