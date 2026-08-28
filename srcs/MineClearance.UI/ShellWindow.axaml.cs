@@ -17,11 +17,6 @@ namespace MineClearance.UI;
 public sealed partial class ShellWindow : Window
 {
     /// <summary>
-    /// 是否正在执行位置调整, 用于防止调整位置触发的位置变化事件递归
-    /// </summary>
-    private bool _isAdjustingPosition;
-
-    /// <summary>
     /// 是否正在执行保存后的关闭, 用于放行第二次关闭请求
     /// </summary>
     private bool _isSaving;
@@ -129,32 +124,17 @@ public sealed partial class ShellWindow : Window
     }
 
     /// <summary>
-    /// 窗口尺寸变化时把位置钳制回工作区内, 并同步钳制各抽屉宽度防止超出窗口范围
+    /// 窗口尺寸变化时同步钳制各抽屉宽度, 防止抽屉超出窗口范围
     /// </summary>
     /// <param name="sender">窗口</param>
     /// <param name="e">尺寸变化事件参数</param>
     private void OnSizeChanged(object? sender, SizeChangedEventArgs e)
     {
-        AdjustPositionToWorkingArea();
-
         // 壳视图宽度变化时钳制各抽屉宽度, 防止抽屉超出窗口范围
         if (DataContext is ShellViewModel viewModel)
         {
             viewModel.ClampDrawerWidths(e.NewSize.Width);
         }
-    }
-
-    /// <summary>
-    /// 窗口位置变化时把位置钳制回工作区内, 使窗口在移动过程中始终完整可见 (参照旧项目 WM_MOVING 处理)
-    /// </summary>
-    /// <param name="sender">窗口</param>
-    /// <param name="e">位置变化事件参数</param>
-    private void OnPositionChanged(object? sender, PixelPointEventArgs e)
-    {
-        // 调整位置触发的递归变化直接忽略
-        if (_isAdjustingPosition) { return; }
-
-        AdjustPositionToWorkingArea();
     }
 
     /// <summary>
@@ -256,7 +236,7 @@ public sealed partial class ShellWindow : Window
     }
 
     /// <summary>
-    /// 应用固定的最小窗口宽高, 并按当前屏幕工作区钳制最大值, 保证窗口完整可见
+    /// 应用固定的最小窗口宽高, 并钳制上限防止最小尺寸超过当前屏幕工作区
     /// </summary>
     /// <param name="minWidth">最小宽度</param>
     /// <param name="minHeight">最小高度</param>
@@ -270,50 +250,7 @@ public sealed partial class ShellWindow : Window
             return;
         }
 
-        MinWidth = Math.Min(
-            minWidth, (screen.WorkingArea.Width / screen.Scaling) - Constants.WindowClampRightMargin
-        );
-        MinHeight = Math.Min(
-            minHeight, (screen.WorkingArea.Height / screen.Scaling) - Constants.WindowClampBottomMargin
-        );
-    }
-
-    /// <summary>
-    /// 将窗口位置钳制到当前屏幕工作区内, 保证窗口完整可见 (窗口大于工作区时尽量贴边)
-    /// </summary>
-    private void AdjustPositionToWorkingArea()
-    {
-        var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
-        if (screen is null) { return; }
-
-        var workArea = screen.WorkingArea;
-        var frameSize = PixelSize.FromSize(ClientSize, screen.Scaling);
-
-        var clampRightMargin = (int)(Constants.WindowClampRightMargin * screen.Scaling);
-        var clampBottomMargin = (int)(Constants.WindowClampBottomMargin * screen.Scaling);
-
-        var x = Math.Clamp(
-            Position.X, workArea.X,
-            Math.Max(
-                workArea.X, workArea.X + workArea.Width - frameSize.Width - clampRightMargin
-            )
-        );
-        var y = Math.Clamp(
-            Position.Y, workArea.Y,
-            Math.Max(
-                workArea.Y, workArea.Y + workArea.Height - frameSize.Height - clampBottomMargin
-            )
-        );
-        if (x == Position.X && y == Position.Y) { return; }
-
-        _isAdjustingPosition = true;
-        try
-        {
-            Position = new(x, y);
-        }
-        finally
-        {
-            _isAdjustingPosition = false;
-        }
+        MinWidth = Math.Min(minWidth, screen.WorkingArea.Width / screen.Scaling);
+        MinHeight = Math.Min(minHeight, screen.WorkingArea.Height / screen.Scaling);
     }
 }

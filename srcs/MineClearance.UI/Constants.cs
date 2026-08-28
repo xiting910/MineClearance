@@ -70,16 +70,6 @@ public static class Constants
     public const double DownloadBallSize = 48;
 
     /// <summary>
-    /// 窗口钳制到工作区时的右边额外留边距
-    /// </summary>
-    public const double WindowClampRightMargin = 8;
-
-    /// <summary>
-    /// 窗口钳制到工作区时的底部额外留边距
-    /// </summary>
-    public const double WindowClampBottomMargin = 30;
-
-    /// <summary>
     /// 游戏视图最小宽度的额外值
     /// </summary>
     public const double GameViewMinWidthExtra = 50;

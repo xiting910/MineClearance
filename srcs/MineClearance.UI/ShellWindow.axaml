@@ -8,7 +8,6 @@
         Closing="OnClosing"
         Deactivated="OnDeactivated"
         SizeChanged="OnSizeChanged"
-        PositionChanged="OnPositionChanged"
         KeyDown="OnKeyDown"
         KeyUp="OnKeyUp">
 
