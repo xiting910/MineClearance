@@ -11,6 +11,16 @@
 
 ---
 
+## [1.5.3] - 2026-08-29
+
+**构建属性完善**: Directory.Build.props 新增 PackageLicenseExpression (MIT) 与 Copyright 全局构建属性, 为 NuGet 包发布和程序集元数据提供标准化的许可证与版权信息.
+
+### Changed
+
+- 工程化: Directory.Build.props 新增 PackageLicenseExpression 与 Copyright 全局构建属性 (许可证表达式与版权声明)
+
+---
+
 ## [1.5.2] - 2026-08-28
 
 **应用图标现代化与窗口布局修复**: 应用图标从通用符号升级为地雷造型, 背景由纯色平涂改为靛蓝对角渐变 + 球面径向渐变 + 柔和投影, 整体风格更现代精致, 16/24px 小尺寸手工逐像素绘制保证清晰辨识; 修复窗口最大化时内容区与屏幕左边缘之间的缝隙问题; 移除窗口位置钳制逻辑, 窗口位置交由系统管理, 拖动行为与标准 Windows 窗口一致, 最小窗口尺寸仍按当前屏幕工作区钳制上限.
@@ -542,7 +552,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.5.2...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.5.3...HEAD
+[1.5.3]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.3
 [1.5.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.2
 [1.5.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.1
 [1.5.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.0

@@ -2,13 +2,15 @@
 
   <!-- 所有项目共用的属性 -->
   <PropertyGroup>
-    <Version>1.5.2</Version>
     <TargetFramework>net10.0</TargetFramework>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <NoWarn>$(NoWarn);NU1507</NoWarn>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);NU1507</NoWarn>
+    <Version>1.5.3</Version>
     <Authors>xiting910</Authors>
     <Product>MineClearance</Product>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright © 2026 $(Authors). All rights reserved.</Copyright>
   </PropertyGroup>
 
   <!-- 所有项目共用的 AssemblyMetadata -->
