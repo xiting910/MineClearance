@@ -21,8 +21,8 @@
 *.yml       text
 
 # 脚本
-*.bat       text    eol=crlf
-*.sh        text    eol=lf
+*.bat       text    eol=crlf    linguist-detectable=false
+*.sh        text    eol=lf      linguist-detectable=false
 
 # 二进制
 *.dll       binary
