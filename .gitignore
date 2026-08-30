@@ -1,24 +1,14 @@
+# Visual Studio
+.vs/
+*.user
+
 # 构建产物
-**/bin/
-**/obj/
+bin/
+obj/
 
 # 发布产物
 publish/
 
-# IDE & 编辑器
-**/.idea/
-**/.vs/
-**/.vscode/
-**/*.user
-*.swp
-*.swo
-*~
-
-# .NET
-*.nupkg
-TestResults/*
+# 测试产物
+TestResults/
 !TestResults/*.trx
-
-# 操作系统
-.DS_Store
-Thumbs.db

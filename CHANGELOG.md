@@ -9,6 +9,13 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 文档: README 全面重写
+- 工程化: .gitattributes 精简 (移除标记文件与多数二进制规则, 保留 ico/png)
+- 工程化: .gitignore 精简 (移除 IDE 与操作系统忽略规则, 构建产物规则不再递归)
+- 工程化: 新增 .vscode/settings.json (dotnet.defaultSolution)
+
 ---
 
 ## [1.5.4] - 2026-08-30

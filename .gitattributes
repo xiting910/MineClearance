@@ -12,25 +12,10 @@
 # Markdown 文件
 *.md        text    diff=markdown
 
-# 标记与数据文件
-*.axaml     text
-*.json      text
-*.xaml      text
-*.xml       text
-*.yaml      text
-*.yml       text
-
 # 脚本
 *.bat       text    eol=crlf    linguist-detectable=false
 *.sh        text    eol=lf      linguist-detectable=false
 
 # 二进制
-*.dll       binary
-*.exe       binary
-*.pdb       binary
-*.png       binary
-*.jpg       binary
 *.ico       binary
-*.woff      binary
-*.woff2     binary
-*.ttf       binary
+*.png       binary
