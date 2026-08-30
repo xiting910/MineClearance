@@ -9,12 +9,20 @@
 
 ## [Unreleased]
 
+---
+
+## [1.5.4] - 2026-08-30
+
+**历史记录统计修正与视图背景透明化**: 修复历史记录统计平均完成度仅计算失败局导致数据失真的问题 (改为计算全部局); 视图背景全面透明化 (历史记录表格列头、主视图参数卡片容器、游戏视图顶部信息栏), 消除白色色块与页面背景的割裂感; CI 工作流优化 (dotnet test 跳过冗余构建、Dependabot 合并简化) 与发布脚本加固 (构建测试前置验证); .editorconfig 全面重构 (补充详细中文注释、按功能分类整理、补充 tab_width 等缺失配置); .gitattributes 排除脚本文件的 linguist 语言检测.
+
 ### Fixed
 
 - UI 层: 历史记录统计平均完成度修正 (从仅计算失败局完成度改为计算全部局完成度)
 
 ### Changed
 
+- 工程化: .gitattributes 排除脚本文件类型检测 (bat/sh 文件添加 linguist-detectable=false, 避免 GitHub 统计语言占比时被脚本文件干扰)
+- 工程化: .editorconfig 全面重构 (补充详细中文注释、按功能分类整理为十五个章节、补充 tab_width / 多行空行 / CA 诊断规则等缺失配置, 移除 VB.NET 独立配置段)
 - 工程化: CI 工作流 `dotnet test` 添加 `--no-build` 跳过冗余构建步骤 (CI 已在前置步骤完成构建)
 - 工程化: Dependabot 自动合并工作流移除分支更新步骤 (简化工作流, 依赖 GitHub 原生合并策略)
 - 工程化: TagPush.bat 发布前新增构建与测试验证步骤 (创建 tag 前执行 `dotnet build` + `dotnet test`, 构建或测试失败时中止发布)
@@ -563,7 +571,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.5.3...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.5.4...HEAD
+[1.5.4]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.4
 [1.5.3]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.3
 [1.5.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.2
 [1.5.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.1
