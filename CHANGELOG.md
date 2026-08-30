@@ -18,6 +18,7 @@
 - 工程化: CI 工作流 `dotnet test` 添加 `--no-build` 跳过冗余构建步骤 (CI 已在前置步骤完成构建)
 - 工程化: Dependabot 自动合并工作流移除分支更新步骤 (简化工作流, 依赖 GitHub 原生合并策略)
 - 工程化: TagPush.bat 发布前新增构建与测试验证步骤 (创建 tag 前执行 `dotnet build` + `dotnet test`, 构建或测试失败时中止发布)
+- UI 层: 视图背景透明化 (历史记录表格列头、主视图参数卡片容器、游戏视图顶部信息栏, 背景由 CardBackgroundBrush 白色改为 Transparent, 悬停/聚焦/禁用等状态同样透明, 消除白色色块与页面背景的割裂感)
 
 ---
 

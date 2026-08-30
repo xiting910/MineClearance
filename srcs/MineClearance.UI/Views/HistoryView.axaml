@@ -6,6 +6,19 @@
              x:DataType="vm:HistoryViewModel"
              Background="Transparent">
 
+  <UserControl.Styles>
+    <!-- 列头背景改为透明, 与数据格子保持一致的透明观感, 悬停与按下状态同样透明避免出现不透明色块 -->
+    <Style Selector="DataGridColumnHeader">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="DataGridColumnHeader:pointerover /template/ Grid#PART_ColumnHeaderRoot">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="DataGridColumnHeader:pressed /template/ Grid#PART_ColumnHeaderRoot">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+  </UserControl.Styles>
+
   <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Margin="16" RowSpacing="8">
 
     <!-- 标题 -->

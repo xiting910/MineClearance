@@ -17,9 +17,9 @@
     <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="32"
           HorizontalAlignment="Center" VerticalAlignment="Center">
 
-      <!-- 左侧参数输入框, 非自定义难度时悬浮提示不允许输入 -->
+      <!-- 左侧参数输入框, 非自定义难度时悬浮提示不允许输入, 背景透明与页面融为一体 -->
       <Border BorderBrush="{DynamicResource SeparatorBrush}" BorderThickness="1"
-              Background="{DynamicResource CardBackgroundBrush}"
+              Background="Transparent"
               CornerRadius="8" Padding="28,20" MinWidth="320"
               ToolTip.Tip="{Binding ParameterInputTip}">
         <StackPanel Spacing="12">

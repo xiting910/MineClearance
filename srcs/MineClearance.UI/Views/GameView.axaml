@@ -17,9 +17,9 @@
     <!-- 游戏区 (常驻布局, 无游戏时仅显示空白棋盘与提示, 启动时预热实例化格子控件) -->
     <DockPanel>
 
-      <!-- 顶部信息栏: 按钮右侧常驻, 信息区空间不足时自动裁剪 -->
+      <!-- 顶部信息栏: 按钮右侧常驻, 信息区空间不足时自动裁剪, 背景透明与页面融为一体 -->
       <Border DockPanel.Dock="Top" Padding="12,8" ClipToBounds="True"
-              Background="{DynamicResource CardBackgroundBrush}"
+              Background="Transparent"
               BorderBrush="{DynamicResource SeparatorBrush}" BorderThickness="0,0,0,1">
         <DockPanel>
 
