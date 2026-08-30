@@ -16,8 +16,8 @@ namespace MineClearance.UI.Models;
 /// <param name="AvgWinDuration">平均胜利用时, 无胜局时为 <see langword="null"/></param>
 /// <param name="MinWinDurationText">最短胜利用时文本, 无胜局时为 --</param>
 /// <param name="MinWinDuration">最短胜利用时, 无胜局时为 <see langword="null"/></param>
-/// <param name="AvgCompletionText">平均完成度文本, 无失败局时为 --</param>
-/// <param name="AvgCompletion">平均完成度数值 (0-1), 无失败局时为 -1</param>
+/// <param name="AvgCompletionText">平均完成度文本, 无游戏记录时为 --</param>
+/// <param name="AvgCompletion">平均完成度数值 (0-1), 无游戏记录时为 -1</param>
 public sealed record StatsRow(
     GameDifficulty? Difficulty,
     string DifficultyText,

@@ -51,7 +51,8 @@ public sealed class StatsRowBuilderTests
         Assert.Equal(TimeSpan.FromMinutes(1.5), row.AvgWinDuration);
         Assert.Equal("01:00", row.MinWinDurationText);
         Assert.Equal(TimeSpan.FromMinutes(1), row.MinWinDuration);
-        Assert.Equal("--", row.AvgCompletionText);
+        Assert.Equal("100%", row.AvgCompletionText);
+        Assert.Equal(1.0, row.AvgCompletion);
     }
 
     [Fact]
@@ -69,8 +70,8 @@ public sealed class StatsRowBuilderTests
         Assert.Equal("50%", row.WinRateText);
         Assert.Equal(50, row.WinRate);
         Assert.Equal("01:00", row.AvgWinDurationText);
-        Assert.Equal("50%", row.AvgCompletionText);
-        Assert.Equal(0.5, row.AvgCompletion);
+        Assert.Equal("75%", row.AvgCompletionText);
+        Assert.Equal(0.75, row.AvgCompletion);
     }
 
     [Fact]

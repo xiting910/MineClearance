@@ -41,9 +41,9 @@ public struct StatsRowBuilder()
     private long _minWinTicks = long.MaxValue;
 
     /// <summary>
-    /// 累计失败局完成度总和, 用于计算平均完成度
+    /// 累计完成度总和, 用于计算平均完成度
     /// </summary>
-    private double _lossCompletion;
+    private double _completion;
 
     /// <summary>
     /// 添加一个游戏结果到累计统计中
@@ -52,15 +52,16 @@ public struct StatsRowBuilder()
     public void Add(GameResult result)
     {
         _games++;
-        if (result.IsWin)
+        if (result.Completion is null)
         {
             _wins++;
             _winTicks += result.Duration.Ticks;
             _minWinTicks = Math.Min(_minWinTicks, result.Duration.Ticks);
+            _completion += Core.Constants.MaxCompletion;
         }
         else
         {
-            _lossCompletion += result.Completion!.Value;
+            _completion += result.Completion.Value;
         }
     }
 
@@ -71,11 +72,9 @@ public struct StatsRowBuilder()
     /// <returns>统计行</returns>
     public readonly StatsRow ToRow(GameDifficulty? difficulty)
     {
-        var text = difficulty is null ? AllDifficultyText : difficulty.Value.GetDescription();
-        var losses = _games - _wins;
         return new(
             Difficulty: difficulty,
-            DifficultyText: text,
+            DifficultyText: difficulty is null ? AllDifficultyText : difficulty.Value.GetDescription(),
             Games: _games,
             Wins: _wins,
             WinRateText: _games == 0
@@ -87,13 +86,15 @@ public struct StatsRowBuilder()
                 ? EmptyStatsText
                 : FormatTimeSpan(TimeSpan.FromTicks(_winTicks / _wins)),
             AvgWinDuration: _wins == 0 ? null : TimeSpan.FromTicks(_winTicks / _wins),
-            MinWinDurationText: _wins == 0 ? EmptyStatsText : FormatTimeSpan(TimeSpan.FromTicks(_minWinTicks)),
-            MinWinDuration: _wins == 0 ? null : TimeSpan.FromTicks(_minWinTicks),
-            AvgCompletionText: losses == 0
+            MinWinDurationText: _wins == 0
                 ? EmptyStatsText
-                : (_lossCompletion * Core.Constants.PercentBase / losses).ToString(Core.Constants.FloatFormat)
+                : FormatTimeSpan(TimeSpan.FromTicks(_minWinTicks)),
+            MinWinDuration: _wins == 0 ? null : TimeSpan.FromTicks(_minWinTicks),
+            AvgCompletionText: _games == 0
+                ? EmptyStatsText
+                : (_completion * Core.Constants.PercentBase / _games).ToString(Core.Constants.FloatFormat)
                 + Core.Constants.PercentSign,
-            AvgCompletion: losses == 0 ? -1 : _lossCompletion / losses
+            AvgCompletion: _games == 0 ? -1 : _completion / _games
         );
     }
 

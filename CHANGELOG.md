@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- UI 层: 历史记录统计平均完成度修正 (从仅计算失败局完成度改为计算全部局完成度)
+
 ### Changed
 
 - 工程化: CI 工作流 `dotnet test` 添加 `--no-build` 跳过冗余构建步骤 (CI 已在前置步骤完成构建)
