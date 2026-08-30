@@ -9,6 +9,12 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 工程化: CI 工作流 `dotnet test` 添加 `--no-build` 跳过冗余构建步骤 (CI 已在前置步骤完成构建)
+- 工程化: Dependabot 自动合并工作流移除分支更新步骤 (简化工作流, 依赖 GitHub 原生合并策略)
+- 工程化: TagPush.bat 发布前新增构建与测试验证步骤 (创建 tag 前执行 `dotnet build` + `dotnet test`, 构建或测试失败时中止发布)
+
 ---
 
 ## [1.5.3] - 2026-08-29

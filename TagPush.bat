@@ -14,7 +14,7 @@ echo ========================================================
 
 rem 1. 检查当前目录是否为 Git 仓库
 echo.
-echo [1/7] 检查 Git 仓库...
+echo [1/8] 检查 Git 仓库...
 git rev-parse --git-dir >nul 2>&1
 if %errorlevel% neq 0 (
     echo [ERROR] 当前目录不是 Git 仓库
@@ -24,7 +24,7 @@ echo 当前目录是 Git 仓库.
 
 rem 2. 检查工作区是否干净 (含未跟踪文件, 发布前源码必须完整)
 echo.
-echo [2/7] 检查工作区状态...
+echo [2/8] 检查工作区状态...
 set "DIRTY="
 for /f "delims=" %%a in ('git status --porcelain') do set "DIRTY=1"
 if defined DIRTY (
@@ -37,7 +37,7 @@ echo 工作区干净.
 
 rem 3. 从 Directory.Build.props 读取 Version 值
 echo.
-echo [3/7] 读取版本号...
+echo [3/8] 读取版本号...
 set "VER="
 for /f "delims=" %%a in ('findstr /c:"<Version>" "%PROPS_FILE%"') do set "RAW=%%a"
 set "RAW=%RAW:*<Version>=%"
@@ -57,7 +57,7 @@ echo 目标 tag: %TAG%
 
 rem 4. 检查 tag 是否已存在
 echo.
-echo [4/7] 检查 tag 是否已存在...
+echo [4/8] 检查 tag 是否已存在...
 set "EXISTING="
 for /f "delims=" %%t in ('git tag -l "%TAG%"') do set "EXISTING=%%t"
 if defined EXISTING (
@@ -68,7 +68,7 @@ echo Tag %TAG% 不存在, 可以创建.
 
 rem 5. 检查 CHANGELOG.md 是否已有对应版本条目
 echo.
-echo [5/7] 检查 CHANGELOG 条目...
+echo [5/8] 检查 CHANGELOG 条目...
 findstr /c:"## [%VER%] -" "%CHANGELOG_FILE%" >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] %CHANGELOG_FILE% 中未找到版本条目 [%VER%], 请先更新 CHANGELOG.md
@@ -76,9 +76,24 @@ if errorlevel 1 (
 )
 echo 找到 CHANGELOG 版本条目: ## [%VER%]
 
-rem 6. 创建 tag
+rem 6. 在创建 tag 前构建并测试
 echo.
-echo [6/7] 创建 tag 并推送...
+echo [6/8] 构建并测试...
+dotnet build --configuration Release
+if %errorlevel% neq 0 (
+    echo [ERROR] 构建失败, 请修复后重试
+    goto :end
+)
+dotnet test --solution MineClearance.slnx --configuration Release --no-build --verbosity normal
+if %errorlevel% neq 0 (
+    echo [ERROR] 测试失败, 请修复后重试
+    goto :end
+)
+echo 构建与测试全部通过.
+
+rem 7. 创建 tag
+echo.
+echo [7/8] 创建 tag 并推送...
 git tag "%TAG%"
 if %errorlevel% neq 0 (
     echo [ERROR] 创建 tag %TAG% 失败
@@ -86,9 +101,9 @@ if %errorlevel% neq 0 (
 )
 echo Tag %TAG% 已创建.
 
-rem 7. 推送 tag 到远程仓库
+rem 8. 推送 tag 到远程仓库
 echo.
-echo [7/7] 推送 tag 到远程仓库 %REMOTE%...
+echo [8/8] 推送 tag 到远程仓库 %REMOTE%...
 git push %REMOTE% "%TAG%"
 if %errorlevel% neq 0 (
     echo [ERROR] 推送 tag %TAG% 失败, tag 已在本机创建, 可手动执行: git push %REMOTE% %TAG%

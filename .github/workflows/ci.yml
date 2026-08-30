@@ -48,7 +48,7 @@ jobs:
       # 5. 运行所有单元测试并生成 TRX 测试报告
       - name: Run tests
         run: |
-          dotnet test --solution MineClearance.slnx --configuration Release --verbosity normal \
+          dotnet test --solution MineClearance.slnx --configuration Release --no-build --verbosity normal \
             --report-xunit-trx --report-xunit-trx-filename test-results.trx \
             --results-directory ./TestResults
 

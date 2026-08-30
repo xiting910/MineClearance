@@ -62,7 +62,7 @@ MineClearance/
 ├── MineClearance.slnx                                #   解决方案文件 (.NET XML 格式)
 ├── README.md                                         #   本文档
 ├── RePublish.bat                                     #   Windows 清理构建脚本
-├── TagPush.bat                                       #   打 tag 并推送发布脚本 (校验版本/工作区/CHANGELOG)
+├── TagPush.bat                                       #   打 tag 并推送发布脚本 (校验版本/工作区/CHANGELOG/构建测试)
 ├── srcs/
 │   ├── MineClearance.Core/                           # 核心层 — 领域模型、接口、枚举、领域服务
 │   │   ├── MineClearance.Core.csproj                 #   项目文件 (DI/Logging Abstractions 引用)
