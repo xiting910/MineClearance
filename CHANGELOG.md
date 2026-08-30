@@ -30,7 +30,7 @@
 
 ---
 
-## [1.5.3] - 2026-08-29
+## [1.5.3] - 2026-08-28
 
 **构建属性完善**: Directory.Build.props 新增 PackageLicenseExpression (MIT) 与 Copyright 全局构建属性, 为 NuGet 包发布和程序集元数据提供标准化的许可证与版权信息.
 
