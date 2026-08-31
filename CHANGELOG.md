@@ -15,6 +15,10 @@
 - 工程化: .gitattributes 精简 (移除标记文件与多数二进制规则, 保留 ico/png)
 - 工程化: .gitignore 精简 (移除 IDE 与操作系统忽略规则, 构建产物规则不再递归)
 - 工程化: 新增 .vscode/settings.json (dotnet.defaultSolution)
+- UI 层: 棋盘格子颜色全面主题化 (CellViewModel 配色从硬编码画刷改为主题资源字典动态读取, App.axaml Light/Dark 主题字典新增 22 组格子色板资源)
+- UI 层: 深色主题格子色板适配 (未翻开 #444A58, 已翻开/数字格与卡片背景 #232733 融入, 数字 1-8 换亮色系, 旗 #2F5D3A, 警告 #C05E22, 雷 #7A2E2E)
+- UI 层: 索引叠加层文字颜色主题化 (GameView 前景由硬编码 #4B5563 改为 DynamicResource CellIndexBrush)
+- UI 层: 主题切换实时刷新棋盘配色 (GameViewModel 订阅 ActualThemeVariantChanged, 统一遍历格子刷新)
 
 ---
 

@@ -1,10 +1,11 @@
+using Avalonia;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MineClearance.Core.Enums;
 using MineClearance.Core.Interfaces;
 using MineClearance.Core.Models;
 using MineClearance.Core.Models.Records;
-using System.Collections.Generic;
+using System;
 using System.ComponentModel;
 
 namespace MineClearance.UI.ViewModels;
@@ -14,32 +15,65 @@ namespace MineClearance.UI.ViewModels;
 /// </summary>
 public sealed partial class CellViewModel : ObservableObject
 {
-    private static readonly IBrush UnopenedBrush = new SolidColorBrush(Color.Parse("#C8C8C8"));
-    private static readonly IBrush EmptyBrush = new SolidColorBrush(Color.Parse("#FFFFFF"));
-    private static readonly IBrush NumberBrush = new SolidColorBrush(Color.Parse("#FFFFFF"));
-    private static readonly IBrush WarningBrush = new SolidColorBrush(Color.Parse("#FFE14D"));
-    private static readonly IBrush FlaggedBrush = new SolidColorBrush(Color.Parse("#7BD88F"));
-    private static readonly IBrush QuestionBrush = new SolidColorBrush(Color.Parse("#E3E3E3"));
-    private static readonly IBrush MineBrush = new SolidColorBrush(Color.Parse("#FF6B6B"));
-    private static readonly IBrush HitMineBrush = new SolidColorBrush(Color.Parse("#B71C1C"));
-    private static readonly IBrush ErrorFlagBrush = new SolidColorBrush(Color.Parse("#FFCDD2"));
-    private static readonly IBrush GuaranteedSafeBrush = new SolidColorBrush(Color.Parse("#A5D6A7"));
-    private static readonly IBrush TextBrush = new SolidColorBrush(Color.Parse("#1A1D24"));
+    /// <summary>
+    /// 主题资源键: 未翻开格子背景
+    /// </summary>
+    private const string UnopenedBrushKey = "CellUnopenedBrush";
 
     /// <summary>
-    /// 数字 1-8 经典配色
+    /// 主题资源键: 已翻开空白格背景
     /// </summary>
-    private static readonly IReadOnlyList<IBrush> NumberColors =
-    [
-        new SolidColorBrush(Color.Parse("#1976D2")), // 1 蓝
-        new SolidColorBrush(Color.Parse("#2E7D32")), // 2 绿
-        new SolidColorBrush(Color.Parse("#C62828")), // 3 红
-        new SolidColorBrush(Color.Parse("#6A1B9A")), // 4 紫
-        new SolidColorBrush(Color.Parse("#6D4C41")), // 5 栗
-        new SolidColorBrush(Color.Parse("#00838F")), // 6 青
-        new SolidColorBrush(Color.Parse("#212121")), // 7 黑
-        new SolidColorBrush(Color.Parse("#757575"))  // 8 灰
-    ];
+    private const string EmptyBrushKey = "CellEmptyBrush";
+
+    /// <summary>
+    /// 主题资源键: 数字格背景
+    /// </summary>
+    private const string NumberBrushKey = "CellNumberBrush";
+
+    /// <summary>
+    /// 主题资源键: 警告数字格背景
+    /// </summary>
+    private const string WarningBrushKey = "CellWarningBrush";
+
+    /// <summary>
+    /// 主题资源键: 旗格背景
+    /// </summary>
+    private const string FlaggedBrushKey = "CellFlaggedBrush";
+
+    /// <summary>
+    /// 主题资源键: 问号格背景
+    /// </summary>
+    private const string QuestionBrushKey = "CellQuestionBrush";
+
+    /// <summary>
+    /// 主题资源键: 地雷格背景
+    /// </summary>
+    private const string MineBrushKey = "CellMineBrush";
+
+    /// <summary>
+    /// 主题资源键: 踩中地雷格背景
+    /// </summary>
+    private const string HitMineBrushKey = "CellHitMineBrush";
+
+    /// <summary>
+    /// 主题资源键: 错误旗格背景
+    /// </summary>
+    private const string ErrorFlagBrushKey = "CellErrorFlagBrush";
+
+    /// <summary>
+    /// 主题资源键: 保证安全格背景
+    /// </summary>
+    private const string GuaranteedSafeBrushKey = "CellGuaranteedSafeBrush";
+
+    /// <summary>
+    /// 主题资源键: 格子符号文字颜色
+    /// </summary>
+    private const string TextBrushKey = "CellTextBrush";
+
+    /// <summary>
+    /// 主题资源键前缀: 数字 1-8 配色, 完整键为 CellNumber1Brush..CellNumber8Brush
+    /// </summary>
+    private const string NumberColorBrushKeyPrefix = "CellNumber";
 
     /// <summary>
     /// 被包装的格子
@@ -53,12 +87,6 @@ public sealed partial class CellViewModel : ObservableObject
     public partial bool IsVisible { get; set; }
 
     /// <summary>
-    /// 显示文本 (数字/旗/问号/地雷符号)
-    /// </summary>
-    [ObservableProperty]
-    public partial string DisplayText { get; set; }
-
-    /// <summary>
     /// 格子背景
     /// </summary>
     [ObservableProperty]
@@ -69,6 +97,12 @@ public sealed partial class CellViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     public partial IBrush Foreground { get; set; }
+
+    /// <summary>
+    /// 显示文本 (数字/旗/问号/地雷符号)
+    /// </summary>
+    [ObservableProperty]
+    public partial string DisplayText { get; set; }
 
     /// <summary>
     /// 格子索引文本, 热键按下时显示, 由游戏视图模型按当前棋盘填充
@@ -112,9 +146,9 @@ public sealed partial class CellViewModel : ObservableObject
         _cell = cell;
         _cell.PropertyChanged += OnCellPropertyChanged;
         IsVisible = false;
+        Background = ThemeBrush(UnopenedBrushKey);
+        Foreground = ThemeBrush(TextBrushKey);
         DisplayText = string.Empty;
-        Background = UnopenedBrush;
-        Foreground = TextBrush;
         IndexText = string.Empty;
         ShowIndex = false;
         Position = position;
@@ -124,7 +158,7 @@ public sealed partial class CellViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 替换内部格子引用 (占位格子升级为真实格子), 不重建视图模型
+    /// 更新被包装的格子
     /// </summary>
     /// <param name="cell">新的格子</param>
     public void UpdateCell(Cell cell)
@@ -141,64 +175,64 @@ public sealed partial class CellViewModel : ObservableObject
     /// <summary>
     /// 按格子类型更新显示文本与配色
     /// </summary>
-    private void UpdateDisplay()
+    public void UpdateDisplay()
     {
         switch (_cell.Type)
         {
             case CellType.Unopened:
                 DisplayText = string.Empty;
-                Background = UnopenedBrush;
-                Foreground = TextBrush;
+                Background = ThemeBrush(UnopenedBrushKey);
+                Foreground = ThemeBrush(TextBrushKey);
                 break;
 
             case CellType.Empty:
                 DisplayText = string.Empty;
-                Background = EmptyBrush;
-                Foreground = TextBrush;
+                Background = ThemeBrush(EmptyBrushKey);
+                Foreground = ThemeBrush(TextBrushKey);
                 break;
 
             case CellType.Number:
-                UpdateNumberDisplay(NumberBrush);
+                UpdateNumberDisplay(ThemeBrush(NumberBrushKey));
                 break;
 
             case CellType.WarningNumber:
-                UpdateNumberDisplay(WarningBrush);
+                UpdateNumberDisplay(ThemeBrush(WarningBrushKey));
                 break;
 
             case CellType.Flagged:
                 DisplayText = "⚑";
-                Background = FlaggedBrush;
-                Foreground = TextBrush;
+                Background = ThemeBrush(FlaggedBrushKey);
+                Foreground = ThemeBrush(TextBrushKey);
                 break;
 
             case CellType.Question:
                 DisplayText = "?";
-                Background = QuestionBrush;
-                Foreground = TextBrush;
+                Background = ThemeBrush(QuestionBrushKey);
+                Foreground = ThemeBrush(TextBrushKey);
                 break;
 
             case CellType.Mine:
                 DisplayText = "💣";
-                Background = MineBrush;
-                Foreground = TextBrush;
+                Background = ThemeBrush(MineBrushKey);
+                Foreground = ThemeBrush(TextBrushKey);
                 break;
 
             case CellType.ErrorFlag:
                 DisplayText = "⚑";
-                Background = ErrorFlagBrush;
-                Foreground = TextBrush;
+                Background = ThemeBrush(ErrorFlagBrushKey);
+                Foreground = ThemeBrush(TextBrushKey);
                 break;
 
             case CellType.OpenedMine:
                 DisplayText = "💣";
-                Background = HitMineBrush;
-                Foreground = TextBrush;
+                Background = ThemeBrush(HitMineBrushKey);
+                Foreground = ThemeBrush(TextBrushKey);
                 break;
 
             case CellType.GuaranteedSafe:
                 DisplayText = "✓";
-                Background = GuaranteedSafeBrush;
-                Foreground = TextBrush;
+                Background = ThemeBrush(GuaranteedSafeBrushKey);
+                Foreground = ThemeBrush(TextBrushKey);
                 break;
         }
     }
@@ -212,9 +246,7 @@ public sealed partial class CellViewModel : ObservableObject
         var mineCount = Game?.GetAdjacentMineCount(Position) ?? 0;
         DisplayText = mineCount.ToString();
         Background = background;
-        Foreground = mineCount > 0 && mineCount <= NumberColors.Count
-            ? NumberColors[mineCount - 1]
-            : TextBrush;
+        Foreground = mineCount is > 0 and < 9 ? NumberColor(mineCount) : ThemeBrush(TextBrushKey);
     }
 
     /// <summary>
@@ -228,5 +260,30 @@ public sealed partial class CellViewModel : ObservableObject
         {
             UpdateDisplay();
         }
+    }
+
+    /// <summary>
+    /// 获取指定数字的配色, 从主题资源读取
+    /// </summary>
+    /// <param name="number">数字</param>
+    /// <returns>数字画刷</returns>
+    private static IBrush NumberColor(int number)
+    {
+        return ThemeBrush(NumberColorBrushKeyPrefix + number + "Brush");
+    }
+
+    /// <summary>
+    /// 从当前主题资源字典获取画刷
+    /// </summary>
+    /// <param name="key">资源键</param>
+    /// <returns>主题画刷</returns>
+    /// <exception cref="InvalidOperationException">应用未初始化或主题资源字典中不存在指定资源</exception>
+    private static IBrush ThemeBrush(string key)
+    {
+        var app = Application.Current;
+        return app?.TryGetResource(key, app.ActualThemeVariant, out var value) is true
+            && value is IBrush brush
+            ? brush
+            : throw new InvalidOperationException($"Theme resource '{key}' not found.");
     }
 }

@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Input;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -193,6 +194,9 @@ public sealed partial class GameViewModel : ObservableObject
 
         // 构建固定大小的格子视图模型池, 只创建一次, 此后所有游戏复用
         BuildCellPool();
+
+        // 订阅主题切换事件, 主题变化时统一刷新全部格子的配色
+        Application.Current?.ActualThemeVariantChanged += OnThemeVariantChanged;
 
         // 棋盘区域初始化为最大尺寸, 使游戏视图在启动布局时即实例化全部格子控件 (预热)
         Rows = Core.Constants.MaxBoardHeight;
@@ -532,6 +536,19 @@ public sealed partial class GameViewModel : ObservableObject
                     : $"💣 游戏失败, 用时: {FormatTime(result.Duration)}{completion}"
                 );
             }
+        }
+    }
+
+    /// <summary>
+    /// 主题切换时刷新全部格子的配色
+    /// </summary>
+    /// <param name="sender">应用实例</param>
+    /// <param name="e">事件参数</param>
+    private void OnThemeVariantChanged(object? sender, EventArgs e)
+    {
+        foreach (var cell in Cells)
+        {
+            cell.UpdateDisplay();
         }
     }
 

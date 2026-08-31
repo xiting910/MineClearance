@@ -45,6 +45,28 @@
           <SolidColorBrush x:Key="SecondaryTextBrush" Color="#6B7280"/>
           <SolidColorBrush x:Key="YellowLabelBrush" Color="#F9A825"/>
           <SolidColorBrush x:Key="EmphasisBrush" Color="#00838F"/>
+
+          <!-- 格子色板: 未翻开/已翻开/状态格与数字配色 -->
+          <SolidColorBrush x:Key="CellUnopenedBrush" Color="#C8C8C8"/>
+          <SolidColorBrush x:Key="CellEmptyBrush" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="CellNumberBrush" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="CellWarningBrush" Color="#FFE14D"/>
+          <SolidColorBrush x:Key="CellFlaggedBrush" Color="#7BD88F"/>
+          <SolidColorBrush x:Key="CellQuestionBrush" Color="#E3E3E3"/>
+          <SolidColorBrush x:Key="CellMineBrush" Color="#FF6B6B"/>
+          <SolidColorBrush x:Key="CellHitMineBrush" Color="#B71C1C"/>
+          <SolidColorBrush x:Key="CellErrorFlagBrush" Color="#FFCDD2"/>
+          <SolidColorBrush x:Key="CellGuaranteedSafeBrush" Color="#A5D6A7"/>
+          <SolidColorBrush x:Key="CellTextBrush" Color="#1A1D24"/>
+          <SolidColorBrush x:Key="CellIndexBrush" Color="#4B5563"/>
+          <SolidColorBrush x:Key="CellNumber1Brush" Color="#1976D2"/>
+          <SolidColorBrush x:Key="CellNumber2Brush" Color="#2E7D32"/>
+          <SolidColorBrush x:Key="CellNumber3Brush" Color="#C62828"/>
+          <SolidColorBrush x:Key="CellNumber4Brush" Color="#6A1B9A"/>
+          <SolidColorBrush x:Key="CellNumber5Brush" Color="#6D4C41"/>
+          <SolidColorBrush x:Key="CellNumber6Brush" Color="#00838F"/>
+          <SolidColorBrush x:Key="CellNumber7Brush" Color="#212121"/>
+          <SolidColorBrush x:Key="CellNumber8Brush" Color="#757575"/>
         </ResourceDictionary>
 
         <!-- 深色主题 -->
@@ -73,6 +95,28 @@
           <SolidColorBrush x:Key="SecondaryTextBrush" Color="#9AA3B2"/>
           <SolidColorBrush x:Key="YellowLabelBrush" Color="#FFD54F"/>
           <SolidColorBrush x:Key="EmphasisBrush" Color="#80DEEA"/>
+
+          <!-- 格子色板: 深色主题下未翻开格子亮于卡片, 已翻开格子与卡片同色融入, 数字用亮色系 -->
+          <SolidColorBrush x:Key="CellUnopenedBrush" Color="#444A58"/>
+          <SolidColorBrush x:Key="CellEmptyBrush" Color="#232733"/>
+          <SolidColorBrush x:Key="CellNumberBrush" Color="#232733"/>
+          <SolidColorBrush x:Key="CellWarningBrush" Color="#C05E22"/>
+          <SolidColorBrush x:Key="CellFlaggedBrush" Color="#2F5D3A"/>
+          <SolidColorBrush x:Key="CellQuestionBrush" Color="#4A4F5C"/>
+          <SolidColorBrush x:Key="CellMineBrush" Color="#7A2E2E"/>
+          <SolidColorBrush x:Key="CellHitMineBrush" Color="#B71C1C"/>
+          <SolidColorBrush x:Key="CellErrorFlagBrush" Color="#5A2A2A"/>
+          <SolidColorBrush x:Key="CellGuaranteedSafeBrush" Color="#2E4A33"/>
+          <SolidColorBrush x:Key="CellTextBrush" Color="#E6E8EC"/>
+          <SolidColorBrush x:Key="CellIndexBrush" Color="#9AA3B2"/>
+          <SolidColorBrush x:Key="CellNumber1Brush" Color="#64B5F6"/>
+          <SolidColorBrush x:Key="CellNumber2Brush" Color="#81C784"/>
+          <SolidColorBrush x:Key="CellNumber3Brush" Color="#EF9A9A"/>
+          <SolidColorBrush x:Key="CellNumber4Brush" Color="#CE93D8"/>
+          <SolidColorBrush x:Key="CellNumber5Brush" Color="#BCAAA4"/>
+          <SolidColorBrush x:Key="CellNumber6Brush" Color="#80DEEA"/>
+          <SolidColorBrush x:Key="CellNumber7Brush" Color="#E0E0E0"/>
+          <SolidColorBrush x:Key="CellNumber8Brush" Color="#BDBDBD"/>
         </ResourceDictionary>
 
       </ResourceDictionary.ThemeDictionaries>
