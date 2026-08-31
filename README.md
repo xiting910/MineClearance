@@ -155,63 +155,63 @@ MineClearance/
 │   │   ├── SingleInstanceServer.cs                   #   单实例服务器
 │   │   └── UnhandledExceptionHelper.cs               #   未处理异常辅助
 │   └── MineClearance.UI/                             #  表示层
-│   │   ├── Assets/                                   #   资源目录
-│   │   │   ├── Backgrounds/                          #    内置背景图片
-│   │   │   │   ├── 1.png                             #     图片 1
-│   │   │   │   ├── 2.png                             #     图片 2
-│   │   │   │   └── 3.png                             #     图片 3
-│   │   │   └── logo.ico                              #    应用图标
-│   │   ├── Models/                                   #   UI 模型
-│   │   │   ├── BackgroundImageOption.cs              #    背景图片选项
-│   │   │   ├── DifficultyFilterOption.cs             #    难度筛选选项
-│   │   │   ├── GameResultRow.cs                      #    游戏结果行
-│   │   │   ├── NavigationTarget.cs                   #    导航目标枚举
-│   │   │   ├── ResultFilterOption.cs                 #    结果筛选选项
-│   │   │   ├── SortKeys.cs                           #    统计表格排序键常量
-│   │   │   ├── StatsRow.cs                           #    统计行
-│   │   │   ├── StatsRowBuilder.cs                    #    统计行构建器
-│   │   │   ├── ThemeMode.cs                          #    主题模式枚举
-│   │   │   ├── ToastItem.cs                          #    Toast 提示条目
-│   │   │   └── UIOptions.cs                          #    UI 配置
-│   │   ├── ViewModels/                               #   视图模型
-│   │   │   ├── CellViewModel.cs                      #    格子视图模型
-│   │   │   ├── GameViewModel.cs                      #    游戏视图模型
-│   │   │   ├── HistoryViewModel.cs                   #    历史记录视图模型
-│   │   │   ├── MainViewModel.cs                      #    主视图模型
-│   │   │   ├── SettingsViewModel.cs                  #    设置视图模型
-│   │   │   ├── ShellViewModel.cs                     #    壳视图模型
-│   │   │   ├── ToastViewModel.cs                     #    Toast 提示视图模型
-│   │   │   └── UpdateViewModel.cs                    #    更新视图模型
-│   │   ├── Views/                                    #   视图
-│   │   │   ├── DownloadBallView.axaml                #    下载进度悬浮球视图
-│   │   │   ├── DownloadBallView.axaml.cs             #    下载进度悬浮球视图代码后置
-│   │   │   ├── DownloadDrawerView.axaml              #    下载详情抽屉视图
-│   │   │   ├── DownloadDrawerView.axaml.cs           #    下载详情抽屉视图代码后置
-│   │   │   ├── GameView.axaml                        #    游戏视图
-│   │   │   ├── GameView.axaml.cs                     #    游戏视图代码后置
-│   │   │   ├── HistoryView.axaml                     #    历史记录视图
-│   │   │   ├── HistoryView.axaml.cs                  #    历史记录视图代码后置
-│   │   │   ├── MainView.axaml                        #    主视图
-│   │   │   ├── MainView.axaml.cs                     #    主视图代码后置
-│   │   │   ├── SettingsView.axaml                    #    设置抽屉内容视图
-│   │   │   ├── SettingsView.axaml.cs                 #    设置抽屉内容视图代码后置
-│   │   │   ├── ShellView.axaml                       #    壳视图
-│   │   │   ├── ShellView.axaml.cs                    #    壳视图代码后置
-│   │   │   ├── ToastView.axaml                       #    Toast 视图
-│   │   │   └── ToastView.axaml.cs                    #    Toast 视图代码后置
-│   │   ├── App.axaml                                 #   应用定义
-│   │   ├── App.axaml.cs                              #   应用类
-│   │   ├── App.Manifest.xml                          #   Windows 应用清单
-│   │   ├── AppMetadata.cs                            #   应用元数据
-│   │   ├── Constants.cs                              #   UI 常量
-│   │   ├── EnumDescriptionConverter.cs               #   枚举描述转换器
-│   │   ├── KeyExtensions.cs                          #   Key 按键扩展
-│   │   ├── MineClearance.UI.csproj                   #   项目文件
-│   │   ├── Program.cs                                #   应用入口
-│   │   ├── ShellWindow.axaml                         #   主窗口
-│   │   ├── ShellWindow.axaml.cs                      #   主窗口代码
-│   │   ├── ViewLocator.cs                            #   ViewModel → View 定位器
-│   │   └── WindowsHelper.cs                          #   Windows 窗口操作辅助
+│       ├── Assets/                                   #   资源目录
+│       │   ├── Backgrounds/                          #    内置背景图片
+│       │   │   ├── 1.png                             #     图片 1
+│       │   │   ├── 2.png                             #     图片 2
+│       │   │   └── 3.png                             #     图片 3
+│       │   └── logo.ico                              #    应用图标
+│       ├── Models/                                   #   UI 模型
+│       │   ├── BackgroundImageOption.cs              #    背景图片选项
+│       │   ├── DifficultyFilterOption.cs             #    难度筛选选项
+│       │   ├── GameResultRow.cs                      #    游戏结果行
+│       │   ├── NavigationTarget.cs                   #    导航目标枚举
+│       │   ├── ResultFilterOption.cs                 #    结果筛选选项
+│       │   ├── SortKeys.cs                           #    统计表格排序键常量
+│       │   ├── StatsRow.cs                           #    统计行
+│       │   ├── StatsRowBuilder.cs                    #    统计行构建器
+│       │   ├── ThemeMode.cs                          #    主题模式枚举
+│       │   ├── ToastItem.cs                          #    Toast 提示条目
+│       │   └── UIOptions.cs                          #    UI 配置
+│       ├── ViewModels/                               #   视图模型
+│       │   ├── CellViewModel.cs                      #    格子视图模型
+│       │   ├── GameViewModel.cs                      #    游戏视图模型
+│       │   ├── HistoryViewModel.cs                   #    历史记录视图模型
+│       │   ├── MainViewModel.cs                      #    主视图模型
+│       │   ├── SettingsViewModel.cs                  #    设置视图模型
+│       │   ├── ShellViewModel.cs                     #    壳视图模型
+│       │   ├── ToastViewModel.cs                     #    Toast 提示视图模型
+│       │   └── UpdateViewModel.cs                    #    更新视图模型
+│       ├── Views/                                    #   视图
+│       │   ├── DownloadBallView.axaml                #    下载进度悬浮球视图
+│       │   ├── DownloadBallView.axaml.cs             #    下载进度悬浮球视图代码后置
+│       │   ├── DownloadDrawerView.axaml              #    下载详情抽屉视图
+│       │   ├── DownloadDrawerView.axaml.cs           #    下载详情抽屉视图代码后置
+│       │   ├── GameView.axaml                        #    游戏视图
+│       │   ├── GameView.axaml.cs                     #    游戏视图代码后置
+│       │   ├── HistoryView.axaml                     #    历史记录视图
+│       │   ├── HistoryView.axaml.cs                  #    历史记录视图代码后置
+│       │   ├── MainView.axaml                        #    主视图
+│       │   ├── MainView.axaml.cs                     #    主视图代码后置
+│       │   ├── SettingsView.axaml                    #    设置抽屉内容视图
+│       │   ├── SettingsView.axaml.cs                 #    设置抽屉内容视图代码后置
+│       │   ├── ShellView.axaml                       #    壳视图
+│       │   ├── ShellView.axaml.cs                    #    壳视图代码后置
+│       │   ├── ToastView.axaml                       #    Toast 视图
+│       │   └── ToastView.axaml.cs                    #    Toast 视图代码后置
+│       ├── App.axaml                                 #   应用定义
+│       ├── App.axaml.cs                              #   应用类
+│       ├── App.Manifest.xml                          #   Windows 应用清单
+│       ├── AppMetadata.cs                            #   应用元数据
+│       ├── Constants.cs                              #   UI 常量
+│       ├── EnumDescriptionConverter.cs               #   枚举描述转换器
+│       ├── KeyExtensions.cs                          #   Key 按键扩展
+│       ├── MineClearance.UI.csproj                   #   项目文件
+│       ├── Program.cs                                #   应用入口
+│       ├── ShellWindow.axaml                         #   主窗口
+│       ├── ShellWindow.axaml.cs                      #   主窗口代码
+│       ├── ViewLocator.cs                            #   ViewModel → View 定位器
+│       └── WindowsHelper.cs                          #   Windows 窗口操作辅助
 ├── tests/                                            # 测试项目目录
 │   ├── MineClearance.Core.Tests/                     #  Core 层单元测试
 │   │   ├── GameBoardDictionaryTests.cs               #   棋盘字典测试
