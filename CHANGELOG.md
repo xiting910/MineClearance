@@ -9,6 +9,12 @@
 
 ## [Unreleased]
 
+---
+
+## [1.6.0] - 2026-08-31
+
+**棋盘配色主题化**: 棋盘格子颜色全面主题化 (CellViewModel 配色从硬编码画刷改为主题资源字典动态读取, App.axaml Light/Dark 主题字典新增 22 组格子色板资源), 深色主题格子色板独立适配 (未翻开/已翻开/数字/旗/警告/雷各有专属深色配色), 索引叠加层文字颜色主题化 (GameView 前景改用 DynamicResource CellIndexBrush), 主题切换时实时刷新棋盘配色 (GameViewModel 订阅 ActualThemeVariantChanged 统一遍历格子刷新).
+
 ### Changed
 
 - 文档: README 全面重写
@@ -582,7 +588,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.5.4...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.6.0
 [1.5.4]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.4
 [1.5.3]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.3
 [1.5.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.2
