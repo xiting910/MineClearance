@@ -9,6 +9,12 @@
 
 ## [Unreleased]
 
+---
+
+## [1.6.1] - 2026-08-31
+
+**日志文件轮转空文件判断修复**: 修复日志文件轮转时误将无实际内容但文件大小为 1KB 的游戏日志轮转的问题 (原逻辑使用 FileInfo.Length > 0 判断文件是否为空, 改为实际读取文件首字节判断, 确保无内容的文件不被轮转).
+
 ### Fixed
 
 - UI 层: 日志文件轮转空文件判断修复 (原逻辑使用 FileInfo.Length > 0 判断文件是否为空, 游戏日志无实际内容但文件大小为 1KB 时会被错误轮转; 改为实际读取文件首字节判断, 确保无内容的文件不被轮转)
@@ -592,7 +598,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.6.1
 [1.6.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.6.0
 [1.5.4]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.4
 [1.5.3]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.3
