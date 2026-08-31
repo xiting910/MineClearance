@@ -110,14 +110,21 @@ file static class Program
             // 提前获取最新日志文件名, 在接下来执行 MoveTo 方法后, latestLogFileInfo.Name 将不再是最新日志文件名
             var latestLogFileName = latestLogFileInfo.Name;
 
-            // 判断最新日志是否存在并且不为空
-            if (latestLogFileInfo.Exists && latestLogFileInfo.Length > 0)
+            // 判断最新日志是否存在
+            if (latestLogFileInfo.Exists)
             {
-                // 轮转日志文件: 将最新日志文件移动到以当前时间命名的文件中
-                latestLogFileInfo.MoveTo(Path.Combine(
-                    latestLogFileInfo.DirectoryName!,
-                    $"{DateTime.Now:yyyy-MM-dd_HHmmss}{Infrastructure.Constants.LogFileSuffix}"
-                ));
+                // 打开日志文件的读取流
+                using var stream = latestLogFileInfo.OpenRead();
+
+                // 如果读到任何内容, 则说明最新日志文件不为空, 需要轮转日志文件
+                if (stream.ReadByte() != -1)
+                {
+                    // 轮转日志文件: 将最新日志文件移动到以当前时间命名的文件中
+                    latestLogFileInfo.MoveTo(Path.Combine(
+                        latestLogFileInfo.DirectoryName!,
+                        $"{DateTime.Now:yyyy-MM-dd_HHmmss}{Infrastructure.Constants.LogFileSuffix}"
+                    ));
+                }
             }
 
             // 获取所有旧的日志文件, 按时间降序排序, 并跳过最新的 N 个文件
