@@ -32,11 +32,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      # 2. 初始化 CodeQL 引擎, 指定分析 C# 语言, 并排除测试项目的扫描
+      # 2. 初始化 CodeQL 引擎, 指定分析 C# 语言, 使用 autobuild 模式, 忽略测试目录
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
+          build-mode: autobuild
           config: |
             paths-ignore:
               - "**/tests/**"
@@ -52,11 +53,7 @@ jobs:
             **/*.props
             **/*.slnx
 
-      # 4. CodeQL 自动检测构建系统并编译
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v4
-
-      # 5. 执行分析并将结果上传到 GitHub Security 面板
+      # 4. 执行分析并将结果上传到 GitHub Security 面板
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:

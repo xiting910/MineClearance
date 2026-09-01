@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 工程化: CodeQL 工作流简化 (autobuild 模式由单独步骤改为初始化步骤内 build-mode: autobuild 配置, 移除冗余的 Autobuild 步骤)
+
 ---
 
 ## [1.6.1] - 2026-08-31
