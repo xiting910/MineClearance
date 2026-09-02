@@ -29,6 +29,9 @@ public static class UnhandledExceptionHelper
         {
             lock (_lock)
             {
+                // 创建应用数据根目录
+                _ = Directory.CreateDirectory(Constants.AppDataRootDirectory);
+
                 // 写入未处理异常日志文件
                 File.AppendAllText(Constants.UnhandledExceptionLogFilePath, text);
             }
