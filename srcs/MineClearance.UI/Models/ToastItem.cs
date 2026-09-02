@@ -83,16 +83,11 @@ public sealed partial class ToastItem(
     /// <returns><see langword="true"/> 如果剩余时间耗尽, 否则 <see langword="false"/></returns>
     public bool Tick(TimeSpan delta)
     {
-        // 悬停暂停期间不扣减剩余时间, 进度条保持不动
         if (!IsPaused)
         {
             _remaining -= delta;
+            Progress = Math.Clamp(_remaining / _totalDuration, 0, Constants.MaxRatio);
         }
-
-        // 计算剩余时间比例, 用于驱动进度条从满宽缩至零
-        Progress = Math.Clamp(_remaining / _totalDuration, 0, Constants.MaxRatio);
-
-        // 剩余时间耗尽时返回 true, 由视图模型移除该条目
         return _remaining <= TimeSpan.Zero;
     }
 

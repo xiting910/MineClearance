@@ -5,6 +5,7 @@ using MineClearance.UI.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 
 namespace MineClearance.UI.ViewModels;
 
@@ -26,19 +27,19 @@ public sealed partial class ToastViewModel : ObservableObject
     private readonly ILogger<ToastViewModel> _logger;
 
     /// <summary>
-    /// UI 配置, 每次显示时读取提示时长与最大条数
-    /// </summary>
-    private readonly UIOptions _uiOptions;
-
-    /// <summary>
     /// 进度条刷新计时器, 驱动所有条目的剩余时间扣减与进度条更新, 集合为空时停止
     /// </summary>
     private readonly DispatcherTimer _refreshTimer;
 
     /// <summary>
-    /// 上一次刷新计时的时间点, 用于计算实际经过的时间
+    /// 高精度计时器, 用于计算实际经过的时间
     /// </summary>
-    private DateTime _lastTickTime;
+    private readonly Stopwatch _stopwatch;
+
+    /// <summary>
+    /// UI 配置, 每次显示时读取提示时长与最大条数
+    /// </summary>
+    private readonly UIOptions _uiOptions;
 
     /// <summary>
     /// 当前显示中的提示条目集合, 满员时新提示顶掉最早的一条
@@ -51,31 +52,37 @@ public sealed partial class ToastViewModel : ObservableObject
     public bool HasItems => Items.Count > 0;
 
     /// <summary>
-    /// 创建短暂提示视图模型
+    /// 构造函数, 注入日志记录器与 UI 配置
     /// </summary>
     /// <param name="logger">日志记录器</param>
     /// <param name="uiOptions">UI 配置</param>
     public ToastViewModel(ILogger<ToastViewModel> logger, UIOptions uiOptions)
     {
         _logger = logger;
+        _stopwatch = new();
         _uiOptions = uiOptions;
         _refreshTimer = new(RefreshInterval, DispatcherPriority.Background, OnRefreshTimerTick);
         Items.CollectionChanged += OnItemsCollectionChanged;
     }
 
     /// <summary>
-    /// 显示短暂提示后消失, 满员时顶掉最早的一条, 显示时长与最大条数每次从配置读取
+    /// 显示提示, 满员时顶掉最早的一条, 并启动计时器驱动进度条扣减
     /// </summary>
     /// <param name="message">提示文本</param>
     /// <param name="clickAction">点击回调</param>
     public void Show(string message, Action? clickAction = null)
     {
-        // 显示时长为零时忽略提示
+        // 获取显示时长
         var duration = TimeSpan.FromSeconds(_uiOptions.ToastDurationSeconds);
+
+        // 显示时长小于等于零时不显示提示
         if (duration <= TimeSpan.Zero) { return; }
 
-        // 满员时顶掉最早的一条, 为新提示腾出位置
-        while (Items.Count >= _uiOptions.MaxToastCount)
+        // 获取最大条数
+        var maxCount = _uiOptions.MaxToastCount;
+
+        // 满员时顶掉最早的一条, 直到为新提示腾出位置
+        while (Items.Count >= maxCount)
         {
             Items.RemoveAt(0);
         }
@@ -92,8 +99,8 @@ public sealed partial class ToastViewModel : ObservableObject
         });
 
         // 启动计时器驱动进度条扣减
-        _lastTickTime = DateTime.Now;
         _refreshTimer.Start();
+        _stopwatch.Restart();
 
         // 记录日志
         LogToastShown(message);
@@ -105,23 +112,8 @@ public sealed partial class ToastViewModel : ObservableObject
     /// <param name="item">被点击的提示条目</param>
     public void InvokeClick(ToastItem item)
     {
-        item.InvokeClick();
         _ = Items.Remove(item);
-    }
-
-    /// <summary>
-    /// 提示条目集合变化时同步显隐状态, 集合为空时停止计时器
-    /// </summary>
-    /// <param name="sender">集合</param>
-    /// <param name="e">集合变化事件参数</param>
-    private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        OnPropertyChanged(nameof(HasItems));
-
-        if (Items.Count == 0)
-        {
-            _refreshTimer.Stop();
-        }
+        item.InvokeClick();
     }
 
     /// <summary>
@@ -131,11 +123,11 @@ public sealed partial class ToastViewModel : ObservableObject
     /// <param name="e">计时器事件参数</param>
     private void OnRefreshTimerTick(object? sender, EventArgs e)
     {
-        var now = DateTime.Now;
-        var delta = now - _lastTickTime;
-        _lastTickTime = now;
+        // 计算实际经过的时间, 并重启计时器
+        var delta = _stopwatch.Elapsed;
+        _stopwatch.Restart();
 
-        // 倒序驱动所有条目扣减剩余时间, 耗尽的条目直接移除避免索引错位
+        // 倒序驱动所有条目扣减剩余时间, 避免移除条目时索引错乱
         for (var i = Items.Count - 1; i >= 0; i--)
         {
             if (Items[i].Tick(delta))
@@ -146,13 +138,28 @@ public sealed partial class ToastViewModel : ObservableObject
     }
 
     /// <summary>
+    /// 提示条目集合变化时同步显隐状态, 集合为空时停止计时器
+    /// </summary>
+    /// <param name="sender">集合</param>
+    /// <param name="e">集合变化事件参数</param>
+    private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(HasItems));
+        if (Items.Count == 0)
+        {
+            _refreshTimer.Stop();
+            _stopwatch.Stop();
+        }
+    }
+
+    /// <summary>
     /// 记录提示显示日志
     /// </summary>
     /// <param name="message">提示文本</param>
     [LoggerMessage(
         EventId = 1,
         EventName = "ToastShown",
-        Level = LogLevel.Information,
+        Level = LogLevel.Debug,
         Message = "Toast shown: {Message}"
     )]
     private partial void LogToastShown(string message);
