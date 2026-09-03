@@ -67,7 +67,7 @@
 | 运行时  | .NET 10 · C# 14                                       |
 | UI 框架 | Avalonia 12 · CommunityToolkit.Mvvm                   |
 | 架构    | Clean Architecture · MVVM                             |
-| 测试    | xUnit v3 · Moq · 318 个单元测试                       |
+| 测试    | xUnit v3 · Moq · 388 个单元测试                       |
 | 工程化  | GitHub Actions · CodeQL · Dependabot · CPM 集中包管理 |
 
 ---
