@@ -18,6 +18,8 @@
 ### Fixed
 
 - Infrastructure 层: 未处理异常兜底日志丢失修复 (HandleException 写入前创建应用数据根目录, 修复异常发生在应用初始化创建目录之前时兜底日志静默丢失的问题)
+- Infrastructure 层: 无日志运行时生成 BOM 占位文件修复 (写入端由带 BOM 的 Encoding.UTF8 改为 new UTF8Encoding(false) 无 BOM 编码, 从未写入日志时文件保持 0 字节, 不再残留 3 字节 UTF-8 BOM 造成无实际内容却有文件大小的日志文件)
+- UI 层: 日志轮转空文件判断恢复为长度判断 (写入端不再产生 BOM 占位文件后, 空日志文件恒为 0 字节, 由 1.6.1 的读取首字节判断恢复为 Length > 0, 无实际内容的文件不再被轮转)
 
 ---
 

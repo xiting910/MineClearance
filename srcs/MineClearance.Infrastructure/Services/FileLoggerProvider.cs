@@ -21,7 +21,7 @@ internal sealed class FileLoggerProvider(FileLoggerOptions _options) : ILoggerPr
     /// <summary>
     /// 文件日志记录器的写入器
     /// </summary>
-    private readonly StreamWriter _writer = new(Constants.LatestLogFilePath, true, Encoding.UTF8)
+    private readonly StreamWriter _writer = new(Constants.LatestLogFilePath, true, new UTF8Encoding(false))
     {
         AutoFlush = true
     };
