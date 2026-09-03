@@ -13,6 +13,7 @@
 
 - 工程化: CodeQL 工作流简化 (autobuild 模式由单独步骤改为初始化步骤内 build-mode: autobuild 配置, 移除冗余的 Autobuild 步骤)
 - UI 层: Toast 倒计时计时重构 (计时由 DateTime.Now 差值改为 Stopwatch 高精度测量, 不受系统时钟调整影响; ToastItem.Tick 悬停暂停期间不再更新进度条; InvokeClick 改为先移除条目再执行点击回调; Toast 显示日志级别由 Information 降为 Debug)
+- UI 层: Toast HasItems 属性改为可观察属性 (从计算属性改为 [ObservableProperty] 源生成, 集合变化时直接赋值触发通知, 简化绑定逻辑)
 
 ### Fixed
 

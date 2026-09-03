@@ -47,9 +47,10 @@ public sealed partial class ToastViewModel : ObservableObject
     public ObservableCollection<ToastItem> Items { get; } = [];
 
     /// <summary>
-    /// 是否存在显示的提示条目, 供视图控制显隐
+    /// 当前是否有提示条目, 用于绑定视图显隐状态
     /// </summary>
-    public bool HasItems => Items.Count > 0;
+    [ObservableProperty]
+    public partial bool HasItems { get; set; }
 
     /// <summary>
     /// 构造函数, 注入日志记录器与 UI 配置
@@ -144,7 +145,7 @@ public sealed partial class ToastViewModel : ObservableObject
     /// <param name="e">集合变化事件参数</param>
     private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        OnPropertyChanged(nameof(HasItems));
+        HasItems = Items.Count > 0;
         if (Items.Count == 0)
         {
             _refreshTimer.Stop();
