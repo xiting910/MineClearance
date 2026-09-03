@@ -57,11 +57,11 @@ public sealed partial class App : Application
         TaskScheduler.UnobservedTaskException += (_, e) =>
         {
             UnhandledExceptionHelper.HandleException(false, e.Exception);
-            toastViewModel.Show(
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => toastViewModel.Show(
                 $"发生未处理的任务异常: {e.Exception.Message}, 阅读 " +
                 Infrastructure.Constants.UnhandledExceptionLogFilePath +
                 " 以查看详细信息"
-            );
+            ));
             e.SetObserved();
         };
 
