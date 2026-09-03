@@ -9,6 +9,12 @@
 
 ## [Unreleased]
 
+---
+
+## [1.6.2] - 2026-09-03
+
+**日志与异常处理修复, Toast 重构与工作流简化**: 修复未处理异常发生在应用初始化创建目录之前时兜底日志静默丢失的问题 (HandleException 写入前创建应用数据根目录); 根治日志轮转空文件误判 (根因为写入端使用带 BOM 的 Encoding.UTF8, 全程无日志写入时退出 flush 仍会落盘 3 字节 UTF-8 BOM 占位文件, 产生无实际内容却有文件大小的日志文件; 写入端改用 new UTF8Encoding(false) 无 BOM 编码, 空日志文件恢复 0 字节, 轮转判断由 1.6.1 的读取首字节恢复为 Length > 0); Toast 倒计时计时改为 Stopwatch 高精度测量并简化 HasItems 通知; CodeQL 工作流 autobuild 配置简化.
+
 ### Changed
 
 - 工程化: CodeQL 工作流简化 (autobuild 模式由单独步骤改为初始化步骤内 build-mode: autobuild 配置, 移除冗余的 Autobuild 步骤)
@@ -610,7 +616,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.6.1...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.6.2...HEAD
+[1.6.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.6.2
 [1.6.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.6.1
 [1.6.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.6.0
 [1.5.4]: https://github.com/xiting910/MineClearance/releases/tag/v1.5.4
