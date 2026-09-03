@@ -11,6 +11,7 @@
 
 ### Changed
 
+- 工程化: Dependabot NuGet 分组移除冗余 update-types 配置 (Avalonia / Microsoft.Extensions.* 分组显式列出的 major/minor/patch 与分组默认包含全部更新类型的行为等价, 删除后配置更简洁, 大版本更新保持放开)
 - 工程化: Dependabot NuGet 分组精简与 major 更新放开 (Avalonia / Microsoft.Extensions.* 分组 update-types 增加 major, 允许大版本自动更新; 移除 xunit / test-sdk (coverlet.collector、Moq) / nuget-catchall 分组, 其余包不再合并更新)
 
 ---
