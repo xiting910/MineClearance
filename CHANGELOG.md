@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 工程化: Dependabot NuGet 分组精简与 major 更新放开 (Avalonia / Microsoft.Extensions.* 分组 update-types 增加 major, 允许大版本自动更新; 移除 xunit / test-sdk (coverlet.collector、Moq) / nuget-catchall 分组, 其余包不再合并更新)
+
 ---
 
 ## [1.6.2] - 2026-09-03

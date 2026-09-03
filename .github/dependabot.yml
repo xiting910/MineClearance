@@ -22,6 +22,7 @@ updates:
         patterns:
           - "Avalonia*"
         update-types:
+          - "major"
           - "minor"
           - "patch"
       # Microsoft.Extensions.* 系列包合并更新
@@ -29,28 +30,7 @@ updates:
         patterns:
           - "Microsoft.Extensions.*"
         update-types:
-          - "minor"
-          - "patch"
-      # xUnit 系列包合并更新
-      xunit:
-        patterns:
-          - "xunit*"
-        update-types:
-          - "minor"
-          - "patch"
-      # 覆盖率工具、Mock 框架合并更新
-      test-sdk:
-        patterns:
-          - "coverlet.collector"
-          - "Moq"
-        update-types:
-          - "minor"
-          - "patch"
-      # 其余包合并为一组
-      nuget-catchall:
-        patterns:
-          - "*"
-        update-types:
+          - "major"
           - "minor"
           - "patch"
 
