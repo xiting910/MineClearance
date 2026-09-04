@@ -81,7 +81,8 @@ internal sealed class FileLoggerProvider(FileLoggerOptions _options) : ILoggerPr
             // 拼接日志行: 时间戳, 级别缩写, 类别名称, 事件ID, 事件名, 日志内容, 异常信息
             var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] "
                 + $"[{logLevel}] [{_categoryName}] ({eventId.Id} {eventId.Name}) "
-                + $"{formatter(state, exception)}";
+                + $"{formatter(state, exception)} "
+                + (exception is null ? string.Empty : exception);
 
             try
             {

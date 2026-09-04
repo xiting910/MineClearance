@@ -16,6 +16,7 @@
 
 ### Fixed
 
+- Infrastructure 层: 日志输出补充异常信息 (FileLoggerProvider 日志行末尾追加 exception.ToString(), 异常为 null 时输出空字符串)
 - UI 层: 未观察任务异常 Toast 提示调度到 UI 线程 (TaskScheduler.UnobservedTaskException 回调可能在线程池线程上触发, 直接调用 ToastViewModel.Show 会跨线程更新 UI 集合, 改为经 Dispatcher.UIThread.Post 调度到 UI 线程执行)
 
 ---
