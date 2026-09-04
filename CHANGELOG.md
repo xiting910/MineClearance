@@ -9,6 +9,12 @@
 
 ## [Unreleased]
 
+---
+
+## [1.6.3] - 2026-09-04
+
+**Dependabot 配置精简与日志/异常处理修复**: Dependabot NuGet 分组移除冗余 update-types 配置并放开大版本自动更新, 配置更简洁; 日志输出补充异常信息 (FileLoggerProvider 日志行末尾追加 exception.ToString()), 修复异常详情丢失; 未观察任务异常 Toast 提示调度到 UI 线程, 修复跨线程更新 UI 集合崩溃.
+
 ### Changed
 
 - 工程化: Dependabot NuGet 分组移除冗余 update-types 配置 (Avalonia / Microsoft.Extensions.* 分组显式列出的 major/minor/patch 与分组默认包含全部更新类型的行为等价, 删除后配置更简洁, 大版本更新保持放开)
@@ -626,7 +632,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.6.2...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.6.3...HEAD
+[1.6.3]: https://github.com/xiting910/MineClearance/releases/tag/v1.6.3
 [1.6.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.6.2
 [1.6.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.6.1
 [1.6.0]: https://github.com/xiting910/MineClearance/releases/tag/v1.6.0
