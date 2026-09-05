@@ -9,6 +9,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- 文档: 新增 Architecture.html 交互式分层架构图 (archify 生成, 展示 UI / Infrastructure / Core 三层与外部 GitHub Releases 依赖关系, 支持主题切换/缩放/导出)
+
+### Changed
+
+- 工程化: .editorconfig 新增 HTML 文件缩进规则 (2 空格缩进), GitHub Actions 工作流文件匹配由 *.{yml,yaml} 精简为 *.yml (仓库仅使用 yml 扩展名)
+
 ---
 
 ## [1.6.3] - 2026-09-04

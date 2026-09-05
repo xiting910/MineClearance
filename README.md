@@ -255,6 +255,7 @@ MineClearance/
 ├── .editorconfig                                     # 代码风格统一配置
 ├── .gitattributes                                    # Git 行尾归一化, diff 策略与二进制标记
 ├── .gitignore                                        # 忽略规则
+├── Architecture.html                                 # 分层架构交互图
 ├── CHANGELOG.md                                      # 变更日志
 ├── Directory.Build.props                             # 全局构建属性
 ├── Directory.Packages.props                          # 集中包版本管理
