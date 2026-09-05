@@ -16,6 +16,7 @@
 ### Changed
 
 - 工程化: .editorconfig 新增 HTML 文件缩进规则 (2 空格缩进), GitHub Actions 工作流文件匹配由 *.{yml,yaml} 精简为 *.yml (仓库仅使用 yml 扩展名)
+- 工程化: .gitattributes 排除 Architecture.html 语言统计 (Architecture.html 添加 diff=html 与 linguist-detectable=false, 避免 GitHub 语言占比统计被架构图 HTML 文件干扰)
 
 ---
 

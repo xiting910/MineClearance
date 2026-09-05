@@ -12,6 +12,9 @@
 # Markdown 文件
 *.md        text    diff=markdown
 
+# Architecture.html 文件不参与语言统计
+Architecture.html   diff=html   linguist-detectable=false
+
 # 脚本
 *.bat       text    eol=crlf    linguist-detectable=false
 *.sh        text    eol=lf      linguist-detectable=false
