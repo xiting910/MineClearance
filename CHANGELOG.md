@@ -12,11 +12,17 @@
 ### Added
 
 - 文档: 新增 Architecture.html 交互式分层架构图 (archify 生成, 展示 UI / Infrastructure / Core 三层与外部 GitHub Releases 依赖关系, 支持主题切换/缩放/导出)
+- 文档: 新增 README.en.md 英文说明文档 (与中文 README 内容对齐, 含语言切换入口与界面预览, 声明 UI 暂不支持多语言且中文版为唯一维护版本)
+- 文档: README 新增界面预览章节 (docs/images 下新增 Main / InGame / History / DarkTheme 四张界面截图, 中文与英文 README 同步展示)
 
 ### Changed
 
 - 工程化: .editorconfig 新增 HTML 文件缩进规则 (2 空格缩进), GitHub Actions 工作流文件匹配由 *.{yml,yaml} 精简为 *.yml (仓库仅使用 yml 扩展名)
 - 工程化: .gitattributes 排除 Architecture.html 语言统计 (Architecture.html 添加 diff=html 与 linguist-detectable=false, 避免 GitHub 语言占比统计被架构图 HTML 文件干扰)
+- 工程化: .gitattributes 新增 webp 二进制标记 (界面预览截图加入仓库后按二进制处理, 不做行尾与文本 diff 转换)
+- 文档: Architecture.html 由仓库根目录移入 docs 目录 (文档类资源统一归档, 中文与英文 README 中的链接同步更新)
+- 文档: README 精简 (移除项目结构树与发布命令章节, 项目结构改由交互式架构图呈现; 新增语言切换入口, 顶部标语与徽章排版微调)
+- 工程化: App.Manifest.xml 移除 UTF-8 BOM (与其他源文件编码保持一致)
 
 ---
 

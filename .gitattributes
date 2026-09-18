@@ -22,3 +22,4 @@ Architecture.html   diff=html   linguist-detectable=false
 # 二进制
 *.ico       binary
 *.png       binary
+*.webp      binary
