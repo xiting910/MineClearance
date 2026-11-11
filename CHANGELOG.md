@@ -9,6 +9,12 @@
 
 ## [Unreleased]
 
+---
+
+## [1.6.4] - 2026-11-11
+
+**平台升级与工程化维护**: 目标框架升级至 .NET 11.0 并同步升级 Microsoft.Extensions 11.0.0 / Avalonia 12.1.6 / Downloader 7.0.1 等依赖, 移除 .NET 11 起纳入基础框架的冗余包引用; 自动更新下载获得上游修复 (进度事件改为按序回调, 修复内存缓冲区满导致的下载挂起, 以及磁盘空间检查定位错误、续传时按整包大小判断的问题); 新增英文文档、界面预览与交互式架构图, 完善代码风格检查、构建期分析器与 CI SDK 配置.
+
 ### Added
 
 - 文档: 新增 Architecture.html 交互式分层架构图 (archify 生成, 展示 UI / Infrastructure / Core 三层与外部 GitHub Releases 依赖关系, 支持主题切换/缩放/导出)
@@ -652,7 +658,8 @@
 - Core 层: 游戏实例释放移入 Game 属性 setter, 修复游戏切换 (开始新游戏/恢复存档/退出) 时先 Dispose 旧实例再赋值新实例抛 ObjectDisposedException 的问题
 - UI 层: 日志轮转提前捕获最新日志文件名, 修复 MoveTo 后 FileInfo.Name 变化导致旧日志误入清理范围的问题
 
-[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.6.3...HEAD
+[Unreleased]: https://github.com/xiting910/MineClearance/compare/v1.6.4...HEAD
+[1.6.4]: https://github.com/xiting910/MineClearance/releases/tag/v1.6.4
 [1.6.3]: https://github.com/xiting910/MineClearance/releases/tag/v1.6.3
 [1.6.2]: https://github.com/xiting910/MineClearance/releases/tag/v1.6.2
 [1.6.1]: https://github.com/xiting910/MineClearance/releases/tag/v1.6.1
