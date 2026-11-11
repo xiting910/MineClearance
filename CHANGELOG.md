@@ -26,6 +26,7 @@
 - 工程化: 目标框架升级至 .NET 11.0 (Microsoft.Extensions.* 抽象包自 .NET 11 起纳入基础框架, 移除 Core / Infrastructure 层中冗余的 PackageReference; 依赖同步升级至 Microsoft.Extensions 11.0.0 / Avalonia 12.1.6 / Downloader 7.0.1 / xunit.v3 4.0.3)
 - 工程化: CI / CodeQL / 发布工作流 .NET SDK 版本同步至 11.0.x (目标框架升级后 setup-dotnet 若仍锁定 10.0.x 会因 NETSDK1045 构建失败)
 - 工程化: .editorconfig 精简并启用构建期代码风格检查 (tab_width 由 indent_size 推导, 删除各文件类型下重复的 tab_width 配置; 移除已无引用的 pascal_case 命名风格; 新增 IDE0390 / IDE0391 建议, 提示将不含 await 的异步方法改为同步; Directory.Build.props 启用 EnforceCodeStyleInBuild)
+- UI 层: 允许的图片扩展名集合改用集合表达式构造 (以集合表达式参数 with(StringComparer.OrdinalIgnoreCase) 传入大小写不敏感比较器, 与文件内其他集合表达式写法统一, 行为不变)
 
 ---
 

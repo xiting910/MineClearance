@@ -38,10 +38,10 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>
     /// 允许的图片扩展名列表, 用于扫描背景图片目录
     /// </summary>
-    private static readonly HashSet<string> AllowedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> AllowedImageExtensions = [
+        with(StringComparer.OrdinalIgnoreCase),
         ".png", ".jpg", ".jpeg", ".bmp", ".gif"
-    };
+    ];
 
     /// <summary>
     /// 内置图片的选项列表
