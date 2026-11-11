@@ -7,7 +7,6 @@ root = true
 indent_style = space
 
 # 缩进大小为 4 个空格
-tab_width = 4
 indent_size = 4
 
 # 使用 UTF-8 编码
@@ -26,7 +25,6 @@ trim_trailing_whitespace = true
 [*.axaml]
 
 # 缩进大小为 2 个空格
-tab_width = 2
 indent_size = 2
 
 # Windows 批处理文件
@@ -39,39 +37,37 @@ end_of_line = crlf
 [*.{csproj,props,slnx}]
 
 # 缩进大小为 2 个空格
-tab_width = 2
 indent_size = 2
 
 # HTML 文件
 [*.html]
 
 # 缩进大小为 2 个空格
-tab_width = 2
 indent_size = 2
 
 # Json 文件
 [*.json]
 
 # 缩进大小为 2 个空格
-tab_width = 2
 indent_size = 2
 
 # GitHub Actions workflows
 [*.yml]
 
 # 缩进大小为 2 个空格
-tab_width = 2
 indent_size = 2
 
 # C#
 [*.cs]
 
 # ============================================================
-# 一、命名规则
+# 一、IDE 诊断规则
 # ============================================================
 
-# 定义 PascalCase 命名风格, 供命名规则引用
-dotnet_naming_style.pascal_case.capitalization = pascal_case
+# 把不含 await 的 async 方法改为同步(普通方法/局部函数/lambda)
+dotnet_diagnostic.IDE0390.severity = suggestion
+# 把不含 await 的 async 方法改为同步(接口实现/基类重写)
+dotnet_diagnostic.IDE0391.severity = suggestion
 
 # ============================================================
 # 二、限定符规则

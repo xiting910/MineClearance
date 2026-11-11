@@ -26,11 +26,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      # 2. 安装 .NET 10 SDK
+      # 2. 安装 .NET 11 SDK
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.x
           cache: true
           cache-dependency-path: |
             **/*.csproj

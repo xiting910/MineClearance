@@ -6,10 +6,10 @@
 
 A cross-platform Minesweeper game built with **Avalonia UI** — no install · progress restore · no-guess mode · reproducible seeds
 
-Built on **Clean Architecture** with **.NET 10.0** — ready to play out of the box, with automatic updates.
+Built on **Clean Architecture** with **.NET 11.0** — ready to play out of the box, with automatic updates.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![.NET 10.0](https://img.shields.io/badge/.NET-10.0-512BD4.svg)](https://dotnet.microsoft.com/)
+[![.NET 11.0](https://img.shields.io/badge/.NET-11.0-512BD4.svg)](https://dotnet.microsoft.com/)
 [![Avalonia 12](https://img.shields.io/badge/Avalonia-12-8B45C6.svg)](https://avaloniaui.net/)
 [![Release](https://img.shields.io/github/v/release/xiting910/MineClearance)](https://github.com/xiting910/MineClearance/releases)
 [![Downloads](https://img.shields.io/github/downloads/xiting910/MineClearance/total)](https://github.com/xiting910/MineClearance/releases)
@@ -85,7 +85,7 @@ Built on **Clean Architecture** with **.NET 10.0** — ready to play out of the 
 
 | Category     | Technology                                            |
 | ------------ | ----------------------------------------------------- |
-| Runtime      | .NET 10 · C# 14                                       |
+| Runtime      | .NET 11 · C# 15                                       |
 | UI framework | Avalonia 12 · CommunityToolkit.Mvvm                   |
 | Architecture | Clean Architecture · MVVM                             |
 | Testing      | xUnit v3 · Moq · 388 unit tests                       |
@@ -99,7 +99,7 @@ Built on **Clean Architecture** with **.NET 10.0** — ready to play out of the 
 
 ### Requirements
 
-- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [.NET 11.0 SDK](https://dotnet.microsoft.com/download/dotnet/11.0)
 
 ### Clone
 

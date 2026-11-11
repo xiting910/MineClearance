@@ -41,11 +41,11 @@ jobs:
           echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
           echo "📌 Version: $VERSION (tag: $TAG_NAME)"
 
-      # 3. 安装 .NET 10 SDK
+      # 3. 安装 .NET 11 SDK
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.x
           cache: true
           cache-dependency-path: |
             **/*.csproj

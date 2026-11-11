@@ -6,10 +6,10 @@
 
 基于 **Avalonia UI** 的跨平台扫雷游戏 — 免安装 · 存档恢复 · 无猜体验 · 种子复现
 
-采用 **Clean Architecture** 架构，使用 **.NET 10.0** 构建，开箱即用、自动更新。
+采用 **Clean Architecture** 架构，使用 **.NET 11.0** 构建，开箱即用、自动更新。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![.NET 10.0](https://img.shields.io/badge/.NET-10.0-512BD4.svg)](https://dotnet.microsoft.com/)
+[![.NET 11.0](https://img.shields.io/badge/.NET-11.0-512BD4.svg)](https://dotnet.microsoft.com/)
 [![Avalonia 12](https://img.shields.io/badge/Avalonia-12-8B45C6.svg)](https://avaloniaui.net/)
 [![Release](https://img.shields.io/github/v/release/xiting910/MineClearance)](https://github.com/xiting910/MineClearance/releases)
 [![Downloads](https://img.shields.io/github/downloads/xiting910/MineClearance/total)](https://github.com/xiting910/MineClearance/releases)
@@ -81,7 +81,7 @@
 
 | 类别    | 技术                                                  |
 | ------- | ----------------------------------------------------- |
-| 运行时  | .NET 10 · C# 14                                       |
+| 运行时  | .NET 11 · C# 15                                       |
 | UI 框架 | Avalonia 12 · CommunityToolkit.Mvvm                   |
 | 架构    | Clean Architecture · MVVM                             |
 | 测试    | xUnit v3 · Moq · 388 个单元测试                       |
@@ -95,7 +95,7 @@
 
 ### 环境要求
 
-- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [.NET 11.0 SDK](https://dotnet.microsoft.com/download/dotnet/11.0)
 
 ### 克隆
 

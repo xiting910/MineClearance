@@ -23,6 +23,9 @@
 - 文档: Architecture.html 由仓库根目录移入 docs 目录 (文档类资源统一归档, 中文与英文 README 中的链接同步更新)
 - 文档: README 精简 (移除项目结构树与发布命令章节, 项目结构改由交互式架构图呈现; 新增语言切换入口, 顶部标语与徽章排版微调)
 - 工程化: App.Manifest.xml 移除 UTF-8 BOM (与其他源文件编码保持一致)
+- 工程化: 目标框架升级至 .NET 11.0 (Microsoft.Extensions.* 抽象包自 .NET 11 起纳入基础框架, 移除 Core / Infrastructure 层中冗余的 PackageReference; 依赖同步升级至 Microsoft.Extensions 11.0.0 / Avalonia 12.1.6 / Downloader 7.0.1 / xunit.v3 4.0.3)
+- 工程化: CI / CodeQL / 发布工作流 .NET SDK 版本同步至 11.0.x (目标框架升级后 setup-dotnet 若仍锁定 10.0.x 会因 NETSDK1045 构建失败)
+- 工程化: .editorconfig 精简并启用构建期代码风格检查 (tab_width 由 indent_size 推导, 删除各文件类型下重复的 tab_width 配置; 移除已无引用的 pascal_case 命名风格; 新增 IDE0390 / IDE0391 建议, 提示将不含 await 的异步方法改为同步; Directory.Build.props 启用 EnforceCodeStyleInBuild)
 
 ---
 
