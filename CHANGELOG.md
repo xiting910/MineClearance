@@ -27,6 +27,7 @@
 - 工程化: CI / CodeQL / 发布工作流 .NET SDK 版本同步至 11.0.x (目标框架升级后 setup-dotnet 若仍锁定 10.0.x 会因 NETSDK1045 构建失败)
 - 工程化: .editorconfig 精简并启用构建期代码风格检查 (tab_width 由 indent_size 推导, 删除各文件类型下重复的 tab_width 配置; 移除已无引用的 pascal_case 命名风格; 新增 IDE0390 / IDE0391 建议, 提示将不含 await 的异步方法改为同步; Directory.Build.props 启用 EnforceCodeStyleInBuild)
 - UI 层: 允许的图片扩展名集合改用集合表达式构造 (以集合表达式参数 with(StringComparer.OrdinalIgnoreCase) 传入大小写不敏感比较器, 与文件内其他集合表达式写法统一, 行为不变)
+- 工程化: global.json 固定 .NET SDK 版本为 11.0.100 (新增 $schema 便于编辑器校验; rollForward 设为 latestFeature, 允许使用 11.0 后续特性带; allowPrerelease 设为 false, 禁止回落到预览版 SDK; 与 CI 工作流的 11.0.x 保持一致)
 
 ---
 
