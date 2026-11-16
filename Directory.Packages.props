@@ -20,7 +20,7 @@
     <PackageVersion Include="Downloader" Version="7.0.1" />
 
     <!-- 测试框架 -->
-    <PackageVersion Include="coverlet.collector" Version="10.1.0" />
+    <PackageVersion Include="coverlet.collector" Version="10.1.1" />
     <PackageVersion Include="Moq" Version="4.21.0" />
     <PackageVersion Include="xunit.v3" Version="4.0.3" />
   </ItemGroup>
