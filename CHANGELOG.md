@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 工程化: Dependabot 每周更新检查日由周一调整为周五 (NuGet 与 GitHub Actions 两个更新任务同步调整, 固定在周五 08:00 Asia/Shanghai 发起检查)
+
 ---
 
 ## [1.6.4] - 2026-11-11
